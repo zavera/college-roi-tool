@@ -111,12 +111,17 @@ public class CollegeServiceImpl implements CollegeService {
 
             return programs.stream()
                     .filter(p -> p.get("title") != null)
+                    .filter(p -> {
+                        // Undergrad branch: only show Bachelor's and Associate's degrees
+                        Map<?, ?> cred = (Map<?, ?>) p.get("credential");
+                        if (cred == null) return false;
+                        String credTitle = String.valueOf(cred.get("title")).toLowerCase();
+                        return credTitle.contains("bachelor") || credTitle.contains("associate");
+                    })
                     .map(p -> {
-                        // Actual structure: earnings → { "4_yr": { "overall_median_earnings": 65000 }, "5_yr": {...} }
                         Double earnings = extractEarnings(p);
                         if (earnings == null) return null;
 
-                        // Include credential level so duplicates are distinguishable
                         String title = (String) p.get("title");
                         Map<?, ?> credential = (Map<?, ?>) p.get("credential");
                         if (credential != null && credential.get("title") != null) {

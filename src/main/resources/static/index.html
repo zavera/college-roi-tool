@@ -395,23 +395,85 @@
 
     <!-- ── FAFSA Package ── -->
     <div class="card">
-        <h2>📋 Financial Aid Package — One Academic Year</h2>
+        <h2>📋 FAFSA Aid Package — One Academic Year</h2>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Enter amounts from your Student Aid Report (SAR) or financial aid offer letter.</p>
 
         <div class="field-group">
-            <label>Federal Student Loan ($)</label>
-            <input type="number" id="federalLoan" placeholder="0.00" min="0" step="0.01">
+            <label>Pell Grant ($) <span style="font-weight:400;color:var(--accent)">— Federal grant, no repayment required</span></label>
+            <input type="number" id="pellGrant" placeholder="0.00" min="0" step="0.01">
+        </div>
+        <div class="field-group">
+            <label>Subsidized Federal Loan ($) <span style="font-weight:400;color:var(--muted)">— Need-based, no interest while enrolled</span></label>
+            <input type="number" id="subsidizedLoan" placeholder="0.00" min="0" step="0.01">
+        </div>
+        <div class="field-group">
+            <label>Unsubsidized Federal Loan ($) <span style="font-weight:400;color:var(--muted)">— Interest accrues immediately</span></label>
+            <input type="number" id="unsubsidizedLoan" placeholder="0.00" min="0" step="0.01">
         </div>
         <div class="field-group">
             <label>Parent PLUS Loan ($)</label>
             <input type="number" id="parentPlusLoan" placeholder="0.00" min="0" step="0.01">
         </div>
         <div class="field-group">
-            <label>Grant Amount ($)</label>
-            <input type="number" id="grantAmount" placeholder="0.00" min="0" step="0.01">
+            <label>Institutional Grant ($) <span style="font-weight:400;color:var(--accent)">— From your college, no repayment</span></label>
+            <input type="number" id="institutionalGrant" placeholder="0.00" min="0" step="0.01">
         </div>
-        <div class="field-group" style="margin-bottom:0">
+        <div class="field-group">
             <label>Scholarship / Gift Aid ($)</label>
             <input type="number" id="scholarshipAmount" placeholder="0.00" min="0" step="0.01">
+        </div>
+        <div class="field-group" style="margin-bottom:0">
+            <label>Federal Work-Study ($) <span style="font-weight:400;color:var(--muted)">— Earned through part-time campus jobs</span></label>
+            <input type="number" id="workStudy" placeholder="0.00" min="0" step="0.01">
+        </div>
+    </div>
+
+    <!-- ── Student Profile ── -->
+    <div class="card">
+        <h2>👤 Student Profile</h2>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Help us personalize your financial advice and surface targeted scholarships.</p>
+
+        <div class="field-group" style="display:flex;gap:14px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:140px;">
+                <label>Gender</label>
+                <select id="genderSelect" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
+                    <option value="">— Select —</option>
+                    <option>Male</option>
+                    <option>Female</option>
+                    <option>Non-binary</option>
+                    <option>Prefer not to say</option>
+                </select>
+            </div>
+            <div style="flex:2;min-width:200px;">
+                <label>Race / Ethnicity</label>
+                <select id="raceSelect" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
+                    <option value="">— Select —</option>
+                    <option>American Indian or Alaska Native</option>
+                    <option>Asian</option>
+                    <option>Black or African American</option>
+                    <option>Hispanic or Latino</option>
+                    <option>Native Hawaiian or Other Pacific Islander</option>
+                    <option>White</option>
+                    <option>Two or more races</option>
+                    <option>Prefer not to say</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="field-group" style="margin-top:4px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;font-size:13px;font-weight:600;letter-spacing:0;">
+                <input type="checkbox" id="firstGenCheck" style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer;">
+                I am a first-generation college student (neither parent holds a 4-year degree)
+            </label>
+        </div>
+
+        <div class="field-group">
+            <label>Extracurricular Activities</label>
+            <textarea id="extracurriculars" rows="3" placeholder="e.g. Student government, robotics club, varsity soccer, community volunteering…" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;resize:vertical;"></textarea>
+        </div>
+        <div class="field-group" style="margin-bottom:0">
+            <label>Academic Achievements</label>
+            <textarea id="academicAchievements" rows="3" placeholder="e.g. 3.8 GPA, National Honor Society, science fair winner, AP Scholar, Dean's List…" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;resize:vertical;"></textarea>
         </div>
     </div>
 
@@ -534,14 +596,25 @@
         const effectiveEarnings = selectedCollege.majorEarnings || selectedCollege.sixYrEarnings;
 
         const payload = {
-            collegeName:      selectedCollege.name || $("#collegeSearch").val().trim() || null,
-            major:            selectedCollege.selectedMajor || null,
-            federalLoan:      pf($("#federalLoan").val()),
-            parentPlusLoan:   pf($("#parentPlusLoan").val()),
-            grantAmount:      pf($("#grantAmount").val()),
-            scholarshipAmount: pf($("#scholarshipAmount").val()),
-            netPrice:         selectedCollege.netPrice,
-            sixYrEarnings:    effectiveEarnings
+            collegeName:          selectedCollege.name || $("#collegeSearch").val().trim() || null,
+            major:                selectedCollege.selectedMajor || null,
+            // Undergrad FAFSA fields
+            pellGrant:            pf($("#pellGrant").val()),
+            subsidizedLoan:       pf($("#subsidizedLoan").val()),
+            unsubsidizedLoan:     pf($("#unsubsidizedLoan").val()),
+            parentPlusLoan:       pf($("#parentPlusLoan").val()),
+            institutionalGrant:   pf($("#institutionalGrant").val()),
+            scholarshipAmount:    pf($("#scholarshipAmount").val()),
+            workStudy:            pf($("#workStudy").val()),
+            // Student profile
+            gender:               $("#genderSelect").val() || null,
+            race:                 $("#raceSelect").val() || null,
+            firstGeneration:      $("#firstGenCheck").is(":checked") || false,
+            extracurriculars:     $("#extracurriculars").val().trim() || null,
+            academicAchievements: $("#academicAchievements").val().trim() || null,
+            // College data
+            netPrice:             selectedCollege.netPrice,
+            sixYrEarnings:        effectiveEarnings
         };
 
         function renderMarkdown(text) {
