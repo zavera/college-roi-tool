@@ -70,6 +70,8 @@ public class GroqService {
             profile.append("- Gender: ").append(req.getGender()).append("\n");
         if (req.getRace() != null && !req.getRace().isBlank())
             profile.append("- Race/Ethnicity: ").append(req.getRace()).append("\n");
+        if (req.getGpa() != null)
+            profile.append("- GPA: ").append(req.getGpa()).append("\n");
         if (req.getExtracurriculars() != null && !req.getExtracurriculars().isBlank())
             profile.append("- Extracurricular activities: ").append(req.getExtracurriculars()).append("\n");
         if (req.getAcademicAchievements() != null && !req.getAcademicAchievements().isBlank())
@@ -94,11 +96,11 @@ public class GroqService {
             %s
 
             Please provide clear, practical guidance on:
-            1. Whether this loan amount is reasonable given projected earnings and the full 4-year picture
+            1. Whether this loan amount is reasonable given the projected earnings
             2. Key risks to be aware of (interest accrual on unsubsidized loans, Parent PLUS repayment burden, etc.)
-            3. Strategies to minimize total debt accumulation over all 4 years, including how borrowing choices compound into the full repayment burden at graduation
-            4. One actionable tip personalized to this student's background, achievements, and activities (e.g. relevant scholarships for their demographic or extracurriculars)
-            5. Suggest 2-3 specific part-time employment opportunities directly related to %s that this student could realistically do while enrolled to offset costs
+            3. Strategies to minimize total debt accumulation over all 4 years of college, including how borrowing choices each year compound into the full repayment burden at graduation
+            4. Research scholarship opportunities specifically for this student based on their GPA, demographics (gender, race/ethnicity, first-generation status), extracurricular activities, and academic achievements. Provide the names of 2 scholarships likely offered or promoted by %s (the college itself) with their direct scholarship page URL.
+            5. Suggest 2-3 specific part-time employment opportunities directly related to %s that this student could realistically do while in school to offset costs (be specific to this field, not generic suggestions)
 
             Keep the response concise, supportive, and easy to understand for an 18-22 year old undergraduate.
             """,
@@ -109,6 +111,7 @@ public class GroqService {
             totalLoans, totalFreeAid,
             req.getNetPrice() != null ? String.format("- College Net Price: $%.2f/yr", req.getNetPrice()) : "",
             req.getSixYrEarnings() != null ? String.format("- Median earnings 6 years after graduation: $%.2f/yr", req.getSixYrEarnings()) : "",
+            req.getCollegeName() != null ? req.getCollegeName() : "this college",
             req.getMajor() != null ? req.getMajor() : "their chosen major"
         );
     }

@@ -19,6 +19,7 @@ public class LlmAdviceRequest {
     private Double institutionalGrant;
 
     // Student profile fields
+    private Double gpa;
     private String extracurriculars;
     private String academicAchievements;
     private String gender;
@@ -64,6 +65,9 @@ public class LlmAdviceRequest {
 
     public Double getInstitutionalGrant() { return institutionalGrant; }
     public void setInstitutionalGrant(Double institutionalGrant) { this.institutionalGrant = institutionalGrant; }
+
+    public Double getGpa() { return gpa; }
+    public void setGpa(Double gpa) { this.gpa = gpa; }
 
     public String getExtracurriculars() { return extracurriculars; }
     public void setExtracurriculars(String extracurriculars) { this.extracurriculars = extracurriculars; }
