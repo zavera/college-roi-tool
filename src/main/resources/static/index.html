@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Financial Advisor</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/ui-lightness/jquery-ui.css">
+    <style>
+        :root {
+            --primary:   #1a73e8;
+            --primary-dk:#1558b0;
+            --accent:    #00897b;
+            --bg:        #f5f7fa;
+            --card:      #ffffff;
+            --text:      #2d3748;
+            --muted:     #718096;
+            --border:    #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* ── Header ── */
+        header {
+            background: linear-gradient(135deg, #1558b0 0%, #1a73e8 60%, #0097a7 100%);
+            color: white;
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 2px 8px rgba(21,88,176,0.2);
+        }
+        header h1  { font-size: 20px; font-weight: 700; }
+        header p   { font-size: 13px; opacity: .82; margin-top: 2px; }
+        .hdr-badge {
+            margin-left: auto;
+            background: rgba(255,255,255,.15);
+            border: 1px solid rgba(255,255,255,.3);
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* ── Container ── */
+        .container {
+            max-width: 680px;
+            margin: 36px auto;
+            padding: 0 20px 60px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* ── Card ── */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.05);
+        }
+        .card h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 18px;
+        }
+
+        /* ── Form elements ── */
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
+            background: #fafbfc;
+            color: var(--text);
+            font-family: inherit;
+            transition: border-color .2s;
+        }
+        input:focus { outline: none; border-color: var(--primary); background: white; }
+
+        .field-group { margin-bottom: 14px; }
+
+        /* ── ROI result panel ── */
+        #results .roi-card {
+            margin-top: 12px;
+            padding: 14px 16px;
+            background: #f0f7ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+        }
+        #results .roi-card h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        #results .roi-card p  { font-size: 13px; margin: 3px 0; color: var(--text); }
+        #results .roi-card strong { color: var(--primary-dk); }
+
+        #results .err-card {
+            margin-top: 12px;
+            padding: 14px 16px;
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-radius: 8px;
+            color: #c53030;
+            font-size: 13px;
+        }
+
+        /* ── Major selector ── */
+        #majorSection {
+            margin-top: 20px;
+            display: none;
+        }
+        #majorSection h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 14px;
+        }
+        select#majorSelect {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
+            background: #fafbfc;
+            color: var(--text);
+            font-family: inherit;
+            transition: border-color .2s;
+        }
+        select#majorSelect:focus { outline: none; border-color: var(--primary); background: white; }
+
+        #majorEarningsCard {
+            margin-top: 12px;
+            padding: 14px 16px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            display: none;
+        }
+        #majorEarningsCard .earnings-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        #majorEarningsCard .stat {
+            flex: 1;
+            min-width: 140px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 14px;
+            text-align: center;
+        }
+        #majorEarningsCard .stat .val {
+            font-size: 18px;
+            font-weight: 800;
+        }
+        #majorEarningsCard .stat .val.blue  { color: var(--primary); }
+        #majorEarningsCard .stat .val.green { color: var(--accent); }
+        #majorEarningsCard .stat .lbl {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 3px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        #majorSpinner {
+            display: none;
+            font-size: 13px;
+            color: var(--muted);
+            font-style: italic;
+            padding: 10px 0;
+        }
+
+        /* ── Buttons ── */
+        .btn-primary {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background .2s;
+        }
+        .btn-primary:hover { background: var(--primary-dk); }
+
+        .btn-ai {
+            display: block;
+            width: 100%;
+            padding: 13px;
+            font-size: 15px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: filter .2s;
+        }
+        .btn-ai:hover    { filter: brightness(1.07); }
+        .btn-ai:disabled { background: #a0aec0; cursor: not-allowed; filter: none; }
+
+        /* ── AI section ── */
+        #aiSection {
+            background: #f0f7ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 24px;
+        }
+        #aiSection h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-dk);
+            margin-bottom: 6px;
+        }
+        #aiSection p.desc {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 18px;
+            line-height: 1.5;
+        }
+
+        .groq-tag {
+            display: inline-block;
+            background: #dbeafe;
+            color: var(--primary-dk);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 9px;
+            border-radius: 12px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        #aiSpinner {
+            display: none;
+            padding: 16px 0;
+            color: var(--primary);
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        #aiAdviceBox {
+            margin-top: 14px;
+            padding: 16px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.75;
+            color: var(--text);
+        }
+
+        /* ── Mobile responsive ── */
+        @media (max-width: 600px) {
+            header {
+                padding: 14px 16px;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            header h1  { font-size: 17px; }
+            header p   { font-size: 12px; }
+            .hdr-badge {
+                margin-left: 0;
+                font-size: 11px;
+                padding: 3px 10px;
+            }
+            .container {
+                margin: 16px auto;
+                padding: 0 12px 40px;
+                gap: 14px;
+            }
+            .card, #aiSection {
+                padding: 16px;
+                border-radius: 8px;
+            }
+            .card h2, #aiSection h2 {
+                font-size: 15px;
+            }
+            input[type="text"], input[type="number"], select#majorSelect {
+                font-size: 16px; /* prevents iOS zoom on focus */
+                padding: 11px 12px;
+            }
+            .btn-primary, .btn-ai {
+                font-size: 15px;
+                padding: 13px;
+            }
+            #majorEarningsCard .earnings-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            #majorEarningsCard .stat {
+                min-width: unset;
+            }
+            #aiAdviceBox {
+                font-size: 13px;
+                line-height: 1.65;
+                padding: 14px;
+            }
+            .groq-tag {
+                display: block;
+                margin: 6px 0 0 0;
+                font-size: 11px;
+            }
+            .ui-autocomplete {
+                max-width: calc(100vw - 32px) !important;
+            }
+        }
+
+        /* override jQuery UI autocomplete to match theme */
+        .ui-autocomplete {
+            border: 1.5px solid var(--primary) !important;
+            border-top: none !important;
+            border-radius: 0 0 6px 6px !important;
+            font-size: 14px !important;
+        }
+        .ui-menu-item-wrapper.ui-state-active {
+            background: #dbeafe !important;
+            color: var(--primary-dk) !important;
+            border: none !important;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>🎓 Student Financial Advisor</h1>
+        <p>Financial literacy guidance for undergraduates &amp; education counselors</p>
+    </div>
+    <span class="hdr-badge">College Scorecard + Groq AI</span>
+</header>
+
+<div class="container">
+
+    <!-- ── College Search ── -->
+    <div class="card">
+        <h2>🏫 Search College</h2>
+        <div class="field-group">
+            <label>College or University</label>
+            <input type="text" id="collegeSearch" placeholder="Type 2+ characters (e.g. Michigan, Howard, NYU)…">
+        </div>
+        <div id="results"></div>
+        <button id="searchButton" class="btn-primary">Look Up ROI Data</button>
+    </div>
+
+    <!-- ── Major / Program Earnings ── -->
+    <div class="card" id="majorSection">
+        <h2>📚 Earnings by Major</h2>
+        <div class="field-group" style="margin-bottom:0">
+            <label>Select a Major</label>
+            <select id="majorSelect">
+                <option value="">— Loading programs… —</option>
+            </select>
+            <div id="majorSpinner">Loading program data…</div>
+        </div>
+        <div id="majorEarningsCard">
+            <div class="earnings-row">
+                <div class="stat">
+                    <div class="val blue" id="collegeAvgEarnings">—</div>
+                    <div class="lbl">College-wide Median (6 yrs)</div>
+                </div>
+                <div class="stat">
+                    <div class="val green" id="majorEarnings">—</div>
+                    <div class="lbl">This Major's Median (6 yrs)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── FAFSA Package ── -->
+    <div class="card">
+        <h2>📋 Financial Aid Package — One Academic Year</h2>
+
+        <div class="field-group">
+            <label>Federal Student Loan ($)</label>
+            <input type="number" id="federalLoan" placeholder="0.00" min="0" step="0.01">
+        </div>
+        <div class="field-group">
+            <label>Parent PLUS Loan ($)</label>
+            <input type="number" id="parentPlusLoan" placeholder="0.00" min="0" step="0.01">
+        </div>
+        <div class="field-group">
+            <label>Grant Amount ($)</label>
+            <input type="number" id="grantAmount" placeholder="0.00" min="0" step="0.01">
+        </div>
+        <div class="field-group" style="margin-bottom:0">
+            <label>Scholarship / Gift Aid ($)</label>
+            <input type="number" id="scholarshipAmount" placeholder="0.00" min="0" step="0.01">
+        </div>
+    </div>
+
+    <!-- ── AI Advisor ── -->
+    <div id="aiSection">
+        <h2>
+            🤖 AI Financial Advisor
+            <span class="groq-tag">Groq · llama-3.3-70b</span>
+        </h2>
+        <p class="desc">
+            Enter your aid package above, select a college, then click below for personalized guidance on responsible borrowing.
+        </p>
+
+        <button id="aiButton" class="btn-ai">Get AI Financial Advice</button>
+
+        <div id="aiSpinner">⏳ Analyzing your financial package…</div>
+        <div id="aiAdviceBox" style="display:none;"></div>
+    </div>
+
+</div>
+
+<script>
+    let selectedCollege = { name: null, netPrice: null, sixYrEarnings: null };
+    let programsData = [];
+
+    // ── Autocomplete (hits Spring Boot backend → College Scorecard) ──
+    $("#collegeSearch").autocomplete({
+        source: function(request, response) {
+            $.get("/api/colleges/search?term=" + encodeURIComponent(request.term), function(data) {
+                response(data);
+            }).fail(function() { response([]); });
+        },
+        minLength: 2,
+        select: function(event, ui) {
+            this.value = ui.item.value;
+            loadROI(ui.item.value);
+            return false;
+        }
+    });
+
+    // ── ROI Lookup ──
+    function loadROI(collegeName) {
+        $.get("/api/colleges/" + encodeURIComponent(collegeName), function(data) {
+            selectedCollege = {
+                name:          collegeName,
+                netPrice:      data.netPrice      || null,
+                sixYrEarnings: data.sixYrEarnings || null
+            };
+            $("#results").html(`
+                <div class="roi-card">
+                    <h3>${collegeName}</h3>
+                    <p><strong>Net Price / Year:</strong> $${(data.netPrice || 0).toLocaleString()}</p>
+                    <p><strong>All-Major Median Earnings (6 yrs):</strong> $${(data.sixYrEarnings || 0).toLocaleString()}</p>
+                    <p><strong>Est. ROI Index:</strong> ${data.roi != null ? data.roi.toFixed(1) + 'K' : 'N/A'}</p>
+                </div>
+            `);
+            loadPrograms(collegeName, data.sixYrEarnings || 0);
+        }).fail(function() {
+            selectedCollege = { name: collegeName, netPrice: null, sixYrEarnings: null };
+            $("#results").html(`
+                <div class="err-card">
+                    <strong>ROI data not available</strong> — try another college or check the backend logs.
+                </div>
+            `);
+            $("#majorSection").hide();
+        });
+    }
+
+    function loadPrograms(collegeName, collegeWideEarnings) {
+        programsData = [];
+        $("#majorSection").show();
+        $("#majorSelect").html('<option value="">— Loading… —</option>');
+        $("#majorSpinner").show();
+        $("#majorEarningsCard").hide();
+
+        $.get("/api/colleges/" + encodeURIComponent(collegeName) + "/programs", function(data) {
+            $("#majorSpinner").hide();
+            programsData = data;
+
+            if (!data || data.length === 0) {
+                $("#majorSelect").html('<option value="">— No program data available —</option>');
+                return;
+            }
+
+            const options = data.map(p =>
+                `<option value="${p.earnings}">${p.title} — $${Number(p.earnings).toLocaleString()}/yr</option>`
+            ).join("");
+            $("#majorSelect").html('<option value="">— Select a major —</option>' + options);
+
+            // Pre-fill college-wide figure so it's visible once a major is chosen
+            $("#collegeAvgEarnings").text("$" + Number(collegeWideEarnings).toLocaleString());
+        }).fail(function() {
+            $("#majorSpinner").hide();
+            $("#majorSelect").html('<option value="">— Could not load programs —</option>');
+        });
+    }
+
+    $("#majorSelect").on("change", function() {
+        const val = $(this).val();
+        if (!val) { $("#majorEarningsCard").hide(); return; }
+        $("#majorEarnings").text("$" + Number(val).toLocaleString());
+        $("#majorEarningsCard").show();
+
+        // Also update the AI advisor's college field in case they want advice
+        // on this specific major's earnings
+        const selectedText = $("#majorSelect option:selected").text().split(" — ")[0];
+        // store for prompt enrichment
+        selectedCollege.selectedMajor = selectedText;
+        selectedCollege.majorEarnings = parseFloat(val);
+    });
+
+    $("#searchButton").on("click", function() {
+        const college = $("#collegeSearch").val().trim();
+        if (college) loadROI(college);
+    });
+
+    // ── AI Advice ──
+    $("#aiButton").on("click", function() {
+        // Use major-specific earnings if a major was selected, otherwise fall back to college-wide
+        const effectiveEarnings = selectedCollege.majorEarnings || selectedCollege.sixYrEarnings;
+
+        const payload = {
+            collegeName:      selectedCollege.name || $("#collegeSearch").val().trim() || null,
+            major:            selectedCollege.selectedMajor || null,
+            federalLoan:      pf($("#federalLoan").val()),
+            parentPlusLoan:   pf($("#parentPlusLoan").val()),
+            grantAmount:      pf($("#grantAmount").val()),
+            scholarshipAmount: pf($("#scholarshipAmount").val()),
+            netPrice:         selectedCollege.netPrice,
+            sixYrEarnings:    effectiveEarnings
+        };
+
+        function renderMarkdown(text) {
+            return text
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                .replace(/\*\*\*(.*?)\*\*\*/g, "<strong><em>$1</em></strong>")
+                .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                .replace(/\*(.*?)\*/g, "<em>$1</em>")
+                .replace(/\n/g, "<br>");
+        }
+
+        $("#aiButton").prop("disabled", true);
+        $("#aiAdviceBox").hide().html("");
+        $("#aiSpinner").show();
+
+        $.ajax({
+            url: "/api/llm/advice",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(payload),
+            success: function(resp) {
+                $("#aiSpinner").hide();
+                $("#aiAdviceBox").html(renderMarkdown(resp.advice || "No advice returned.")).show();
+                $("#aiButton").prop("disabled", false);
+            },
+            error: function(xhr) {
+                $("#aiSpinner").hide();
+                const msg = xhr.responseJSON?.error || "Something went wrong. Please try again.";
+                $("#aiAdviceBox").html("⚠️ " + msg).show();
+                $("#aiButton").prop("disabled", false);
+            }
+        });
+    });
+
+    function pf(val) {
+        const f = parseFloat(val);
+        return isNaN(f) ? null : f;
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Financial Advisor</title>
+<style>
+  :root {
+    --primary:   #1a73e8;
+    --primary-dk:#1558b0;
+    --accent:    #00897b;
+    --bg:        #f5f7fa;
+    --card:      #ffffff;
+    --text:      #2d3748;
+    --muted:     #718096;
+    --border:    #e2e8f0;
+    --success:   #276749;
+    --danger:    #c53030;
+    --warn:      #b7791f;
+    --radius:    12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #1558b0 0%, #1a73e8 60%, #0097a7 100%);
+    color: white; padding: 22px 36px;
+    display: flex; align-items: center; gap: 16px;
+    box-shadow: 0 2px 10px rgba(21,88,176,0.25);
+  }
+  header .logo { font-size: 30px; }
+  header h1   { font-size: 20px; font-weight: 700; }
+  header p    { font-size: 13px; opacity: .82; margin-top: 2px; }
+  .badge {
+    margin-left: auto; background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.3);
+    border-radius: 20px; padding: 4px 14px; font-size: 12px; font-weight: 600; white-space: nowrap;
+  }
+
+  /* Layout */
+  .main { max-width: 780px; margin: 36px auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 22px; }
+
+  /* Card */
+  .card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+  .card-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .card-sub   { font-size: 11px; font-weight: 400; color: var(--muted); margin-left: 4px; }
+
+  /* Search */
+  .search-wrap { position: relative; }
+  .search-wrap input { padding-right: 42px; }
+  .search-spinner {
+    position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+    width: 16px; height: 16px; border: 2px solid var(--border);
+    border-top-color: var(--primary); border-radius: 50%;
+    animation: spin .7s linear infinite; display: none;
+  }
+  @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+
+  .suggestions {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 50;
+    background: white; border: 1.5px solid var(--primary); border-top: none;
+    border-radius: 0 0 8px 8px; max-height: 220px; overflow-y: auto;
+    box-shadow: 0 4px 14px rgba(0,0,0,.1); display: none; list-style: none;
+  }
+  .suggestions li {
+    padding: 10px 14px; font-size: 14px; cursor: pointer;
+    border-bottom: 1px solid var(--border); transition: background .1s;
+  }
+  .suggestions li:last-child { border-bottom: none; }
+  .suggestions li:hover, .suggestions li.kbd { background: #ebf2ff; color: var(--primary); font-weight: 600; }
+
+  /* ROI panel */
+  .roi-panel {
+    margin-top: 14px; padding: 16px 18px;
+    background: #f0f7ff; border: 1px solid #bfdbfe;
+    border-radius: 10px; display: none;
+  }
+  .roi-panel h3 { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
+  .roi-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .roi-stat { background: white; border-radius: 8px; padding: 11px; text-align: center; border: 1px solid var(--border); }
+  .roi-stat .val { font-size: 16px; font-weight: 800; }
+  .roi-stat .val.blue  { color: var(--primary); }
+  .roi-stat .val.green { color: var(--accent); }
+  .roi-stat .val.warn  { color: var(--warn); }
+  .roi-stat .lbl { font-size: 10px; color: var(--muted); margin-top: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; }
+
+  /* Form fields */
+  .field { margin-bottom: 14px; }
+  .field:last-of-type { margin-bottom: 0; }
+  label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .4px; }
+  input[type="text"], input[type="number"], select, textarea {
+    width: 100%; padding: 10px 12px; font-size: 14px;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    background: #fafbfc; color: var(--text); transition: border-color .2s; font-family: inherit;
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); background: white; }
+  textarea { resize: vertical; min-height: 72px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media(max-width:520px){ .two-col { grid-template-columns: 1fr; } .roi-grid { grid-template-columns: 1fr; } }
+
+  /* AI button */
+  .btn-ai {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 13px; margin-top: 18px;
+    font-size: 15px; font-weight: 700; border: none; border-radius: 8px; cursor: pointer;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white; transition: filter .2s;
+  }
+  .btn-ai:hover   { filter: brightness(1.08); }
+  .btn-ai:active  { filter: brightness(.96); }
+  .btn-ai:disabled { background: #a0aec0; cursor: not-allowed; filter: none; }
+
+  /* AI response */
+  .ai-thinking {
+    display: none; align-items: center; gap: 10px;
+    color: var(--primary); font-style: italic; font-size: 14px; padding: 14px 0;
+  }
+  .ai-thinking.on { display: flex; }
+  .dots span { animation: blink 1.4s infinite; display: inline-block; }
+  .dots span:nth-child(2){ animation-delay:.2s; }
+  .dots span:nth-child(3){ animation-delay:.4s; }
+  @keyframes blink { 0%,80%,100%{opacity:0} 40%{opacity:1} }
+
+  .ai-response {
+    display: none; margin-top: 14px; padding: 18px;
+    background: #f8faff; border: 1px solid #bfdbfe;
+    border-radius: 8px; font-size: 14px; line-height: 1.8;
+    color: var(--text); white-space: pre-wrap;
+  }
+  .ai-response.on { display: block; }
+
+  /* Toast */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: #2d3748; color: white; padding: 11px 20px;
+    border-radius: 8px; font-size: 13px; font-weight: 600;
+    opacity: 0; transform: translateY(8px); transition: all .3s;
+    pointer-events: none; z-index: 999; max-width: 300px;
+  }
+  #toast.show    { opacity: 1; transform: translateY(0); }
+  #toast.success { background: #276749; }
+  #toast.error   { background: #c53030; }
+
+  .source-note { font-size: 11px; color: var(--muted); margin-top: 6px; font-style: italic; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🎓</div>
+  <div>
+    <h1>Student Financial Advisor</h1>
+    <p>Financial literacy guidance for undergraduates &amp; education counselors</p>
+  </div>
+  <span class="badge">Testing Mode</span>
+</header>
+
+<div class="main">
+
+  <!-- ── College Scorecard Search ── -->
+  <div class="card">
+    <div class="card-title">
+      🏫 College Search
+      <span class="card-sub">— U.S. Dept. of Education · College Scorecard</span>
+    </div>
+
+    <div class="field">
+      <label>Search College or University</label>
+      <div class="search-wrap">
+        <input type="text" id="collegeInput" placeholder="Type 2+ characters (e.g. Michigan, Howard, NYU)…" autocomplete="off">
+        <div class="search-spinner" id="searchSpinner"></div>
+        <ul class="suggestions" id="suggestions"></ul>
+      </div>
+      <p class="source-note">Live data from api.data.gov — net price, median earnings, and ROI are pulled from the College Scorecard.</p>
+    </div>
+
+    <div class="roi-panel" id="roiPanel">
+      <h3 id="roiCollegeName"></h3>
+      <div class="roi-grid">
+        <div class="roi-stat">
+          <div class="val blue" id="roiNetPrice">—</div>
+          <div class="lbl">Net Price / Year</div>
+        </div>
+        <div class="roi-stat">
+          <div class="val green" id="roiEarnings">—</div>
+          <div class="lbl">Median Earnings (6 yrs)</div>
+        </div>
+        <div class="roi-stat">
+          <div class="val" id="roiValue">—</div>
+          <div class="lbl">ROI Index</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AI Financial Advisor ── -->
+  <div class="card">
+    <div class="card-title">
+      🤖 AI Financial Advisor
+      <span class="card-sub">— Groq · llama-3.3-70b-versatile</span>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">
+      Enter your aid package below. The advisor uses your college's real Scorecard data together with your inputs to give personalized, responsible borrowing guidance.
+    </p>
+
+    <div class="two-col">
+      <div class="field">
+        <label>College (auto-filled from search)</label>
+        <input type="text" id="aiCollege" placeholder="Select a college above">
+      </div>
+      <div class="field">
+        <label>Planned Major / Field</label>
+        <input type="text" id="aiMajor" placeholder="e.g. Computer Science">
+      </div>
+      <div class="field">
+        <label>Annual Federal Loan ($)</label>
+        <input type="number" id="aiFederalLoan" placeholder="e.g. 5500" min="0">
+      </div>
+      <div class="field">
+        <label>Annual Parent PLUS Loan ($)</label>
+        <input type="number" id="aiPlusLoan" placeholder="e.g. 8000" min="0">
+      </div>
+      <div class="field">
+        <label>Grants / Free Aid ($)</label>
+        <input type="number" id="aiGrant" placeholder="e.g. 3000" min="0">
+      </div>
+      <div class="field">
+        <label>Scholarships / Gift Aid ($)</label>
+        <input type="number" id="aiScholarship" placeholder="e.g. 2000" min="0">
+      </div>
+    </div>
+
+    <div class="field" style="margin-top:14px">
+      <label>Your question or additional context (optional)</label>
+      <textarea id="aiQuestion" placeholder="e.g. I'm a first-generation student. My family also wants to take a PLUS loan. Is this manageable given my major?"></textarea>
+    </div>
+
+    <button class="btn-ai" id="aiBtn" onclick="askAI()">🤖 Get AI Financial Guidance</button>
+
+    <div class="ai-thinking" id="aiThinking">
+      ⏳ Analyzing your situation<span class="dots"><span>.</span><span>.</span><span>.</span></span>
+    </div>
+    <div class="ai-response" id="aiResponse"></div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Config ──────────────────────────────────────
+const GROQ_KEY      = "GROQ_KEY_SET_VIA_ENV";
+const GROQ_MODEL    = "llama-3.3-70b-versatile";
+const SC_KEY        = "hMS6qvCYkVlttQ1LaAYyeC4gPIWiUNa749oDfKFl";
+const SC_BASE       = "https://api.data.gov/ed/collegescorecard/v1/schools";
+
+// ── State ────────────────────────────────────────
+let school = { name: null, netPrice: null, sixYrEarnings: null, roi: null };
+let searchTimer = null;
+let kbdIdx = -1;
+
+// ── Autocomplete ─────────────────────────────────
+const input   = document.getElementById("collegeInput");
+const list    = document.getElementById("suggestions");
+const spinner = document.getElementById("searchSpinner");
+
+input.addEventListener("input", () => {
+  const q = input.value.trim();
+  kbdIdx = -1;
+  clearTimeout(searchTimer);
+  hideList();
+  if (q.length < 2) return;
+  spinner.style.display = "block";
+  searchTimer = setTimeout(() => doSearch(q), 320);
+});
+
+input.addEventListener("keydown", e => {
+  const items = list.querySelectorAll("li");
+  if (!items.length) return;
+  if (e.key === "ArrowDown") { kbdIdx = Math.min(kbdIdx+1, items.length-1); highlight(items); e.preventDefault(); }
+  else if (e.key === "ArrowUp") { kbdIdx = Math.max(kbdIdx-1, 0); highlight(items); e.preventDefault(); }
+  else if (e.key === "Enter" && kbdIdx >= 0) { items[kbdIdx].click(); e.preventDefault(); }
+  else if (e.key === "Escape") hideList();
+});
+
+document.addEventListener("click", e => { if (!e.target.closest(".search-wrap")) hideList(); });
+
+function highlight(items) { items.forEach((li,i) => li.classList.toggle("kbd", i===kbdIdx)); }
+function hideList() { list.style.display = "none"; list.innerHTML = ""; }
+
+async function doSearch(q) {
+  try {
+    const url  = `${SC_BASE}?api_key=${SC_KEY}&school.name=${encodeURIComponent(q)}&fields=school.name&per_page=10`;
+    const data = await (await fetch(url)).json();
+    const names = (data.results||[]).map(r => r["school.name"]).filter(Boolean);
+    spinner.style.display = "none";
+    if (!names.length) return;
+    list.innerHTML = names.map(n => `<li data-name="${esc(n)}">${esc(n)}</li>`).join("");
+    list.style.display = "block";
+    list.querySelectorAll("li").forEach(li => li.addEventListener("click", () => pickCollege(li.dataset.name)));
+  } catch { spinner.style.display = "none"; }
+}
+
+// ── ROI lookup ───────────────────────────────────
+async function pickCollege(name) {
+  input.value = name;
+  hideList();
+  spinner.style.display = "block";
+  try {
+    const fields = "school.name,latest.cost.net_price.overall,latest.earnings.6_yrs_after_entry.median";
+    const url    = `${SC_BASE}?api_key=${SC_KEY}&school.name=${encodeURIComponent(name)}&fields=${fields}`;
+    const result = ((await (await fetch(url)).json()).results || [])[0];
+    if (!result) { toast("No scorecard data found.", "error"); return; }
+
+    const np  = result["latest.cost.net_price.overall"] ?? null;
+    const ear = result["latest.earnings.6_yrs_after_entry.median"] ?? null;
+    const roi = (np != null && ear != null) ? (ear - np) / 1000 : null;
+
+    school = { name, netPrice: np, sixYrEarnings: ear, roi };
+    document.getElementById("aiCollege").value = name;
+
+    document.getElementById("roiCollegeName").textContent = name;
+    document.getElementById("roiNetPrice").textContent    = np  != null ? fmt(np)  : "N/A";
+    document.getElementById("roiEarnings").textContent    = ear != null ? fmt(ear) : "N/A";
+
+    const roiEl = document.getElementById("roiValue");
+    if (roi != null) {
+      roiEl.textContent = (roi >= 0 ? "+" : "") + roi.toFixed(1) + "K";
+      roiEl.className   = "val " + (roi >= 0 ? "green" : "warn");
+    } else { roiEl.textContent = "N/A"; roiEl.className = "val"; }
+
+    document.getElementById("roiPanel").style.display = "block";
+    toast("Scorecard data loaded for " + name, "success");
+  } catch (e) {
+    toast("Scorecard error: " + e.message, "error");
+  } finally { spinner.style.display = "none"; }
+}
+
+// ── AI Advisor ───────────────────────────────────
+async function askAI() {
+  const btn = document.getElementById("aiBtn");
+  btn.disabled = true;
+  document.getElementById("aiThinking").classList.add("on");
+  document.getElementById("aiResponse").classList.remove("on");
+
+  const college     = document.getElementById("aiCollege").value.trim()    || school.name || "unspecified";
+  const major       = document.getElementById("aiMajor").value.trim();
+  const fedLoan     = pf(document.getElementById("aiFederalLoan").value);
+  const plusLoan    = pf(document.getElementById("aiPlusLoan").value);
+  const grant       = pf(document.getElementById("aiGrant").value);
+  const scholarship = pf(document.getElementById("aiScholarship").value);
+  const question    = document.getElementById("aiQuestion").value.trim();
+
+  const prompt = buildPrompt({ college, major, fedLoan, plusLoan, grant, scholarship, question });
+
+  try {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + GROQ_KEY },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 700,
+        temperature: 0.65
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error?.message || "HTTP " + res.status);
+    }
+    const reply = (await res.json()).choices?.[0]?.message?.content || "No response.";
+    document.getElementById("aiResponse").textContent = reply;
+    document.getElementById("aiResponse").classList.add("on");
+  } catch (e) {
+    document.getElementById("aiResponse").textContent = "⚠️ " + e.message;
+    document.getElementById("aiResponse").classList.add("on");
+  } finally {
+    document.getElementById("aiThinking").classList.remove("on");
+    btn.disabled = false;
+  }
+}
+
+function buildPrompt({ college, major, fedLoan, plusLoan, grant, scholarship, question }) {
+  const totalLoans = (fedLoan||0) + (plusLoan||0);
+  const totalFree  = (grant||0)   + (scholarship||0);
+  return `You are a compassionate, practical financial literacy advisor helping undergraduate students and education counselors make responsible decisions about student loans.
+
+College: ${college}
+${major ? `Major: ${major}` : ""}
+${school.netPrice      != null ? `Annual net price (College Scorecard): $${school.netPrice.toLocaleString()}` : ""}
+${school.sixYrEarnings != null ? `Median earnings 6 yrs after graduation: $${school.sixYrEarnings.toLocaleString()}` : ""}
+${school.roi           != null ? `ROI index: ${school.roi.toFixed(1)}K` : ""}
+
+Financial Aid Package (per academic year):
+- Federal Student Loan: $${(fedLoan||0).toLocaleString()}
+- Parent PLUS Loan: $${(plusLoan||0).toLocaleString()}
+- Total loans: $${totalLoans.toLocaleString()}
+- Grants (free money): $${(grant||0).toLocaleString()}
+- Scholarships / Gift Aid: $${(scholarship||0).toLocaleString()}
+- Total free aid: $${totalFree.toLocaleString()}
+${question ? `\nStudent's question: "${question}"` : ""}
+
+Please provide:
+1. A brief honest assessment of whether this loan situation is manageable given the earnings data
+2. 2–3 concrete, actionable steps this student should take
+3. One important risk specific to this situation
+4. A short encouraging note
+
+Write for an 18–22 year old first-time borrower. Plain language, no jargon, keep it concise.`;
+}
+
+// ── Helpers ──────────────────────────────────────
+function fmt(n) { return "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 }); }
+function pf(v)  { const f = parseFloat(v); return isNaN(f) ? null : f; }
+function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+let toastTimer;
+function toast(msg, type = "") {
+  const el = document.getElementById("toast");
+  el.textContent = msg; el.className = "show " + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = "", 3000);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Finance Tool — Financial Literacy & Money Transfer Simulator</title>
+<style>
+  :root {
+    --primary: #5c35d9;
+    --primary-dark: #4526b0;
+    --accent: #00c2a8;
+    --danger: #e74c3c;
+    --success: #27ae60;
+    --warning: #f39c12;
+    --bg: #f0f2f7;
+    --card: #ffffff;
+    --text: #2c3e50;
+    --muted: #7f8c8d;
+    --border: #dde1ea;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+    color: white; padding: 20px 32px;
+    display: flex; align-items: center; gap: 16px;
+    box-shadow: 0 2px 12px rgba(92,53,217,0.3);
+  }
+  header .logo { font-size: 28px; }
+  header h1 { font-size: 20px; font-weight: 700; }
+  header p  { font-size: 13px; opacity: 0.85; }
+  .badge {
+    margin-left: auto;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px; padding: 4px 14px;
+    font-size: 12px; font-weight: 600;
+  }
+
+  /* ── Layout ── */
+  .main { max-width: 1100px; margin: 0 auto; padding: 28px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media(max-width:760px){ .main { grid-template-columns: 1fr; } }
+  .full { grid-column: 1 / -1; }
+
+  /* ── Card ── */
+  .card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); padding: 22px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .card-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .card-title span { font-size: 18px; }
+
+  /* ── College Scorecard Search ── */
+  .search-wrap { position: relative; }
+  .search-wrap input { padding-right: 40px; }
+  .search-spinner {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    width: 16px; height: 16px; border: 2px solid var(--border);
+    border-top-color: var(--primary); border-radius: 50%;
+    animation: spin .7s linear infinite; display: none;
+  }
+  @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+
+  .suggestions {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 50;
+    background: white; border: 1.5px solid var(--primary); border-top: none;
+    border-radius: 0 0 8px 8px; max-height: 220px; overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: none;
+  }
+  .suggestions li {
+    padding: 10px 14px; font-size: 14px; cursor: pointer; list-style: none;
+    border-bottom: 1px solid var(--border); transition: background .1s;
+  }
+  .suggestions li:last-child { border-bottom: none; }
+  .suggestions li:hover, .suggestions li.active { background: #f0eaff; color: var(--primary); font-weight: 600; }
+
+  /* ── ROI Panel ── */
+  .roi-panel {
+    margin-top: 14px; padding: 16px; background: linear-gradient(135deg,#e8f4f8,#eef0ff);
+    border-radius: 10px; border: 1px solid #c4d8e8; display: none;
+  }
+  .roi-panel h3 { font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
+  .roi-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .roi-stat { background: white; border-radius: 8px; padding: 11px 14px; text-align: center; border: 1px solid var(--border); }
+  .roi-stat .val { font-size: 17px; font-weight: 800; }
+  .roi-stat .val.green { color: var(--success); }
+  .roi-stat .val.blue  { color: var(--primary); }
+  .roi-stat .val.warn  { color: var(--warning); }
+  .roi-stat .lbl { font-size: 11px; color: var(--muted); margin-top: 3px; font-weight: 600; text-transform: uppercase; }
+
+  /* ── Account pills ── */
+  .accounts { display: flex; gap: 12px; flex-wrap: wrap; }
+  .account-pill {
+    flex: 1; min-width: 160px; border-radius: 10px; padding: 14px 16px;
+    color: white; border: 3px solid transparent; transition: transform .15s, border-color .15s;
+  }
+  .account-pill.checking { background: linear-gradient(135deg,#5c35d9,#8b5cf6); }
+  .account-pill.savings  { background: linear-gradient(135deg,#00c2a8,#00897b); }
+  .account-pill.loan     { background: linear-gradient(135deg,#e74c3c,#c0392b); }
+  .account-pill .acc-name { font-size: 12px; opacity: .85; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+  .account-pill .acc-bal  { font-size: 22px; font-weight: 800; }
+  .account-pill .acc-sub  { font-size: 11px; opacity: .75; margin-top: 4px; }
+
+  /* ── Form ── */
+  .field { margin-bottom: 14px; }
+  label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .4px; }
+  input, select, textarea {
+    width: 100%; padding: 10px 12px; font-size: 14px;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    background: #fafbfc; color: var(--text); transition: border-color .2s; font-family: inherit;
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); background: white; }
+  textarea { resize: vertical; min-height: 70px; }
+
+  /* ── Buttons ── */
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 11px 22px; font-size: 14px; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; transition: background .2s, transform .1s; }
+  .btn:active { transform: scale(.98); }
+  .btn-primary { background: var(--primary); color: white; width: 100%; justify-content: center; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-primary:disabled { background: #bbb; cursor: not-allowed; }
+  .btn-ai { background: linear-gradient(135deg, #5c35d9, #00c2a8); color: white; width: 100%; justify-content: center; font-size: 15px; padding: 13px; }
+  .btn-ai:hover { filter: brightness(1.07); }
+  .btn-ai:disabled { background: #bbb; cursor: not-allowed; filter: none; }
+  .btn-sm { padding: 6px 14px; font-size: 12px; border-radius: 6px; background: var(--bg); color: var(--muted); border: 1px solid var(--border); cursor: pointer; }
+  .btn-sm:hover { background: var(--border); }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+  .tab { padding: 7px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: var(--bg); color: var(--muted); transition: all .15s; }
+  .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+
+  /* ── Loan calc ── */
+  .loan-summary { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .loan-stat { background: var(--bg); border-radius: 8px; padding: 12px; text-align: center; border: 1px solid var(--border); }
+  .loan-stat .val { font-size: 18px; font-weight: 800; color: var(--primary); }
+  .loan-stat .lbl { font-size: 11px; color: var(--muted); margin-top: 3px; font-weight: 600; text-transform: uppercase; }
+
+  /* ── AI Section ── */
+  .ai-box { background: linear-gradient(135deg, #faf5ff, #e8f8f5); border: 1.5px solid #c4b5fd; border-radius: var(--radius); padding: 20px; }
+  .ai-response { margin-top: 14px; background: white; border-radius: 8px; padding: 16px; font-size: 14px; line-height: 1.75; color: var(--text); border: 1px solid #e8d5ff; min-height: 60px; white-space: pre-wrap; display: none; }
+  .ai-response.visible { display: block; }
+  .ai-thinking { display: none; align-items: center; gap: 10px; color: var(--primary); font-style: italic; font-size: 14px; padding: 12px 0; }
+  .ai-thinking.visible { display: flex; }
+  .dots span { animation: blink 1.4s infinite; display: inline-block; }
+  .dots span:nth-child(2) { animation-delay: .2s; }
+  .dots span:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink { 0%,80%,100%{opacity:0} 40%{opacity:1} }
+
+  /* ── Toast ── */
+  #toast { position: fixed; bottom: 28px; right: 28px; background: #2c3e50; color: white; padding: 12px 22px; border-radius: 8px; font-size: 14px; font-weight: 600; opacity: 0; transform: translateY(10px); transition: all .3s; pointer-events: none; z-index: 999; max-width: 320px; }
+  #toast.show { opacity: 1; transform: translateY(0); }
+  #toast.success { background: var(--success); }
+  #toast.error   { background: var(--danger); }
+
+  .ai-avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--accent)); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+
+  .scorecard-note { font-size: 11px; color: var(--muted); margin-top: 6px; font-style: italic; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🎓</div>
+  <div>
+    <h1>Student Finance Tool</h1>
+    <p>Financial literacy simulator for undergraduates &amp; education counselors</p>
+  </div>
+  <span class="badge">🔒 Testing Mode — No data saved</span>
+</header>
+
+<div class="main">
+
+  <!-- ══════════════════════════════════════════
+       COLLEGE SCORECARD SEARCH
+  ══════════════════════════════════════════ -->
+  <div class="card full">
+    <div class="card-title"><span>🏫</span> College Scorecard Search <small style="font-size:11px;font-weight:400;color:var(--muted);margin-left:4px">— U.S. Dept. of Education live data</small></div>
+
+    <div class="field" style="margin-bottom:0">
+      <label>Search College / University</label>
+      <div class="search-wrap">
+        <input type="text" id="collegeInput" placeholder="Type at least 2 characters (e.g. Michigan, Stanford, Howard)..." autocomplete="off">
+        <div class="search-spinner" id="searchSpinner"></div>
+        <ul class="suggestions" id="suggestions"></ul>
+      </div>
+      <div class="scorecard-note">Powered by the U.S. College Scorecard API · data.gov</div>
+    </div>
+
+    <!-- ROI Result Panel -->
+    <div class="roi-panel" id="roiPanel">
+      <h3 id="roiCollegeName"></h3>
+      <div class="roi-grid">
+        <div class="roi-stat">
+          <div class="val blue" id="roiNetPrice">—</div>
+          <div class="lbl">Net Price / Year</div>
+        </div>
+        <div class="roi-stat">
+          <div class="val green" id="roiEarnings">—</div>
+          <div class="lbl">Median Earnings (6 yrs)</div>
+        </div>
+        <div class="roi-stat">
+          <div class="val" id="roiValue">—</div>
+          <div class="lbl">Est. ROI Index</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       ACCOUNTS
+  ══════════════════════════════════════════ -->
+  <div class="card full">
+    <div class="card-title"><span>💳</span> Simulated Accounts</div>
+    <div class="accounts" id="accountsContainer"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TRANSFER
+  ══════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-title"><span>↔️</span> Money Transfer Simulator</div>
+
+    <div class="tabs" id="tabsContainer">
+      <div class="tab active" data-type="Transfer">Transfer</div>
+      <div class="tab" data-type="Loan Disbursement">Loan In</div>
+      <div class="tab" data-type="Loan Payment">Loan Payment</div>
+      <div class="tab" data-type="Scholarship">Scholarship</div>
+    </div>
+
+    <div class="field">
+      <label>From Account</label>
+      <select id="fromAccount"></select>
+    </div>
+    <div class="field">
+      <label>To Account</label>
+      <select id="toAccount"></select>
+    </div>
+    <div class="field">
+      <label>Amount ($)</label>
+      <input type="number" id="transferAmount" placeholder="0.00" min="0.01" step="0.01">
+    </div>
+    <div class="field">
+      <label>Note (optional)</label>
+      <input type="text" id="transferNote" placeholder="e.g. Fall semester tuition">
+    </div>
+    <button class="btn btn-primary" id="transferBtn">⚡ Execute Transfer</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       LOAN CALCULATOR
+  ══════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-title"><span>📊</span> Student Loan Planner</div>
+    <div class="field">
+      <label>Total Loan Amount ($)</label>
+      <input type="number" id="loanPrincipal" placeholder="e.g. 27000" value="27000">
+    </div>
+    <div class="field">
+      <label>Annual Interest Rate (%)</label>
+      <input type="number" id="loanRate" placeholder="e.g. 5.5" value="5.5" step="0.1">
+    </div>
+    <div class="field">
+      <label>Repayment Term (years)</label>
+      <select id="loanTerm">
+        <option value="10" selected>10 years (Standard)</option>
+        <option value="20">20 years (Extended)</option>
+        <option value="25">25 years (Income-driven)</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="calcLoan()" style="margin-bottom:0">📐 Calculate</button>
+    <div class="loan-summary" id="loanSummary" style="display:none"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       AI FINANCIAL ADVISOR
+  ══════════════════════════════════════════ -->
+  <div class="card full ai-box">
+    <div class="card-title" style="color:#5c35d9">
+      <div class="ai-avatar">🤖</div>
+      AI Financial Advisor
+      <small style="font-weight:400;color:var(--muted);font-size:12px;margin-left:4px">— Groq · llama3-8b-8192</small>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">
+      The advisor uses your selected college's real Scorecard data (net price, earnings) together with your inputs to give personalized, responsible borrowing guidance.
+    </p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div class="field" style="margin:0">
+        <label>College (auto-filled from search)</label>
+        <input type="text" id="aiCollege" placeholder="Select a college above or type here">
+      </div>
+      <div class="field" style="margin:0">
+        <label>Planned Major / Field</label>
+        <input type="text" id="aiMajor" placeholder="e.g. Computer Science">
+      </div>
+      <div class="field" style="margin:0">
+        <label>Annual Federal Loan ($)</label>
+        <input type="number" id="aiFederalLoan" placeholder="e.g. 5500">
+      </div>
+      <div class="field" style="margin:0">
+        <label>Annual Parent PLUS Loan ($)</label>
+        <input type="number" id="aiPlusLoan" placeholder="e.g. 8000">
+      </div>
+      <div class="field" style="margin:0">
+        <label>Grants / Free Aid ($)</label>
+        <input type="number" id="aiGrant" placeholder="e.g. 3000">
+      </div>
+      <div class="field" style="margin:0">
+        <label>Scholarships / Gift Aid ($)</label>
+        <input type="number" id="aiScholarship" placeholder="e.g. 2000">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Your question or situation (optional)</label>
+      <textarea id="aiQuestion" placeholder="e.g. I'm a first-gen student. My family wants to take a PLUS loan on top of mine. Is this manageable with my projected major?"></textarea>
+    </div>
+
+    <button class="btn btn-ai" id="aiBtn" onclick="askAI()">🤖 Get AI Financial Guidance</button>
+
+    <div class="ai-thinking" id="aiThinking">
+      <div class="ai-avatar">🤖</div>
+      Analyzing your situation<span class="dots"><span>.</span><span>.</span><span>.</span></span>
+    </div>
+    <div class="ai-response" id="aiResponse"></div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════
+const GROQ_API_KEY       = "GROQ_KEY_SET_VIA_ENV";
+const GROQ_MODEL         = "llama-3.3-70b-versatile";
+const SCORECARD_API_KEY  = "hMS6qvCYkVlttQ1LaAYyeC4gPIWiUNa749oDfKFl";
+const SCORECARD_BASE     = "https://api.data.gov/ed/collegescorecard/v1/schools";
+
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
+const accounts = [
+  { id: "checking", name: "Checking Account",    balance:  1240.00, type: "checking" },
+  { id: "savings",  name: "Savings Account",      balance:  3800.00, type: "savings"  },
+  { id: "loan",     name: "Student Loan Account", balance: -27500.00, type: "loan"    },
+];
+
+let activeTab     = "Transfer";
+let selectedSchool = { name: null, netPrice: null, sixYrEarnings: null, roi: null };
+let searchTimeout = null;
+let activeSuggestionIndex = -1;
+
+// ═══════════════════════════════════════
+//  COLLEGE SCORECARD — SEARCH (autocomplete)
+// ═══════════════════════════════════════
+const collegeInput  = document.getElementById("collegeInput");
+const suggestionsEl = document.getElementById("suggestions");
+const spinner       = document.getElementById("searchSpinner");
+
+collegeInput.addEventListener("input", () => {
+  const term = collegeInput.value.trim();
+  activeSuggestionIndex = -1;
+  clearTimeout(searchTimeout);
+  hideSuggestions();
+
+  if (term.length < 2) return;
+
+  spinner.style.display = "block";
+  searchTimeout = setTimeout(() => fetchSuggestions(term), 320);
+});
+
+collegeInput.addEventListener("keydown", e => {
+  const items = suggestionsEl.querySelectorAll("li");
+  if (!items.length) return;
+  if (e.key === "ArrowDown") {
+    activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, items.length - 1);
+    highlightSuggestion(items);
+    e.preventDefault();
+  } else if (e.key === "ArrowUp") {
+    activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, 0);
+    highlightSuggestion(items);
+    e.preventDefault();
+  } else if (e.key === "Enter" && activeSuggestionIndex >= 0) {
+    items[activeSuggestionIndex].click();
+    e.preventDefault();
+  } else if (e.key === "Escape") {
+    hideSuggestions();
+  }
+});
+
+document.addEventListener("click", e => {
+  if (!e.target.closest(".search-wrap")) hideSuggestions();
+});
+
+function highlightSuggestion(items) {
+  items.forEach((li, i) => li.classList.toggle("active", i === activeSuggestionIndex));
+}
+
+async function fetchSuggestions(term) {
+  try {
+    const url = `${SCORECARD_BASE}?api_key=${SCORECARD_API_KEY}` +
+                `&school.name=${encodeURIComponent(term)}&fields=school.name&per_page=10`;
+    const res  = await fetch(url);
+    const data = await res.json();
+    const names = (data.results || [])
+      .map(r => r["school.name"])
+      .filter(Boolean);
+
+    spinner.style.display = "none";
+
+    if (!names.length) { hideSuggestions(); return; }
+
+    suggestionsEl.innerHTML = names.map(n =>
+      `<li data-name="${escHtml(n)}">${escHtml(n)}</li>`
+    ).join("");
+    suggestionsEl.style.display = "block";
+
+    suggestionsEl.querySelectorAll("li").forEach(li => {
+      li.addEventListener("click", () => selectCollege(li.dataset.name));
+    });
+  } catch {
+    spinner.style.display = "none";
+  }
+}
+
+function hideSuggestions() {
+  suggestionsEl.style.display = "none";
+  suggestionsEl.innerHTML = "";
+}
+
+// ═══════════════════════════════════════
+//  COLLEGE SCORECARD — ROI LOOKUP
+// ═══════════════════════════════════════
+async function selectCollege(name) {
+  collegeInput.value = name;
+  hideSuggestions();
+  spinner.style.display = "block";
+
+  try {
+    const fields = "school.name,latest.cost.net_price.overall,latest.earnings.6_yrs_after_entry.median";
+    const url    = `${SCORECARD_BASE}?api_key=${SCORECARD_API_KEY}` +
+                   `&school.name=${encodeURIComponent(name)}&fields=${fields}`;
+    const res    = await fetch(url);
+    const data   = await res.json();
+    const result = (data.results || [])[0];
+
+    if (!result) { toast("No data found for this college.", "error"); return; }
+
+    const netPrice    = result["latest.cost.net_price.overall"] ?? null;
+    const earnings    = result["latest.earnings.6_yrs_after_entry.median"] ?? null;
+    const roi         = (netPrice != null && earnings != null) ? (earnings - netPrice) / 1000 : null;
+
+    selectedSchool = { name, netPrice, sixYrEarnings: earnings, roi };
+
+    // Auto-fill AI advisor college field
+    document.getElementById("aiCollege").value = name;
+
+    // Render ROI panel
+    const panel = document.getElementById("roiPanel");
+    document.getElementById("roiCollegeName").textContent = name;
+    document.getElementById("roiNetPrice").textContent  = netPrice  != null ? fmtMoney(netPrice)  : "N/A";
+    document.getElementById("roiEarnings").textContent  = earnings  != null ? fmtMoney(earnings)  : "N/A";
+
+    const roiEl = document.getElementById("roiValue");
+    if (roi != null) {
+      roiEl.textContent = (roi >= 0 ? "+" : "") + roi.toFixed(1) + "K";
+      roiEl.className   = "val " + (roi >= 0 ? "green" : "warn");
+    } else {
+      roiEl.textContent = "N/A";
+      roiEl.className   = "val";
+    }
+
+    panel.style.display = "block";
+    toast(`✅ Loaded scorecard data for ${name}`, "success");
+  } catch (e) {
+    toast("Scorecard API error: " + e.message, "error");
+  } finally {
+    spinner.style.display = "none";
+  }
+}
+
+// ═══════════════════════════════════════
+//  ACCOUNTS
+// ═══════════════════════════════════════
+function renderAccounts() {
+  const c = document.getElementById("accountsContainer");
+  c.innerHTML = accounts.map(a => `
+    <div class="account-pill ${a.type}">
+      <div class="acc-name">${a.name}</div>
+      <div class="acc-bal">${fmtMoney(a.balance)}</div>
+      <div class="acc-sub">${a.id === "loan" ? "Outstanding balance" : "Available"}</div>
+    </div>
+  `).join("");
+
+  const opts = accounts.map(a => `<option value="${a.id}">${a.name} (${fmtMoney(a.balance)})</option>`).join("");
+  document.getElementById("fromAccount").innerHTML = opts;
+  document.getElementById("toAccount").innerHTML   = opts;
+  if (accounts.length > 1) document.getElementById("toAccount").selectedIndex = 1;
+}
+
+// ═══════════════════════════════════════
+//  TRANSFER
+// ═══════════════════════════════════════
+document.getElementById("transferBtn").addEventListener("click", () => {
+  const fromId = document.getElementById("fromAccount").value;
+  const toId   = document.getElementById("toAccount").value;
+  const amount = parseFloat(document.getElementById("transferAmount").value);
+  const note   = document.getElementById("transferNote").value.trim();
+
+  if (fromId === toId)        return toast("From and To accounts must be different.", "error");
+  if (!amount || amount <= 0) return toast("Please enter a valid amount.", "error");
+
+  const from = accounts.find(a => a.id === fromId);
+  const to   = accounts.find(a => a.id === toId);
+
+  if (from.type !== "loan" && from.balance < amount)
+    return toast("Insufficient balance in " + from.name, "error");
+
+  from.balance -= amount;
+  to.balance   += amount;
+
+  renderAccounts();
+  document.getElementById("transferAmount").value = "";
+  document.getElementById("transferNote").value   = "";
+  toast(`✅ ${fmtMoney(amount)} transferred successfully!`, "success");
+});
+
+// ═══════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════
+document.getElementById("tabsContainer").addEventListener("click", e => {
+  const tab = e.target.closest(".tab");
+  if (!tab) return;
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  tab.classList.add("active");
+  activeTab = tab.dataset.type;
+});
+
+// ═══════════════════════════════════════
+//  LOAN CALCULATOR
+// ═══════════════════════════════════════
+function calcLoan() {
+  const P = parseFloat(document.getElementById("loanPrincipal").value);
+  const r = parseFloat(document.getElementById("loanRate").value) / 100 / 12;
+  const n = parseInt(document.getElementById("loanTerm").value) * 12;
+  if (!P || !r) return toast("Enter valid principal and rate.", "error");
+
+  const monthly   = P * r * Math.pow(1+r,n) / (Math.pow(1+r,n) - 1);
+  const totalPaid = monthly * n;
+  const interest  = totalPaid - P;
+
+  const box = document.getElementById("loanSummary");
+  box.style.display = "grid";
+  box.innerHTML = `
+    <div class="loan-stat"><div class="val">${fmtMoney(monthly)}</div><div class="lbl">Monthly Payment</div></div>
+    <div class="loan-stat"><div class="val">${fmtMoney(totalPaid)}</div><div class="lbl">Total Paid</div></div>
+    <div class="loan-stat"><div class="val" style="color:var(--danger)">${fmtMoney(interest)}</div><div class="lbl">Total Interest</div></div>
+  `;
+}
+
+// ═══════════════════════════════════════
+//  AI ADVISOR (Groq)
+// ═══════════════════════════════════════
+async function askAI() {
+  const college      = document.getElementById("aiCollege").value.trim() || selectedSchool.name;
+  const major        = document.getElementById("aiMajor").value.trim();
+  const federalLoan  = pf(document.getElementById("aiFederalLoan").value);
+  const plusLoan     = pf(document.getElementById("aiPlusLoan").value);
+  const grant        = pf(document.getElementById("aiGrant").value);
+  const scholarship  = pf(document.getElementById("aiScholarship").value);
+  const question     = document.getElementById("aiQuestion").value.trim();
+
+  const btn = document.getElementById("aiBtn");
+  btn.disabled = true;
+  document.getElementById("aiThinking").classList.add("visible");
+  document.getElementById("aiResponse").classList.remove("visible");
+
+  const prompt = buildPrompt({ college, major, federalLoan, plusLoan, grant, scholarship, question });
+
+  try {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + GROQ_API_KEY },
+      body: JSON.stringify({ model: GROQ_MODEL, messages: [{ role: "user", content: prompt }], max_tokens: 700, temperature: 0.65 })
+    });
+    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e?.error?.message || "Groq error " + res.status); }
+    const data  = await res.json();
+    const reply = data.choices?.[0]?.message?.content || "No response returned.";
+    document.getElementById("aiResponse").textContent = reply;
+    document.getElementById("aiResponse").classList.add("visible");
+  } catch (e) {
+    document.getElementById("aiResponse").textContent = "⚠️ Could not reach AI: " + e.message;
+    document.getElementById("aiResponse").classList.add("visible");
+  } finally {
+    document.getElementById("aiThinking").classList.remove("visible");
+    btn.disabled = false;
+  }
+}
+
+function buildPrompt({ college, major, federalLoan, plusLoan, grant, scholarship, question }) {
+  const totalLoans  = (federalLoan || 0) + (plusLoan || 0);
+  const totalFreeAid = (grant || 0) + (scholarship || 0);
+  const { netPrice, sixYrEarnings, roi } = selectedSchool;
+
+  return `You are a compassionate, practical financial literacy advisor helping undergraduate students and education counselors make responsible decisions about student loans and college finances.
+
+${college ? `College/University: ${college}` : "College: not specified"}
+${major   ? `Planned major: ${major}` : ""}
+${netPrice      != null ? `College net price (annual, from College Scorecard): $${netPrice.toLocaleString()}` : ""}
+${sixYrEarnings != null ? `Median earnings 6 yrs after graduation (College Scorecard): $${sixYrEarnings.toLocaleString()}` : ""}
+${roi           != null ? `Estimated ROI index: ${roi.toFixed(1)}K` : ""}
+
+Financial Aid Package (per year):
+- Federal Student Loan: $${(federalLoan||0).toLocaleString()}
+- Parent PLUS Loan: $${(plusLoan||0).toLocaleString()}
+- Total loans this year: $${totalLoans.toLocaleString()}
+- Grants (free money): $${(grant||0).toLocaleString()}
+- Scholarships / Gift Aid: $${(scholarship||0).toLocaleString()}
+- Total free aid: $${totalFreeAid.toLocaleString()}
+${question ? `\nStudent's question:\n"${question}"` : ""}
+
+Please provide:
+1. A brief, honest assessment of whether this loan situation is manageable given the college's real earnings data
+2. 2–3 concrete, actionable steps this student should take
+3. One important risk or warning specific to this situation
+4. A brief encouraging note
+
+Keep it supportive, direct, and easy to understand for an 18–22 year old first-time borrower. Use plain language — no jargon.`;
+}
+
+// ═══════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════
+function fmtMoney(n) {
+  const sign = n < 0 ? "−$" : "$";
+  return sign + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function pf(v) { const f = parseFloat(v); return isNaN(f) ? null : f; }
+function escHtml(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+let toastTimer;
+function toast(msg, type = "") {
+  const el = document.getElementById("toast");
+  el.textContent = msg; el.className = "show " + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = "", 3200);
+}
+
+// ── Boot ──
+renderAccounts();
+calcLoan();
+</script>
+</body>
+</html>
