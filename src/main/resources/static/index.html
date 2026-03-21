@@ -404,8 +404,17 @@
             <label>College or University</label>
             <input type="text" id="collegeSearch" placeholder="Type 2+ characters (e.g. Michigan, Howard, NYU)…">
         </div>
+        <div class="field-group" style="margin-bottom:0">
+            <label>Student Residency Status</label>
+            <select id="residencySelect" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
+                <option value="instate" selected>In-State</option>
+                <option value="outofstate">Out-of-State</option>
+                <option value="international">International</option>
+                <option value="online">Online / Distance Learning</option>
+            </select>
+        </div>
         <div id="results"></div>
-        <button id="searchButton" class="btn-primary">Look Up ROI Data</button>
+        <button id="searchButton" class="btn-primary">Look Up Cost of Attendance</button>
     </div>
 
     <!-- ── Major / Program Earnings ── -->
@@ -580,13 +589,38 @@
             };
             recalculateGap();
             const fmt = n => (n != null && n > 0) ? '$' + Number(n).toLocaleString() : 'N/A';
+
+            // Pick the right cost figure based on residency selection
+            const residency = $("#residencySelect").val();
+            let costLabel, costValue, costBreakdown = '';
+
+            if (residency === 'outofstate') {
+                costLabel = 'Out-of-State Tuition / Year';
+                costValue = data.outOfStateTuition;
+                if (data.roomBoardOnCampus) costBreakdown = `<p style="font-size:12px;color:var(--muted);margin:2px 0">+ Room &amp; Board (on-campus): ${fmt(data.roomBoardOnCampus)} &nbsp;|&nbsp; Books &amp; Supplies: ${fmt(data.booksSupply)}</p>`;
+            } else if (residency === 'international') {
+                costLabel = 'Out-of-State Tuition / Year (International)';
+                costValue = data.outOfStateTuition;
+                costBreakdown = `<p style="font-size:12px;color:var(--muted);margin:2px 0">Note: International students typically pay out-of-state rates. Verify with the institution for visa/fee surcharges.</p>`;
+            } else if (residency === 'online') {
+                costLabel = 'Avg. Cost of Attendance / Year (Online)';
+                costValue = data.costOfAttendance;
+                if (data.roomBoardOffCampus) costBreakdown = `<p style="font-size:12px;color:var(--muted);margin:2px 0">Off-campus living estimate: ${fmt(data.roomBoardOffCampus)} &nbsp;|&nbsp; Books &amp; Supplies: ${fmt(data.booksSupply)}</p>`;
+            } else {
+                // default: in-state
+                costLabel = 'In-State Tuition / Year';
+                costValue = data.inStateTuition;
+                if (data.roomBoardOnCampus) costBreakdown = `<p style="font-size:12px;color:var(--muted);margin:2px 0">+ Room &amp; Board (on-campus): ${fmt(data.roomBoardOnCampus)} &nbsp;|&nbsp; Books &amp; Supplies: ${fmt(data.booksSupply)}</p>`;
+            }
+
             $("#results").html(`
                 <div class="roi-card">
                     <h3>${collegeName}</h3>
-                    <p><strong>Avg. Cost of Attendance / Year:</strong> ${fmt(data.costOfAttendance)}</p>
-                    <p><strong>In-State Tuition / Year:</strong> ${fmt(data.inStateTuition)}</p>
-                    <p><strong>Out-of-State Tuition / Year:</strong> ${fmt(data.outOfStateTuition)}</p>
+                    <p><strong>${costLabel}:</strong> ${fmt(costValue)}</p>
+                    ${costBreakdown}
+                    <p style="margin-top:6px"><strong>Net Price After Aid / Year:</strong> ${fmt(data.netPrice)}</p>
                     <p><strong>All-Major Median Earnings (6 yrs):</strong> ${fmt(data.sixYrEarnings)}</p>
+                    ${data.onlineOnly ? '<p style="font-size:12px;color:var(--accent);margin-top:4px">✓ This is a fully online institution</p>' : ''}
                 </div>
             `);
             loadPrograms(collegeName, data.sixYrEarnings || 0);

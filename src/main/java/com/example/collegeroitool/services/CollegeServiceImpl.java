@@ -58,7 +58,20 @@ public class CollegeServiceImpl implements CollegeService {
         try {
             String url = API_BASE + "?api_key=" + apiKey +
                     "&school.name=" + URLEncoder.encode(name, StandardCharsets.UTF_8) +
-                    "&fields=school.name,latest.cost.attendance.academic_year,latest.cost.tuition.in_state,latest.cost.tuition.out_of_state,latest.cost.net_price.overall,latest.earnings.6_yrs_after_entry.median";
+                    "&fields=school.name," +
+                    "latest.cost.attendance.academic_year," +
+                    "latest.cost.tuition.in_state," +
+                    "latest.cost.tuition.out_of_state," +
+                    "latest.cost.net_price.overall," +
+                    "latest.cost.net_price.public," +
+                    "latest.cost.net_price.private," +
+                    "latest.cost.booksupply," +
+                    "latest.cost.roomboard.oncampus," +
+                    "latest.cost.roomboard.offcampus," +
+                    "latest.cost.otherexpense.oncampus," +
+                    "latest.cost.otherexpense.offcampus," +
+                    "latest.earnings.6_yrs_after_entry.median," +
+                    "school.online_only";
 
             Map response = restTemplate.getForObject(url, Map.class);
             List<Map> results = (List<Map>) response.get("results");
@@ -86,12 +99,31 @@ public class CollegeServiceImpl implements CollegeService {
             Double earningsValue = result.get("latest.earnings.6_yrs_after_entry.median") != null
                     ? ((Number) result.get("latest.earnings.6_yrs_after_entry.median")).doubleValue() : 0.0;
 
+            Double booksSupply = result.get("latest.cost.booksupply") != null
+                    ? ((Number) result.get("latest.cost.booksupply")).doubleValue() : null;
+            Double roomBoardOn = result.get("latest.cost.roomboard.oncampus") != null
+                    ? ((Number) result.get("latest.cost.roomboard.oncampus")).doubleValue() : null;
+            Double roomBoardOff = result.get("latest.cost.roomboard.offcampus") != null
+                    ? ((Number) result.get("latest.cost.roomboard.offcampus")).doubleValue() : null;
+            Double otherOn = result.get("latest.cost.otherexpense.oncampus") != null
+                    ? ((Number) result.get("latest.cost.otherexpense.oncampus")).doubleValue() : null;
+            Double otherOff = result.get("latest.cost.otherexpense.offcampus") != null
+                    ? ((Number) result.get("latest.cost.otherexpense.offcampus")).doubleValue() : null;
+            Integer onlineOnly = result.get("school.online_only") != null
+                    ? ((Number) result.get("school.online_only")).intValue() : 0;
+
             Map<String, Object> roiData = new java.util.HashMap<>();
             roiData.put("name", collegeName);
             roiData.put("costOfAttendance", costOfAttendance);
             roiData.put("inStateTuition", inStateTuition);
             roiData.put("outOfStateTuition", outOfStateTuition);
             roiData.put("netPrice", netPriceValue);
+            roiData.put("booksSupply", booksSupply);
+            roiData.put("roomBoardOnCampus", roomBoardOn);
+            roiData.put("roomBoardOffCampus", roomBoardOff);
+            roiData.put("otherExpenseOnCampus", otherOn);
+            roiData.put("otherExpenseOffCampus", otherOff);
+            roiData.put("onlineOnly", onlineOnly == 1);
             roiData.put("sixYrEarnings", earningsValue);
             return roiData;
 
