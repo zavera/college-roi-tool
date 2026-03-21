@@ -58,7 +58,7 @@ public class CollegeServiceImpl implements CollegeService {
         try {
             String url = API_BASE + "?api_key=" + apiKey +
                     "&school.name=" + URLEncoder.encode(name, StandardCharsets.UTF_8) +
-                    "&fields=school.name,latest.cost.net_price.overall,latest.earnings.6_yrs_after_entry.median";
+                    "&fields=school.name,latest.cost.attendance.academic_year,latest.cost.tuition.in_state,latest.cost.tuition.out_of_state,latest.cost.net_price.overall,latest.earnings.6_yrs_after_entry.median";
 
             Map response = restTemplate.getForObject(url, Map.class);
             List<Map> results = (List<Map>) response.get("results");
@@ -71,20 +71,29 @@ public class CollegeServiceImpl implements CollegeService {
             String collegeName = (String) result.getOrDefault("school.name", name);
 
             // Scorecard returns flattened dot-notation keys, not nested objects
+            Double costOfAttendance = result.get("latest.cost.attendance.academic_year") != null
+                    ? ((Number) result.get("latest.cost.attendance.academic_year")).doubleValue() : null;
+
+            Double inStateTuition = result.get("latest.cost.tuition.in_state") != null
+                    ? ((Number) result.get("latest.cost.tuition.in_state")).doubleValue() : null;
+
+            Double outOfStateTuition = result.get("latest.cost.tuition.out_of_state") != null
+                    ? ((Number) result.get("latest.cost.tuition.out_of_state")).doubleValue() : null;
+
             Double netPriceValue = result.get("latest.cost.net_price.overall") != null
                     ? ((Number) result.get("latest.cost.net_price.overall")).doubleValue() : 0.0;
 
             Double earningsValue = result.get("latest.earnings.6_yrs_after_entry.median") != null
                     ? ((Number) result.get("latest.earnings.6_yrs_after_entry.median")).doubleValue() : 0.0;
 
-            double roi = (earningsValue - netPriceValue) / 1000.0;
-
-            return Map.of(
-                    "name", collegeName,
-                    "netPrice", netPriceValue,
-                    "sixYrEarnings", earningsValue,
-                    "roi", roi
-            );
+            Map<String, Object> roiData = new java.util.HashMap<>();
+            roiData.put("name", collegeName);
+            roiData.put("costOfAttendance", costOfAttendance);
+            roiData.put("inStateTuition", inStateTuition);
+            roiData.put("outOfStateTuition", outOfStateTuition);
+            roiData.put("netPrice", netPriceValue);
+            roiData.put("sixYrEarnings", earningsValue);
+            return roiData;
 
         } catch (Exception e) {
             return Map.of("error", "API request failed: " + e.getMessage());

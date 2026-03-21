@@ -527,12 +527,15 @@
                 netPrice:      data.netPrice      || null,
                 sixYrEarnings: data.sixYrEarnings || null
             };
+            const fmt = n => (n != null && n > 0) ? '$' + Number(n).toLocaleString() : 'N/A';
             $("#results").html(`
                 <div class="roi-card">
                     <h3>${collegeName}</h3>
-                    <p><strong>Net Price / Year:</strong> $${(data.netPrice || 0).toLocaleString()}</p>
-                    <p><strong>All-Major Median Earnings (6 yrs):</strong> $${(data.sixYrEarnings || 0).toLocaleString()}</p>
-                    <p><strong>Est. ROI Index:</strong> ${data.roi != null ? data.roi.toFixed(1) + 'K' : 'N/A'}</p>
+                    <p><strong>Avg. Cost of Attendance / Year:</strong> ${fmt(data.costOfAttendance)}</p>
+                    <p><strong>In-State Tuition / Year:</strong> ${fmt(data.inStateTuition)}</p>
+                    <p><strong>Out-of-State Tuition / Year:</strong> ${fmt(data.outOfStateTuition)}</p>
+                    <p><strong>Net Price After Aid / Year:</strong> ${fmt(data.netPrice)}</p>
+                    <p><strong>All-Major Median Earnings (6 yrs):</strong> ${fmt(data.sixYrEarnings)}</p>
                 </div>
             `);
             loadPrograms(collegeName, data.sixYrEarnings || 0);
