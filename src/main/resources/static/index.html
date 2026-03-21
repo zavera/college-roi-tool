@@ -404,14 +404,30 @@
             <label>College or University</label>
             <input type="text" id="collegeSearch" placeholder="Type 2+ characters (e.g. Michigan, Howard, NYU)…">
         </div>
-        <div class="field-group" style="margin-bottom:0">
-            <label>Student Residency Status</label>
-            <select id="residencySelect" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
-                <option value="instate" selected>In-State</option>
-                <option value="outofstate">Out-of-State</option>
-                <option value="international">International</option>
-                <option value="online">Online / Distance Learning</option>
-            </select>
+        <div class="field-group" style="display:flex;gap:14px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:140px;">
+                <label>Student Residency Status</label>
+                <select id="residencySelect" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
+                    <option value="instate" selected>In-State</option>
+                    <option value="outofstate">Out-of-State</option>
+                    <option value="international">International</option>
+                    <option value="online">Online / Distance Learning</option>
+                </select>
+            </div>
+            <div style="flex:1;min-width:140px;">
+                <label>Where Will You Live?</label>
+                <select id="livingSelect" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
+                    <option value="oncampus" selected>On-Campus (University Housing)</option>
+                    <option value="offcampus">Off-Campus Apartment</option>
+                    <option value="home">At Home with Family</option>
+                </select>
+            </div>
+        </div>
+        <div class="field-group" style="margin-bottom:0;margin-top:4px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;font-size:13px;font-weight:600;letter-spacing:0;">
+                <input type="checkbox" id="healthInsuranceCheck" checked style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer;">
+                I'm covered under my parent's health insurance plan <span style="font-weight:400;color:var(--muted)">(uncheck to add ~$2,500/yr estimate)</span>
+            </label>
         </div>
         <div id="results"></div>
         <button id="searchButton" class="btn-primary">Look Up Cost of Attendance</button>
@@ -560,7 +576,14 @@
 </div>
 
 <script>
-    let selectedCollege = { name: null, netPrice: null, sixYrEarnings: null, costOfAttendance: null };
+    let selectedCollege = {
+        name: null, netPrice: null, sixYrEarnings: null, costOfAttendance: null,
+        inStateTuition: null, outOfStateTuition: null, booksSupply: null,
+        roomBoardOnCampus: null, roomBoardOffCampus: null,
+        transportationOnCampus: null, transportationOffCampus: null,
+        otherOnCampus: null, otherOffCampus: null,
+        onlineOnly: false
+    };
     let programsData = [];
 
     // ── Autocomplete (hits Spring Boot backend → College Scorecard) ──
@@ -582,40 +605,23 @@
     function loadROI(collegeName) {
         $.get("/api/colleges/" + encodeURIComponent(collegeName), function(data) {
             selectedCollege = {
-                name:             collegeName,
-                netPrice:         data.netPrice         || null,
-                sixYrEarnings:    data.sixYrEarnings    || null,
-                costOfAttendance: data.costOfAttendance || null
+                name:                   collegeName,
+                netPrice:               data.netPrice               || null,
+                sixYrEarnings:          data.sixYrEarnings          || null,
+                costOfAttendance:       data.costOfAttendance       || null,
+                inStateTuition:         data.inStateTuition         || null,
+                outOfStateTuition:      data.outOfStateTuition      || null,
+                booksSupply:            data.booksSupply            || null,
+                roomBoardOnCampus:      data.roomBoardOnCampus      || null,
+                roomBoardOffCampus:     data.roomBoardOffCampus     || null,
+                transportationOnCampus: data.transportationOnCampus || null,
+                transportationOffCampus:data.transportationOffCampus|| null,
+                otherOnCampus:          data.otherExpenseOnCampus   || null,
+                otherOffCampus:         data.otherExpenseOffCampus  || null,
+                onlineOnly:             data.onlineOnly             || false
             };
+            renderCOACard(collegeName);
             recalculateGap();
-            const fmt = n => (n != null && n > 0) ? '$' + Number(n).toLocaleString() : 'N/A';
-
-            // Pick the right cost figure based on residency selection
-            const residency = $("#residencySelect").val();
-            let costLabel, costValue, costBreakdown = '';
-
-            if (residency === 'outofstate') {
-                costLabel = 'Out-of-State Tuition / Year';
-                costValue = data.outOfStateTuition;
-            } else if (residency === 'international') {
-                costLabel = 'Out-of-State Tuition / Year (International)';
-                costValue = data.outOfStateTuition;
-            } else if (residency === 'online') {
-                costLabel = 'Avg. Cost of Attendance / Year (Online)';
-                costValue = data.costOfAttendance;
-            } else {
-                // default: in-state
-                costLabel = 'In-State Tuition / Year';
-                costValue = data.inStateTuition;
-            }
-
-            $("#results").html(`
-                <div class="roi-card">
-                    <h3>${collegeName}</h3>
-                    <p><strong>${costLabel}:</strong> ${fmt(costValue)}</p>
-                    ${data.onlineOnly ? '<p style="font-size:12px;color:var(--accent);margin-top:4px">✓ This is a fully online institution</p>' : ''}
-                </div>
-            `);
             loadPrograms(collegeName, data.sixYrEarnings || 0);
         }).fail(function() {
             selectedCollege = { name: collegeName, netPrice: null, sixYrEarnings: null };
@@ -626,6 +632,88 @@
             `);
             $("#majorSection").hide();
         });
+    }
+
+    function renderCOACard(collegeName) {
+        const fmt = n => (n != null && n > 0) ? '$' + Number(n).toLocaleString() : null;
+        const residency = $("#residencySelect").val();
+        const living    = $("#livingSelect").val();
+
+        // Tuition based on residency
+        const tuition = (residency === 'instate') ? selectedCollege.inStateTuition
+                       : selectedCollege.outOfStateTuition;
+        const tuitionLabel = (residency === 'instate')        ? 'In-State Tuition'
+                           : (residency === 'international')  ? 'Tuition (International Rate)'
+                           : (residency === 'online')         ? 'Tuition (Online)'
+                           :                                    'Out-of-State Tuition';
+
+        // Room & Board based on living
+        const roomBoard = (living === 'oncampus')  ? selectedCollege.roomBoardOnCampus
+                        : (living === 'offcampus') ? selectedCollege.roomBoardOffCampus
+                        : 0;
+        const rbLabel   = (living === 'oncampus')  ? 'Room & Board (On-Campus)'
+                        : (living === 'offcampus') ? 'Room & Board (Off-Campus Estimate)'
+                        : null; // home = no room/board row
+
+        // Transportation
+        const transport = (living === 'oncampus') ? selectedCollege.transportationOnCampus
+                        : selectedCollege.transportationOffCampus;
+
+        // Other / Personal expenses
+        const other = (living === 'oncampus') ? selectedCollege.otherOnCampus
+                    : selectedCollege.otherOffCampus;
+
+        const books = selectedCollege.booksSupply;
+        const healthInsurance = $("#healthInsuranceCheck").is(":checked") ? 0 : 2500;
+
+        // Build rows
+        let rows = '';
+        const row = (label, val, style) => val ? `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;${style||''}"><span style="color:var(--muted)">${label}</span><span>${val}</span></div>` : '';
+
+        rows += row(tuitionLabel, fmt(tuition));
+        if (rbLabel && roomBoard) rows += row(rbLabel, fmt(roomBoard));
+        rows += row('Books & Supplies', fmt(books));
+        rows += row('Transportation', fmt(transport));
+        rows += row('Personal Expenses', fmt(other));
+        if (healthInsurance > 0) rows += row('Health Insurance (est.)', fmt(healthInsurance), 'color:var(--muted)');
+
+        const computedCOA = computeCOA();
+        const coaDisplay = computedCOA ? '$' + Math.round(computedCOA).toLocaleString() : 'N/A';
+
+        $("#results").html(`
+            <div class="roi-card" style="margin-top:14px;">
+                <h3 style="margin-bottom:10px;">${collegeName}${selectedCollege.onlineOnly ? ' <span style="font-size:11px;color:var(--accent);font-weight:400">✓ Online</span>' : ''}</h3>
+                ${rows}
+                <div style="display:flex;justify-content:space-between;padding:8px 0 0;margin-top:6px;border-top:2px solid var(--border);font-weight:700;font-size:14px;">
+                    <span>📌 Est. Total COA / Year</span>
+                    <span style="color:var(--primary-dk)">${coaDisplay}</span>
+                </div>
+            </div>
+        `);
+    }
+
+    // ── Compute COA dynamically from cost components ──
+    function computeCOA() {
+        if (!selectedCollege.name) return null;
+        const residency = $("#residencySelect").val();
+        const living    = $("#livingSelect").val();
+
+        const tuition     = (residency === 'instate') ? selectedCollege.inStateTuition
+                           : selectedCollege.outOfStateTuition;
+        const roomBoard   = (living === 'oncampus')  ? selectedCollege.roomBoardOnCampus
+                          : (living === 'offcampus') ? selectedCollege.roomBoardOffCampus
+                          : 0;
+        const transport   = (living === 'oncampus') ? selectedCollege.transportationOnCampus
+                          : selectedCollege.transportationOffCampus;
+        const other       = (living === 'oncampus') ? selectedCollege.otherOnCampus
+                          : selectedCollege.otherOffCampus;
+        const books       = selectedCollege.booksSupply || 0;
+        const health      = $("#healthInsuranceCheck").is(":checked") ? 0 : 2500;
+
+        const components = [tuition, roomBoard, transport, other, books, health].map(v => v || 0);
+        const total = components.reduce((a, b) => a + b, 0);
+        // Fallback to Scorecard COA if we can't compute a meaningful figure
+        return total > 1000 ? total : selectedCollege.costOfAttendance;
     }
 
     function loadPrograms(collegeName, collegeWideEarnings) {
@@ -674,6 +762,14 @@
     $("#searchButton").on("click", function() {
         const college = $("#collegeSearch").val().trim();
         if (college) loadROI(college);
+    });
+
+    // Re-render when residency, living, or health insurance changes
+    $("#residencySelect, #livingSelect").on("change", function() {
+        if (selectedCollege.name) { renderCOACard(selectedCollege.name); recalculateGap(); }
+    });
+    $("#healthInsuranceCheck").on("change", function() {
+        if (selectedCollege.name) { renderCOACard(selectedCollege.name); recalculateGap(); }
     });
 
     // ── AI Advice ──
@@ -747,7 +843,7 @@
     fafsaFieldIds.forEach(id => $(id).on('input', recalculateGap));
 
     function recalculateGap() {
-        const totalCost = selectedCollege.costOfAttendance;
+        const totalCost = computeCOA();
 
         if (!selectedCollege.name || !totalCost) {
             $("#gapAnalysisContent").html('<p class="gap-placeholder">🏫 Search and select a college above to activate gap analysis.</p>');
@@ -762,30 +858,54 @@
         const scholarship   = pf($("#scholarshipAmount").val())  || 0;
         const workStudy     = pf($("#workStudy").val())          || 0;
 
-        const totalGrants   = pellGrant + instGrant + scholarship + workStudy + familyCont;
+        // Gift aid = free money (no repayment)
+        const totalGiftAid  = pellGrant + instGrant + scholarship;
+        // Net Price = COA minus gift aid
+        const netPrice      = totalCost - totalGiftAid;
+        // Unmet Need = Net Price minus everything else (loans, work-study, family)
         const totalLoans    = subLoan + unsubLoan;
-        const totalCovered  = totalGrants + totalLoans;
-        const unmetNeed     = totalCost - totalCovered;
+        const unmetNeed     = netPrice - totalLoans - workStudy - familyCont;
 
-        const d = n => '$' + Math.round(n).toLocaleString('en-US');
-        const sub = (n, color) => `<span class="gap-value" style="color:${color}">−${d(n)}</span>`;
+        const d = n => '$' + Math.round(Math.max(0,n)).toLocaleString('en-US');
+        const sub = (n, color) => n > 0 ? `<span class="gap-value" style="color:${color}">−${d(n)}</span>` : `<span class="gap-value" style="color:var(--muted)">—</span>`;
 
         const unmetClass = unmetNeed > 0 ? 'gap-unmet' : 'gap-met';
         const unmetIcon  = unmetNeed > 0 ? '⚠️' : '✅';
-        const unmetLabel = unmetNeed > 0 ? 'Unmet Need (Still Owed)' : 'Fully Covered';
+
+        // ── 3 Key Numbers ──
+        const keyNumbers = `
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px;">
+                <div style="background:#f0f4ff;border:1.5px solid #c7d7f8;border-radius:8px;padding:12px;text-align:center;">
+                    <div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">💰 Total COA</div>
+                    <div style="font-size:18px;font-weight:800;color:var(--primary-dk)">${d(totalCost)}</div>
+                    <div style="font-size:10px;color:var(--muted);margin-top:2px;">per year</div>
+                </div>
+                <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:8px;padding:12px;text-align:center;">
+                    <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">🏷️ Net Price</div>
+                    <div style="font-size:18px;font-weight:800;color:#276749">${d(netPrice)}</div>
+                    <div style="font-size:10px;color:var(--muted);margin-top:2px;">after free aid</div>
+                </div>
+                <div style="background:${unmetNeed > 0 ? '#fff5f5' : '#f0fdf4'};border:1.5px solid ${unmetNeed > 0 ? '#fed7d7' : '#bbf7d0'};border-radius:8px;padding:12px;text-align:center;">
+                    <div style="font-size:11px;font-weight:700;color:${unmetNeed > 0 ? '#c53030' : 'var(--accent)'};text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">${unmetIcon} Unmet Need</div>
+                    <div style="font-size:18px;font-weight:800;color:${unmetNeed > 0 ? '#c53030' : '#276749'}">${d(unmetNeed)}</div>
+                    <div style="font-size:10px;color:var(--muted);margin-top:2px;">true gap remaining</div>
+                </div>
+            </div>
+            <div style="font-size:10.5px;color:var(--muted);margin-bottom:14px;line-height:1.5;">
+                <strong>Net Price</strong> = COA − free gift aid (Pell + grants + scholarships) &nbsp;·&nbsp;
+                <strong>Unmet Need</strong> = Net Price − loans − work-study − family contribution
+            </div>`;
 
         $("#gapAnalysisContent").html(`
+            ${keyNumbers}
+
             <div class="gap-row gap-cost-row">
                 <span class="gap-label">📌 Total Cost of Attendance / Year</span>
                 <span class="gap-value" style="color:var(--primary-dk);font-size:15px;">${d(totalCost)}</span>
             </div>
 
-            <div style="margin:10px 0 4px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Aid &amp; Contributions</div>
+            <div style="margin:10px 0 4px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Gift Aid — Free Money (No Repayment)</div>
 
-            <div class="gap-row">
-                <span class="gap-label">Total Family Contribution</span>
-                ${sub(familyCont, 'var(--accent)')}
-            </div>
             <div class="gap-row">
                 <span class="gap-label">Pell Grant</span>
                 ${sub(pellGrant, 'var(--accent)')}
@@ -798,12 +918,13 @@
                 <span class="gap-label">Scholarship / Gift Aid</span>
                 ${sub(scholarship, 'var(--accent)')}
             </div>
-            <div class="gap-row">
-                <span class="gap-label">Federal Work-Study</span>
-                ${sub(workStudy, 'var(--accent)')}
+
+            <div class="gap-row" style="border-top:1px solid var(--border);margin-top:6px;padding-top:8px;font-weight:600;">
+                <span class="gap-label">= Net Price (What You Pay)</span>
+                <span class="gap-value" style="color:#276749;font-size:14px;">${d(netPrice)}</span>
             </div>
 
-            <div style="margin:10px 0 4px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Federal Loans (Must Be Repaid)</div>
+            <div style="margin:10px 0 4px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Financing Sources (Reduce Unmet Need)</div>
 
             <div class="gap-row">
                 <span class="gap-label">Subsidized Loan</span>
@@ -813,22 +934,28 @@
                 <span class="gap-label">Unsubsidized Loan</span>
                 ${sub(unsubLoan, 'var(--muted)')}
             </div>
+            <div class="gap-row">
+                <span class="gap-label">Federal Work-Study</span>
+                ${sub(workStudy, 'var(--muted)')}
+            </div>
+            <div class="gap-row">
+                <span class="gap-label">Family Contribution</span>
+                ${sub(familyCont, 'var(--muted)')}
+            </div>
 
             <div class="gap-total-row">
-                <span class="${unmetClass}">${unmetIcon} ${unmetLabel}</span>
-                <span class="gap-value ${unmetClass}" style="font-size:17px;">${unmetNeed > 0 ? d(unmetNeed) : d(0)}</span>
+                <span class="${unmetClass}">${unmetIcon} Unmet Need</span>
+                <span class="gap-value ${unmetClass}" style="font-size:17px;">${d(unmetNeed)}</span>
             </div>
 
             ${unmetNeed > 0
                 ? `<div class="gap-alert alert-red">
-                    Your aid package leaves <strong>${d(unmetNeed)}</strong> uncovered this year
-                    (<strong>${d(unmetNeed * 4)}</strong> over 4 years). Consider additional scholarships,
-                    employer tuition assistance, or meeting with your financial aid office about
-                    institutional grants before taking on additional debt.
+                    <strong>${d(unmetNeed)}/yr · ${d(unmetNeed * 4)} over 4 years</strong> still unaccounted for.
+                    Look for additional scholarships or meet with your financial aid office before taking on more debt.
                    </div>`
                 : `<div class="gap-alert alert-green">
-                    ✅ Your current aid package fully covers the cost of attendance — great position to be in!
-                    Any unused loan eligibility you skip now means less debt after graduation.
+                    ✅ Your aid package fully covers the cost of attendance — great position to be in!
+                    Any unused loan eligibility you decline now means less debt at graduation.
                    </div>`
             }
         `);

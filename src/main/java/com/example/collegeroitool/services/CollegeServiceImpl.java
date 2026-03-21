@@ -70,6 +70,8 @@ public class CollegeServiceImpl implements CollegeService {
                     "latest.cost.roomboard.offcampus," +
                     "latest.cost.otherexpense.oncampus," +
                     "latest.cost.otherexpense.offcampus," +
+                    "latest.cost.transportation.oncampus," +
+                    "latest.cost.transportation.offcampus," +
                     "latest.earnings.6_yrs_after_entry.median," +
                     "school.online_only";
 
@@ -109,6 +111,10 @@ public class CollegeServiceImpl implements CollegeService {
                     ? ((Number) result.get("latest.cost.otherexpense.oncampus")).doubleValue() : null;
             Double otherOff = result.get("latest.cost.otherexpense.offcampus") != null
                     ? ((Number) result.get("latest.cost.otherexpense.offcampus")).doubleValue() : null;
+            Double transportOn = result.get("latest.cost.transportation.oncampus") != null
+                    ? ((Number) result.get("latest.cost.transportation.oncampus")).doubleValue() : null;
+            Double transportOff = result.get("latest.cost.transportation.offcampus") != null
+                    ? ((Number) result.get("latest.cost.transportation.offcampus")).doubleValue() : null;
             Integer onlineOnly = result.get("school.online_only") != null
                     ? ((Number) result.get("school.online_only")).intValue() : 0;
 
@@ -123,6 +129,8 @@ public class CollegeServiceImpl implements CollegeService {
             roiData.put("roomBoardOffCampus", roomBoardOff);
             roiData.put("otherExpenseOnCampus", otherOn);
             roiData.put("otherExpenseOffCampus", otherOff);
+            roiData.put("transportationOnCampus", transportOn);
+            roiData.put("transportationOffCampus", transportOff);
             roiData.put("onlineOnly", onlineOnly == 1);
             roiData.put("sixYrEarnings", earningsValue);
             return roiData;
