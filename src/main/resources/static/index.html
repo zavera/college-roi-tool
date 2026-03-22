@@ -777,17 +777,29 @@
         // Use major-specific earnings if a major was selected, otherwise fall back to college-wide
         const effectiveEarnings = selectedCollege.majorEarnings || selectedCollege.sixYrEarnings;
 
+        // Compute the 3 key numbers to send to the AI
+        const coa       = computeCOA() || 0;
+        const pellG     = pf($("#pellGrant").val())          || 0;
+        const instG     = pf($("#institutionalGrant").val()) || 0;
+        const schol     = pf($("#scholarshipAmount").val())  || 0;
+        const subL      = pf($("#subsidizedLoan").val())     || 0;
+        const unsubL    = pf($("#unsubsidizedLoan").val())   || 0;
+        const ws        = pf($("#workStudy").val())          || 0;
+        const fam       = pf($("#parentPlusLoan").val())     || 0;
+        const netPriceCalc   = coa - pellG - instG - schol;
+        const unmetNeedCalc  = netPriceCalc - subL - unsubL - ws - fam;
+
         const payload = {
             collegeName:          selectedCollege.name || $("#collegeSearch").val().trim() || null,
             major:                selectedCollege.selectedMajor || null,
             // Undergrad FAFSA fields
-            pellGrant:            pf($("#pellGrant").val()),
-            subsidizedLoan:       pf($("#subsidizedLoan").val()),
-            unsubsidizedLoan:     pf($("#unsubsidizedLoan").val()),
-            parentPlusLoan:       pf($("#parentPlusLoan").val()),
-            institutionalGrant:   pf($("#institutionalGrant").val()),
-            scholarshipAmount:    pf($("#scholarshipAmount").val()),
-            workStudy:            pf($("#workStudy").val()),
+            pellGrant:            pellG,
+            subsidizedLoan:       subL,
+            unsubsidizedLoan:     unsubL,
+            parentPlusLoan:       fam,
+            institutionalGrant:   instG,
+            scholarshipAmount:    schol,
+            workStudy:            ws,
             // Student profile
             gender:               $("#genderSelect").val() || null,
             race:                 $("#raceSelect").val() || null,
@@ -795,7 +807,13 @@
             gpa:                  pf($("#gpaInput").val()),
             extracurriculars:     $("#extracurriculars").val().trim() || null,
             academicAchievements: $("#academicAchievements").val().trim() || null,
-            // College data
+            // Computed COA context
+            computedCOA:          coa,
+            computedNetPrice:     Math.max(0, netPriceCalc),
+            computedUnmetNeed:    Math.max(0, unmetNeedCalc),
+            residency:            $("#residencySelect").val(),
+            livingSituation:      $("#livingSelect").val(),
+            // College earnings data
             netPrice:             selectedCollege.netPrice,
             sixYrEarnings:        effectiveEarnings
         };
@@ -803,6 +821,9 @@
         function renderMarkdown(text) {
             return text
                 .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                // Markdown links [text](url) → clickable hyperlinks (must run before bold/italic)
+                .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,
+                    '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:var(--primary);text-decoration:underline;">$1</a>')
                 .replace(/\*\*\*(.*?)\*\*\*/g, "<strong><em>$1</em></strong>")
                 .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
                 .replace(/\*(.*?)\*/g, "<em>$1</em>")

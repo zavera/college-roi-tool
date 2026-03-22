@@ -18,6 +18,13 @@ public class LlmAdviceRequest {
     private Double workStudy;
     private Double institutionalGrant;
 
+    // Computed COA fields from frontend
+    private Double computedCOA;
+    private Double computedNetPrice;
+    private Double computedUnmetNeed;
+    private String residency;
+    private String livingSituation;
+
     // Student profile fields
     private Double gpa;
     private String extracurriculars;
@@ -83,4 +90,19 @@ public class LlmAdviceRequest {
 
     public Boolean getFirstGeneration() { return firstGeneration; }
     public void setFirstGeneration(Boolean firstGeneration) { this.firstGeneration = firstGeneration; }
+
+    public Double getComputedCOA() { return computedCOA; }
+    public void setComputedCOA(Double computedCOA) { this.computedCOA = computedCOA; }
+
+    public Double getComputedNetPrice() { return computedNetPrice; }
+    public void setComputedNetPrice(Double computedNetPrice) { this.computedNetPrice = computedNetPrice; }
+
+    public Double getComputedUnmetNeed() { return computedUnmetNeed; }
+    public void setComputedUnmetNeed(Double computedUnmetNeed) { this.computedUnmetNeed = computedUnmetNeed; }
+
+    public String getResidency() { return residency; }
+    public void setResidency(String residency) { this.residency = residency; }
+
+    public String getLivingSituation() { return livingSituation; }
+    public void setLivingSituation(String livingSituation) { this.livingSituation = livingSituation; }
 }
