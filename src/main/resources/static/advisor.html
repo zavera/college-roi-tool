@@ -153,7 +153,7 @@
   <div class="logo"></div>
   <div>
     <h1>Student Financial Advisor</h1>
-    <p>AKEB – Aga Khan Education Board</p>
+    <p>EFAS Program</p>
   </div>
   <span class="badge">Testing Mode</span>
 </header>
@@ -410,7 +410,7 @@ function buildPrompt({ college, major, fedLoan, plusLoan, grant, scholarship, qu
 
   const d = v => '$' + Math.round(v).toLocaleString('en-US');
 
-  return `You are producing an AI Financial Summary for a student on behalf of the Aga Khan Education Board (AKEB) EFAS Program. Output structured plain text matching the exact format below. Use only the numbers provided — do not recalculate them.
+  return `You are producing an AI Financial Summary for a student. Output structured plain text matching the exact format below. Use only the numbers provided — do not recalculate them.
 
 STUDENT DATA:
 College: ${college}
@@ -486,7 +486,7 @@ Key Considerations
 [Write 3-5 concise, actionable key considerations for this student's specific financial picture. Reference the debt-to-income benchmark. Be honest about risks, remain supportive. Plain language for an 18-22 year old.]
 
 ---
-Aga Khan Education Board USA – EFAS Program | This document is for informational purposes only.`;
+This document is for informational purposes only.`;
 }
 
 // ── Helpers ──────────────────────────────────────

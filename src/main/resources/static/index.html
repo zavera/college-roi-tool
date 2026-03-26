@@ -390,7 +390,7 @@
 <header>
     <div>
         <h1>Student Financial Advisor</h1>
-        <p>AKEB – Aga Khan Education Board</p>
+        <p>EFAS Program</p>
     </div>
     <span class="hdr-badge">College Scorecard + Groq AI</span>
 </header>
@@ -815,7 +815,8 @@
             livingSituation:      $("#livingSelect").val(),
             // College earnings data
             netPrice:             selectedCollege.netPrice,
-            sixYrEarnings:        effectiveEarnings
+            sixYrEarnings:        effectiveEarnings,
+            collegeWideEarnings:  selectedCollege.sixYrEarnings || null
         };
 
         function renderMarkdown(text) {
@@ -841,7 +842,8 @@
             data: JSON.stringify(payload),
             success: function(resp) {
                 $("#aiSpinner").hide();
-                $("#aiAdviceBox").html(renderMarkdown(resp.advice || "No advice returned.")).show();
+                // Response is HTML — inject directly without markdown escaping
+                $("#aiAdviceBox").html(resp.advice || "No advice returned.").show();
                 $("#aiButton").prop("disabled", false);
             },
             error: function(xhr) {
