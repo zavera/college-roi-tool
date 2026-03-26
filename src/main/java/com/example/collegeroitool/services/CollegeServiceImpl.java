@@ -23,6 +23,11 @@ public class CollegeServiceImpl implements CollegeService {
 
     private static final String API_BASE = "https://api.data.gov/ed/collegescorecard/v1/schools";
 
+    /** Normalize & → space so the Scorecard API matches names like "Texas A&M University". */
+    private static String normalizeForSearch(String s) {
+        return s.replace("&", " ").replaceAll("\\s+", " ").trim();
+    }
+
     @Override
     public List<String> searchColleges(String term) {
         try {
@@ -31,7 +36,7 @@ public class CollegeServiceImpl implements CollegeService {
             }
 
             String url = API_BASE + "?api_key=" + apiKey +
-                    "&school.name=" + URLEncoder.encode(term.trim(), StandardCharsets.UTF_8) +
+                    "&school.name=" + URLEncoder.encode(normalizeForSearch(term), StandardCharsets.UTF_8) +
                     "&fields=school.name&per_page=10";
 
             Map response = restTemplate.getForObject(url, Map.class);
@@ -57,7 +62,7 @@ public class CollegeServiceImpl implements CollegeService {
     public Map<String, Object> getCollegeROI(String name) {
         try {
             String url = API_BASE + "?api_key=" + apiKey +
-                    "&school.name=" + URLEncoder.encode(name, StandardCharsets.UTF_8) +
+                    "&school.name=" + URLEncoder.encode(normalizeForSearch(name), StandardCharsets.UTF_8) +
                     "&fields=school.name," +
                     "latest.cost.attendance.academic_year," +
                     "latest.cost.tuition.in_state," +
@@ -144,7 +149,7 @@ public class CollegeServiceImpl implements CollegeService {
     public List<Map<String, Object>> getCollegePrograms(String name) {
         try {
             String url = API_BASE + "?api_key=" + apiKey +
-                    "&school.name=" + URLEncoder.encode(name, StandardCharsets.UTF_8) +
+                    "&school.name=" + URLEncoder.encode(normalizeForSearch(name), StandardCharsets.UTF_8) +
                     "&fields=school.name,latest.programs.cip_4_digit";
 
             Map response = restTemplate.getForObject(url, Map.class);
@@ -211,7 +216,7 @@ public class CollegeServiceImpl implements CollegeService {
     public Map<String, Object> getProgramsRaw(String name) {
         try {
             String url = API_BASE + "?api_key=" + apiKey +
-                    "&school.name=" + URLEncoder.encode(name, StandardCharsets.UTF_8) +
+                    "&school.name=" + URLEncoder.encode(normalizeForSearch(name), StandardCharsets.UTF_8) +
                     "&fields=school.name,latest.programs.cip_4_digit";
             Map response = restTemplate.getForObject(url, Map.class);
             List<Map> results = (List<Map>) response.get("results");

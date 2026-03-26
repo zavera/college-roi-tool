@@ -293,7 +293,8 @@ function hideList() { list.style.display = "none"; list.innerHTML = ""; }
 
 async function doSearch(q) {
   try {
-    const url  = `${SC_BASE}?api_key=${SC_KEY}&school.name=${encodeURIComponent(q)}&fields=school.name&per_page=10`;
+    const searchQ = q.replace(/&/g, ' ').replace(/\s+/g, ' ').trim();
+    const url  = `${SC_BASE}?api_key=${SC_KEY}&school.name=${encodeURIComponent(searchQ)}&fields=school.name&per_page=10`;
     const data = await (await fetch(url)).json();
     const names = (data.results||[]).map(r => r["school.name"]).filter(Boolean);
     spinner.style.display = "none";
@@ -311,7 +312,8 @@ async function pickCollege(name) {
   spinner.style.display = "block";
   try {
     const fields = "school.name,latest.cost.net_price.overall,latest.earnings.6_yrs_after_entry.median";
-    const url    = `${SC_BASE}?api_key=${SC_KEY}&school.name=${encodeURIComponent(name)}&fields=${fields}`;
+    const lookupName = name.replace(/&/g, ' ').replace(/\s+/g, ' ').trim();
+    const url    = `${SC_BASE}?api_key=${SC_KEY}&school.name=${encodeURIComponent(lookupName)}&fields=${fields}`;
     const result = ((await (await fetch(url)).json()).results || [])[0];
     if (!result) { toast("No scorecard data found.", "error"); return; }
 

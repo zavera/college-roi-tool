@@ -402,8 +402,10 @@ function highlightSuggestion(items) {
 
 async function fetchSuggestions(term) {
   try {
+    // Normalize & so the Scorecard API partial-text search matches names like "Texas A&M"
+    const searchTerm = term.replace(/&/g, ' ').replace(/\s+/g, ' ').trim();
     const url = `${SCORECARD_BASE}?api_key=${SCORECARD_API_KEY}` +
-                `&school.name=${encodeURIComponent(term)}&fields=school.name&per_page=10`;
+                `&school.name=${encodeURIComponent(searchTerm)}&fields=school.name&per_page=10`;
     const res  = await fetch(url);
     const data = await res.json();
     const names = (data.results || [])
@@ -442,8 +444,10 @@ async function selectCollege(name) {
 
   try {
     const fields = "school.name,latest.cost.net_price.overall,latest.earnings.6_yrs_after_entry.median";
+    // Normalize & so the Scorecard API can match names like "Texas A&M University"
+    const lookupName = name.replace(/&/g, ' ').replace(/\s+/g, ' ').trim();
     const url    = `${SCORECARD_BASE}?api_key=${SCORECARD_API_KEY}` +
-                   `&school.name=${encodeURIComponent(name)}&fields=${fields}`;
+                   `&school.name=${encodeURIComponent(lookupName)}&fields=${fields}`;
     const res    = await fetch(url);
     const data   = await res.json();
     const result = (data.results || [])[0];
