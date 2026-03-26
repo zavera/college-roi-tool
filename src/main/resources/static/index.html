@@ -8,14 +8,14 @@
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/ui-lightness/jquery-ui.css">
     <style>
         :root {
-            --primary:   #1a73e8;
-            --primary-dk:#1558b0;
-            --accent:    #00897b;
+            --primary:   #2d7a2d;
+            --primary-dk:#1e5c1e;
+            --accent:    #2d7a2d;
             --bg:        #f5f7fa;
             --card:      #ffffff;
-            --text:      #2d3748;
-            --muted:     #718096;
-            --border:    #e2e8f0;
+            --text:      #1a1a1a;
+            --muted:     #666666;
+            --border:    #e0e0e0;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -28,13 +28,13 @@
 
         /* ── Header ── */
         header {
-            background: linear-gradient(135deg, #1558b0 0%, #1a73e8 60%, #0097a7 100%);
+            background: #2d7a2d;
             color: white;
             padding: 20px 32px;
             display: flex;
             align-items: center;
             gap: 14px;
-            box-shadow: 0 2px 8px rgba(21,88,176,0.2);
+            box-shadow: 0 2px 8px rgba(45,122,45,0.25);
         }
         header h1  { font-size: 20px; font-weight: 700; }
         header p   { font-size: 13px; opacity: .82; margin-top: 2px; }
@@ -102,8 +102,8 @@
         #results .roi-card {
             margin-top: 12px;
             padding: 14px 16px;
-            background: #f0f7ff;
-            border: 1px solid #bfdbfe;
+            background: #f0faf0;
+            border: 1px solid #a8d5a8;
             border-radius: 8px;
         }
         #results .roi-card h3 {
@@ -227,8 +227,8 @@
 
         /* ── AI section ── */
         #aiSection {
-            background: #f0f7ff;
-            border: 1px solid #bfdbfe;
+            background: #f0faf0;
+            border: 1px solid #a8d5a8;
             border-radius: 10px;
             padding: 24px;
         }
@@ -247,7 +247,7 @@
 
         .groq-tag {
             display: inline-block;
-            background: #dbeafe;
+            background: #d4edd4;
             color: var(--primary-dk);
             font-size: 11px;
             font-weight: 700;
@@ -345,7 +345,7 @@
         .gap-row:last-child { border-bottom: none; }
         .gap-label { color: var(--muted); }
         .gap-value { font-weight: 600; color: var(--text); }
-        .gap-cost-row { background: #f8faff; border-radius: 6px; padding: 10px 12px !important; margin-bottom: 4px; }
+        .gap-cost-row { background: #f5faf5; border-radius: 6px; padding: 10px 12px !important; margin-bottom: 4px; }
         .gap-cost-row .gap-label { color: var(--primary-dk); font-weight: 700; font-size: 13px; }
         .gap-cost-row .gap-value { color: var(--primary-dk); font-size: 15px; }
         .gap-total-row {
@@ -379,7 +379,7 @@
             font-size: 14px !important;
         }
         .ui-menu-item-wrapper.ui-state-active {
-            background: #dbeafe !important;
+            background: #d4edd4 !important;
             color: var(--primary-dk) !important;
             border: none !important;
         }
@@ -389,7 +389,7 @@
 
 <header>
     <div>
-        <h1>🎓 Student Financial Advisor</h1>
+        <h1>Student Financial Advisor</h1>
         <p>Financial literacy guidance for undergraduates &amp; education counselors</p>
     </div>
     <span class="hdr-badge">College Scorecard + Groq AI</span>
@@ -399,7 +399,7 @@
 
     <!-- ── College Search ── -->
     <div class="card">
-        <h2>🏫 Search College</h2>
+        <h2>Search College</h2>
         <div class="field-group">
             <label>College or University</label>
             <input type="text" id="collegeSearch" placeholder="Type 2+ characters (e.g. Michigan, Howard, NYU)…">
@@ -435,7 +435,7 @@
 
     <!-- ── Major / Program Earnings ── -->
     <div class="card" id="majorSection">
-        <h2>📚 Earnings by Major</h2>
+        <h2>Earnings by Major</h2>
         <div class="field-group" style="margin-bottom:0">
             <label>Select a Major</label>
             <select id="majorSelect">
@@ -459,7 +459,7 @@
 
     <!-- ── FAFSA Package ── -->
     <div class="card">
-        <h2>📋 FAFSA Aid Package — One Academic Year</h2>
+        <h2>FAFSA Aid Package — One Academic Year</h2>
         <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Enter amounts from your Student Aid Report (SAR) or financial aid offer letter.</p>
 
         <div class="field-group">
@@ -494,18 +494,18 @@
 
     <!-- ── Financial Gap Analysis ── -->
     <div class="card" id="gapAnalysisCard">
-        <h2>📊 Financial Gap Analysis</h2>
+        <h2>Financial Gap Analysis</h2>
         <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">
             Auto-calculated as you enter aid amounts — shows exactly how much of your cost is covered and what remains.
         </p>
         <div id="gapAnalysisContent">
-            <p class="gap-placeholder">🏫 Search and select a college above to activate gap analysis.</p>
+            <p class="gap-placeholder">Search and select a college above to activate gap analysis.</p>
         </div>
     </div>
 
     <!-- ── Student Profile ── -->
     <div class="card">
-        <h2>👤 Student Profile</h2>
+        <h2>Student Profile</h2>
         <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Help us personalize your financial advice and surface targeted scholarships.</p>
 
         <div class="field-group" style="display:flex;gap:14px;flex-wrap:wrap;">
@@ -560,16 +560,16 @@
     <!-- ── AI Advisor ── -->
     <div id="aiSection">
         <h2>
-            🤖 AI Financial Advisor
+            AI Financial Advisor
             <span class="groq-tag">Groq · llama-3.3-70b</span>
         </h2>
         <p class="desc">
             Enter your aid package above, select a college, then click below for personalized guidance on responsible borrowing.
         </p>
 
-        <button id="aiButton" class="btn-ai">Get AI Financial Advice</button>
+        <button id="aiButton" class="btn-ai">AI Summary</button>
 
-        <div id="aiSpinner">⏳ Analyzing your financial package…</div>
+        <div id="aiSpinner">Analyzing your financial package…</div>
         <div id="aiAdviceBox" style="display:none;"></div>
     </div>
 

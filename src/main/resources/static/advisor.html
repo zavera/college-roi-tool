@@ -6,15 +6,15 @@
 <title>Student Financial Advisor</title>
 <style>
   :root {
-    --primary:   #1a73e8;
-    --primary-dk:#1558b0;
-    --accent:    #00897b;
+    --primary:   #2d7a2d;
+    --primary-dk:#1e5c1e;
+    --accent:    #2d7a2d;
     --bg:        #f5f7fa;
     --card:      #ffffff;
-    --text:      #2d3748;
-    --muted:     #718096;
-    --border:    #e2e8f0;
-    --success:   #276749;
+    --text:      #1a1a1a;
+    --muted:     #666666;
+    --border:    #e0e0e0;
+    --success:   #1e5c1e;
     --danger:    #c53030;
     --warn:      #b7791f;
     --radius:    12px;
@@ -25,10 +25,10 @@
 
   /* Header */
   header {
-    background: linear-gradient(135deg, #1558b0 0%, #1a73e8 60%, #0097a7 100%);
+    background: #2d7a2d;
     color: white; padding: 22px 36px;
     display: flex; align-items: center; gap: 16px;
-    box-shadow: 0 2px 10px rgba(21,88,176,0.25);
+    box-shadow: 0 2px 10px rgba(45,122,45,0.25);
   }
   header .logo { font-size: 30px; }
   header h1   { font-size: 20px; font-weight: 700; }
@@ -69,12 +69,12 @@
     border-bottom: 1px solid var(--border); transition: background .1s;
   }
   .suggestions li:last-child { border-bottom: none; }
-  .suggestions li:hover, .suggestions li.kbd { background: #ebf2ff; color: var(--primary); font-weight: 600; }
+  .suggestions li:hover, .suggestions li.kbd { background: #ebf7eb; color: var(--primary); font-weight: 600; }
 
   /* ROI panel */
   .roi-panel {
     margin-top: 14px; padding: 16px 18px;
-    background: #f0f7ff; border: 1px solid #bfdbfe;
+    background: #f0faf0; border: 1px solid #a8d5a8;
     border-radius: 10px; display: none;
   }
   .roi-panel h3 { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
@@ -126,7 +126,7 @@
 
   .ai-response {
     display: none; margin-top: 14px; padding: 18px;
-    background: #f8faff; border: 1px solid #bfdbfe;
+    background: #f5faf5; border: 1px solid #a8d5a8;
     border-radius: 8px; font-size: 14px; line-height: 1.8;
     color: var(--text); white-space: pre-wrap;
   }
@@ -150,7 +150,7 @@
 <body>
 
 <header>
-  <div class="logo">🎓</div>
+  <div class="logo"></div>
   <div>
     <h1>Student Financial Advisor</h1>
     <p>Financial literacy guidance for undergraduates &amp; education counselors</p>
@@ -163,7 +163,7 @@
   <!-- ── College Scorecard Search ── -->
   <div class="card">
     <div class="card-title">
-      🏫 College Search
+      College Search
       <span class="card-sub">— U.S. Dept. of Education · College Scorecard</span>
     </div>
 
@@ -199,7 +199,7 @@
   <!-- ── AI Financial Advisor ── -->
   <div class="card">
     <div class="card-title">
-      🤖 AI Financial Advisor
+      AI Financial Advisor
       <span class="card-sub">— Groq · llama-3.3-70b-versatile</span>
     </div>
     <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">
@@ -238,10 +238,10 @@
       <textarea id="aiQuestion" placeholder="e.g. I'm a first-generation student. My family also wants to take a PLUS loan. Is this manageable given my major?"></textarea>
     </div>
 
-    <button class="btn-ai" id="aiBtn" onclick="askAI()">🤖 Get AI Financial Guidance</button>
+    <button class="btn-ai" id="aiBtn" onclick="askAI()">AI Summary</button>
 
     <div class="ai-thinking" id="aiThinking">
-      ⏳ Analyzing your situation<span class="dots"><span>.</span><span>.</span><span>.</span></span>
+      Analyzing your situation<span class="dots"><span>.</span><span>.</span><span>.</span></span>
     </div>
     <div class="ai-response" id="aiResponse"></div>
   </div>
