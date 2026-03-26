@@ -33,7 +33,7 @@ public class GroqService {
         Map<String, Object> body = new HashMap<>();
         body.put("model", model);
         body.put("messages", List.of(message));
-        body.put("max_tokens", 600);
+        body.put("max_tokens", 1100);
         body.put("temperature", 0.7);
 
         HttpHeaders headers = new HttpHeaders();
@@ -52,116 +52,140 @@ public class GroqService {
     }
 
     private String buildPrompt(LlmAdviceRequest req) {
-        double subsidized   = req.getSubsidizedLoan()    != null ? req.getSubsidizedLoan()    : 0;
-        double unsubsidized = req.getUnsubsidizedLoan()  != null ? req.getUnsubsidizedLoan()  : 0;
-        double familyCont   = req.getParentPlusLoan()    != null ? req.getParentPlusLoan()    : 0;
-        double pellGrant    = req.getPellGrant()          != null ? req.getPellGrant()          : 0;
-        double instGrant    = req.getInstitutionalGrant() != null ? req.getInstitutionalGrant(): 0;
-        double scholarship  = req.getScholarshipAmount()  != null ? req.getScholarshipAmount() : 0;
-        double workStudy    = req.getWorkStudy()          != null ? req.getWorkStudy()          : 0;
-        double totalLoans   = subsidized + unsubsidized;
-        double totalFreeAid = pellGrant + instGrant + scholarship;
+        double subsidized   = req.getSubsidizedLoan()     != null ? req.getSubsidizedLoan()     : 0;
+        double unsubsidized = req.getUnsubsidizedLoan()   != null ? req.getUnsubsidizedLoan()   : 0;
+        double familyCont   = req.getParentPlusLoan()     != null ? req.getParentPlusLoan()     : 0;
+        double pellGrant    = req.getPellGrant()           != null ? req.getPellGrant()           : 0;
+        double instGrant    = req.getInstitutionalGrant()  != null ? req.getInstitutionalGrant() : 0;
+        double scholarship  = req.getScholarshipAmount()   != null ? req.getScholarshipAmount()  : 0;
+        double workStudy    = req.getWorkStudy()           != null ? req.getWorkStudy()           : 0;
+        double annualFedLoans = subsidized + unsubsidized;
+        double totalFreeAid   = pellGrant + instGrant + scholarship;
+        double computedNet    = req.getComputedNetPrice()  != null ? req.getComputedNetPrice()  : 0;
+        double unmetNeed      = req.getComputedUnmetNeed() != null ? req.getComputedUnmetNeed() : 0;
+        double sixYrEarnings  = req.getSixYrEarnings()     != null ? req.getSixYrEarnings()     : 0;
 
-        // Residency label
-        String residencyLabel = "In-State";
-        if (req.getResidency() != null) {
-            switch (req.getResidency()) {
-                case "outofstate"   -> residencyLabel = "Out-of-State";
-                case "international"-> residencyLabel = "International";
-                case "online"       -> residencyLabel = "Online / Distance Learning";
-            }
-        }
+        // 10-year standard repayment: P × r(1+r)^120 / ((1+r)^120 − 1), r = 6.5%/12
+        double r      = 0.065 / 12.0;
+        double factor = r * Math.pow(1 + r, 120) / (Math.pow(1 + r, 120) - 1);
+        double s1p    = annualFedLoans * 4;
+        double s2p    = s1p + unmetNeed * 4;
+        long   s1m    = Math.round(s1p * factor);
+        long   s2m    = Math.round(s2p * factor);
+        long   s1a    = s1m * 12;
+        long   s2a    = s2m * 12;
+        String s1Pct  = sixYrEarnings > 0 ? Math.round(s1a * 100.0 / sixYrEarnings) + "%" : "N/A";
+        String s2Pct  = sixYrEarnings > 0 ? Math.round(s2a * 100.0 / sixYrEarnings) + "%" : "N/A";
 
-        // Living situation label
-        String livingLabel = "On-Campus";
-        if (req.getLivingSituation() != null) {
-            switch (req.getLivingSituation()) {
-                case "offcampus" -> livingLabel = "Off-Campus Apartment";
-                case "home"      -> livingLabel = "At Home with Family";
-            }
-        }
-
-        // Cost flags for tone calibration
-        boolean isOutOfState   = "outofstate".equals(req.getResidency()) || "international".equals(req.getResidency());
-        double  computedCOA    = req.getComputedCOA()       != null ? req.getComputedCOA()       : 0;
-        double  computedNet    = req.getComputedNetPrice()   != null ? req.getComputedNetPrice()   : 0;
-        double  unmetNeed      = req.getComputedUnmetNeed()  != null ? req.getComputedUnmetNeed()  : 0;
-        boolean highNetPrice   = computedNet    > 30000;
-        boolean highUnmetNeed  = unmetNeed      > 15000;
-        boolean loansAreDriver = totalLoans > 0 && (totalLoans / Math.max(computedNet, 1)) > 0.4;
-
-        // Build student profile block
+        // Student profile block
         StringBuilder profile = new StringBuilder();
         if (req.getFirstGeneration() != null && req.getFirstGeneration())
-            profile.append("- First-generation college student\n");
-        if (req.getGender() != null && !req.getGender().isBlank())
-            profile.append("- Gender: ").append(req.getGender()).append("\n");
-        if (req.getRace() != null && !req.getRace().isBlank())
-            profile.append("- Race/Ethnicity: ").append(req.getRace()).append("\n");
+            profile.append("First-generation college student. ");
         if (req.getGpa() != null)
-            profile.append("- GPA: ").append(req.getGpa()).append("\n");
+            profile.append("GPA: ").append(req.getGpa()).append(". ");
+        if (req.getRace() != null && !req.getRace().isBlank())
+            profile.append("Race/Ethnicity: ").append(req.getRace()).append(". ");
         if (req.getExtracurriculars() != null && !req.getExtracurriculars().isBlank())
-            profile.append("- Extracurricular activities: ").append(req.getExtracurriculars()).append("\n");
+            profile.append("Extracurriculars: ").append(req.getExtracurriculars()).append(". ");
         if (req.getAcademicAchievements() != null && !req.getAcademicAchievements().isBlank())
-            profile.append("- Academic achievements: ").append(req.getAcademicAchievements()).append("\n");
+            profile.append("Achievements: ").append(req.getAcademicAchievements()).append(". ");
 
-        // Tone instruction based on risk flags
-        StringBuilder toneInstruction = new StringBuilder();
-        if (loansAreDriver) toneInstruction.append("IMPORTANT: Loans are the primary mechanism covering this student's costs — use a cautious, alert tone throughout.\n");
-        if (highNetPrice && highUnmetNeed) toneInstruction.append("IMPORTANT: Both Net Price and Unmet Need are high — flag this as a significant financial risk.\n");
-        if (isOutOfState) toneInstruction.append("IMPORTANT: This student is attending as an out-of-state/international student — factor in whether residency choice is the primary cost driver.\n");
-
-        String college   = req.getCollegeName() != null ? req.getCollegeName() : "this college";
-        String majorStr  = req.getMajor()       != null ? req.getMajor()       : "their chosen major";
+        String college  = req.getCollegeName() != null ? req.getCollegeName() : "this college";
+        String major    = req.getMajor()       != null ? req.getMajor()       : "unspecified";
 
         return String.format("""
-            You are a financial literacy advisor helping undergraduate students make responsible decisions about student loans. Your primary goal is to help students borrow as little as possible.
+You are producing an AI Financial Summary on behalf of the Aga Khan Education Board (AKEB) EFAS Program. Output structured plain text matching the exact format below. Use only the pre-calculated numbers provided — do not recalculate them.
 
-            %s
-            Student profile for ONE academic year at %s%s:
-            %s
-            Cost of Attendance (based on student's selections):
-            - Residency status: %s
-            - Living situation: %s
-            - Estimated Total COA / Year: $%.2f
-            - Net Price (COA minus free gift aid): $%.2f
-            - Unmet Need (Net Price minus loans, work-study, and family contribution): $%.2f
+STUDENT DATA:
+College: %s
+Major: %s
+Annual Net Price (Scorecard): $%,.0f
+Annual Federal Loans Offered: $%,.0f
+Annual Unmet Need (after federal loans): $%,.0f
+Annual Free Aid (Pell + grants + scholarships): $%,.0f
+Median Earnings 6 yrs: %s
+Student profile: %s
 
-            FAFSA Aid Package:
-            - Pell Grant (free, no repayment): $%.2f
-            - Institutional Grant (free, no repayment): $%.2f
-            - Scholarship / Gift Aid (free, no repayment): $%.2f
-            - Subsidized Federal Loan (need-based, no interest while enrolled): $%.2f
-            - Unsubsidized Federal Loan (interest accrues immediately): $%.2f
-            - Federal Work-Study: $%.2f
-            - Family Contribution: $%.2f
-            - Total loans this year: $%.2f
-            - Total free aid this year: $%.2f
-            %s
+REPAYMENT SCENARIOS (pre-calculated — use these exact figures):
+Scenario 1 (Federal Loans Only): 4-yr total = $%,d, monthly = ~$%,d, annual = ~$%,d, ~%s of 6-yr earnings
+Scenario 2 (Maximum Borrowing):  4-yr total = $%,d, monthly = ~$%,d, annual = ~$%,d, ~%s of 6-yr earnings
 
-            Please provide clear, practical guidance on the following — lead with the most important financial concern first:
-            1. Whether the total loan amount is reasonable relative to projected earnings. Compare estimated 4-year total loan burden to the median first-year salary.
-            2. **Net Price & Unmet Need Analysis**: Evaluate this student's financial position critically.
-               - If both Net Price and Unmet Need are high, flag this as a significant financial risk and urge caution.
-               - If Unmet Need is low but loans are still high, flag the risk of over-borrowing beyond what is necessary.
-               - If the student is Out-of-State or International, specifically assess whether the residency choice is the primary cost driver and whether switching to an in-state or online program would significantly reduce the burden.
-               - Use the most cautious tone when loans are the primary mechanism covering costs.
-            3. Strategies to minimize total debt over all 4 years, including how each year's borrowing compounds into the full repayment burden at graduation.
-            4. Research 2 scholarship opportunities specifically for this student based on their GPA, demographics, and extracurriculars. Provide the scholarship name and its direct URL as a markdown hyperlink in the format [Scholarship Name](URL), linking to the actual scholarship page at %s or a well-known external source.
-            5. Suggest 2-3 specific part-time employment opportunities directly related to %s that this student could realistically do while in school to offset costs.
+OUTPUT — respond using exactly this structure:
 
-            Keep the response concise, supportive, and easy to understand for an 18-22 year old undergraduate.
-            """,
-            toneInstruction.toString(),
+Financial Summary
+Here is a snapshot of your financial picture for %s based on the information available.
+
+Net Price: $%,.0f
+Federal Loans Offered: $%,.0f
+Unmet Need (after loans): $%,.0f
+
+Note: Unmet need represents the remaining gap after federal loans are applied. This gap may be covered through additional borrowing, outside scholarships, family contributions, or employment. This tool does not predict how that gap will be filled.
+
+---
+
+For Context: Earnings Data
+
+Median Earnings – This Major (6 yrs): %s
+Median Earnings – College-Wide (6 yrs): %s
+
+Note: These figures reflect median earnings approximately 2 years after completing a 4-year degree. They represent median outcomes and do not guarantee individual results. For majors where graduate school is common, early career earnings may be lower.
+
+---
+
+For Context: Estimated Repayment Scenarios (10-Year Standard Plan)
+
+                                  Scenario 1                Scenario 2
+                               Federal Loans Only        Maximum Borrowing
+Estimated 4-Year Borrowing:      $%,d                      $%,d
+Estimated Monthly Payment:       ~$%,d                     ~$%,d
+Estimated Annual Repayment:      ~$%,d                     ~$%,d
+As %% of 6-Year Median Earnings:  ~%s                       ~%s
+
+Note: Repayment estimates assume a 6.5%% federal loan interest rate. Actual rates may vary. Scenario 2 assumes all unmet need is borrowed across 4 years ($%,.0f x 4 = $%,.0f + $%,.0f federal).
+
+---
+
+For Context: Debt-to-Income Benchmark
+
+Financial industry sources generally cite annual student loan repayment under 10%% of income as a manageable threshold. This figure is provided for reference only.
+
+---
+
+Possible Employment Opportunities
+
+[Write 2-3 sentences on realistic part-time or campus employment paths for this student, specific to their major. Mention how earning while in school reduces borrowing and builds professional experience.]
+
+---
+
+Additional Resources to Explore
+
+For scholarship opportunities that may apply to your profile, visit:
+https://the.ismaili/us/en/resources/scholarships
+
+---
+
+Key Considerations
+
+[Write 3-5 concise, actionable key considerations specific to this student's financial picture. Reference the debt-to-income benchmark. Be honest about risks, remain supportive. Plain language for an 18-22 year old.]
+
+---
+Aga Khan Education Board USA – EFAS Program | This document is for informational purposes only.
+""",
+            college, major,
+            computedNet, annualFedLoans, unmetNeed, totalFreeAid,
+            sixYrEarnings > 0 ? String.format("$%,.0f/yr", sixYrEarnings) : "Not available",
+            profile.length() > 0 ? profile.toString() : "Not provided",
+            (long) s1p, s1m, s1a, s1Pct,
+            (long) s2p, s2m, s2a, s2Pct,
             college,
-            req.getMajor() != null ? ", pursuing " + req.getMajor() : "",
-            profile.toString(),
-            residencyLabel, livingLabel,
-            computedCOA, computedNet, unmetNeed,
-            pellGrant, instGrant, scholarship, subsidized, unsubsidized, workStudy, familyCont,
-            totalLoans, totalFreeAid,
-            req.getSixYrEarnings() != null ? String.format("- Median earnings 6 years after graduation: $%.2f/yr", req.getSixYrEarnings()) : "",
-            college, majorStr
+            computedNet, annualFedLoans, unmetNeed,
+            sixYrEarnings > 0 ? String.format("$%,.0f/yr", sixYrEarnings) : "Not available",
+            sixYrEarnings > 0 ? String.format("$%,.0f/yr", sixYrEarnings) : "Not available",
+            (long) s1p, (long) s2p,
+            s1m, s2m,
+            s1a, s2a,
+            s1Pct, s2Pct,
+            unmetNeed, unmetNeed * 4, s1p
         );
     }
 }
