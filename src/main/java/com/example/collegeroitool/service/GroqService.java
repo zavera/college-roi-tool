@@ -199,9 +199,8 @@ public class GroqService {
 "---\n" +
 "Heading: \"Key Considerations\"\n" +
 "\n" +
-"Write 2-3 sentences of personalized guidance based on the student's profile, major, unmet need, and repayment percentages.\n" +
-"Keep it factual and supportive — reference their specific numbers where relevant.\n" +
-"<p style=\"font-size:13px;color:#1a1a1a;margin:0 0 16px;\">[personalized text]</p>\n" +
+"Output this paragraph EXACTLY as written — do not change, paraphrase, or add to it:\n" +
+"<p style=\"font-size:13px;color:#1a1a1a;margin:0 0 16px;\">This information is provided to help you understand your financial aid package. For personalized guidance on managing your educational costs, we encourage you to speak with your school's financial aid office or an independent financial advisor.</p>\n" +
 "\n" +
 "---\n" +
 "FOOTER\n" +
