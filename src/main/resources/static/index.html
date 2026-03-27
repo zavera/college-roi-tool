@@ -217,29 +217,32 @@
             display: block;
             width: 100%;
             padding: 13px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            background: #1c2b4a;
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 4px;
             cursor: pointer;
-            transition: filter .2s;
+            transition: background .2s;
         }
-        .btn-ai:hover    { filter: brightness(1.07); }
-        .btn-ai:disabled { background: #a0aec0; cursor: not-allowed; filter: none; }
+        .btn-ai:hover    { background: #111d33; }
+        .btn-ai:disabled { background: #a0aec0; cursor: not-allowed; }
 
         /* ── AI section ── */
         #aiSection {
-            background: #eef1f8;
-            border: 1px solid #b8c4d8;
-            border-radius: 10px;
+            background: #fdf9ef;
+            border: 1px solid #d4b96a;
+            border-top: 3px solid #b8960c;
+            border-radius: 6px;
             padding: 24px;
         }
         #aiSection h2 {
             font-size: 16px;
             font-weight: 700;
-            color: var(--primary-dk);
+            color: var(--primary);
             margin-bottom: 6px;
         }
         #aiSection p.desc {
@@ -251,32 +254,35 @@
 
         .groq-tag {
             display: inline-block;
-            background: #d6dce8;
-            color: var(--primary-dk);
-            font-size: 11px;
+            background: #f0e9ce;
+            color: #7a5c00;
+            font-size: 10px;
             font-weight: 700;
             padding: 2px 9px;
-            border-radius: 12px;
+            border-radius: 3px;
             margin-left: 8px;
             vertical-align: middle;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
         }
 
         #aiSpinner {
             display: none;
             padding: 16px 0;
-            color: var(--primary);
+            color: var(--muted);
             font-style: italic;
             font-size: 14px;
         }
 
         #aiAdviceBox {
             margin-top: 14px;
-            padding: 16px;
+            padding: 18px 20px;
             background: white;
-            border: 1px solid var(--border);
-            border-radius: 8px;
+            border: 1px solid #ddd8ce;
+            border-left: 3px solid #b8960c;
+            border-radius: 4px;
             font-size: 14px;
-            line-height: 1.75;
+            line-height: 1.8;
             color: var(--text);
         }
 
