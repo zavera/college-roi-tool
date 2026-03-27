@@ -33,6 +33,9 @@ public class LlmAdviceRequest {
     private String race;
     private Boolean firstGeneration;
 
+    // College-wide 6-yr median earnings (from Scorecard, distinct from major-specific earnings)
+    private Double collegeWideEarnings;
+
     // Getters and Setters
     public String getCollegeName() { return collegeName; }
     public void setCollegeName(String collegeName) { this.collegeName = collegeName; }
@@ -105,4 +108,7 @@ public class LlmAdviceRequest {
 
     public String getLivingSituation() { return livingSituation; }
     public void setLivingSituation(String livingSituation) { this.livingSituation = livingSituation; }
+
+    public Double getCollegeWideEarnings() { return collegeWideEarnings; }
+    public void setCollegeWideEarnings(Double collegeWideEarnings) { this.collegeWideEarnings = collegeWideEarnings; }
 }
