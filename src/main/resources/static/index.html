@@ -564,14 +564,14 @@
     <!-- ── AI Advisor ── -->
     <div id="aiSection">
         <h2>
-            AI Financial Summary
+            AI Financial Advisor
             <span class="groq-tag">Groq · llama-3.3-70b</span>
         </h2>
         <p class="desc">
-            Enter your aid package above, select a college, then click below for personalized summary.
+            Enter your aid package above, select a college, then click below for personalized guidance on responsible borrowing.
         </p>
 
-        <button id="aiButton" class="btn-ai">AI Summary</button>
+        <button id="aiButton" class="btn-ai">Get AI Financial Advice</button>
 
         <div id="aiSpinner">Analyzing your financial package…</div>
         <div id="aiAdviceBox" style="display:none;"></div>
@@ -846,8 +846,7 @@
             data: JSON.stringify(payload),
             success: function(resp) {
                 $("#aiSpinner").hide();
-                // Response is HTML — inject directly without markdown escaping
-                $("#aiAdviceBox").html(resp.advice || "No advice returned.").show();
+                $("#aiAdviceBox").html(renderMarkdown(resp.advice || "No advice returned.")).show();
                 $("#aiButton").prop("disabled", false);
             },
             error: function(xhr) {
