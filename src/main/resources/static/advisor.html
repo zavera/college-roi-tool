@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Student Financial Advisor</title>
+<title>Astra AI Advisor</title>
 <style>
   :root {
-    --primary:   #1a73e8;
-    --primary-dk:#1558b0;
-    --accent:    #00897b;
-    --bg:        #f5f7fa;
+    --primary:   #1c2b4a;
+    --primary-dk:#111d33;
+    --accent:    #b8960c;
+    --bg:        #f4f2ee;
     --card:      #ffffff;
-    --text:      #2d3748;
-    --muted:     #718096;
-    --border:    #e2e8f0;
-    --success:   #276749;
+    --text:      #1a1a2e;
+    --muted:     #6b7280;
+    --border:    #ddd8ce;
+    --success:   #1c2b4a;
     --danger:    #c53030;
     --warn:      #b7791f;
     --radius:    12px;
@@ -25,18 +25,20 @@
 
   /* Header */
   header {
-    background: linear-gradient(135deg, #1558b0 0%, #1a73e8 60%, #0097a7 100%);
+    background: #1c2b4a;
     color: white; padding: 22px 36px;
     display: flex; align-items: center; gap: 16px;
-    box-shadow: 0 2px 10px rgba(21,88,176,0.25);
+    box-shadow: 0 2px 10px rgba(17,29,51,0.35);
+    border-bottom: 2px solid #b8960c;
   }
-  header .logo { font-size: 30px; }
-  header h1   { font-size: 20px; font-weight: 700; }
-  header p    { font-size: 13px; opacity: .82; margin-top: 2px; }
+  header .logo { font-size: 22px; opacity: 0; width: 0; }
+  header h1   { font-size: 20px; font-weight: 700; letter-spacing: 0.02em; }
+  header p    { font-size: 12px; opacity: .72; margin-top: 3px; letter-spacing: 0.04em; text-transform: uppercase; }
   .badge {
-    margin-left: auto; background: rgba(255,255,255,.15);
-    border: 1px solid rgba(255,255,255,.3);
-    border-radius: 20px; padding: 4px 14px; font-size: 12px; font-weight: 600; white-space: nowrap;
+    margin-left: auto; background: rgba(184,150,12,.18);
+    border: 1px solid rgba(184,150,12,.5);
+    border-radius: 4px; padding: 4px 14px; font-size: 11px; font-weight: 600; white-space: nowrap;
+    letter-spacing: 0.06em; text-transform: uppercase; color: #e8c84a;
   }
 
   /* Layout */
@@ -69,12 +71,12 @@
     border-bottom: 1px solid var(--border); transition: background .1s;
   }
   .suggestions li:last-child { border-bottom: none; }
-  .suggestions li:hover, .suggestions li.kbd { background: #ebf2ff; color: var(--primary); font-weight: 600; }
+  .suggestions li:hover, .suggestions li.kbd { background: #eef1f8; color: var(--primary); font-weight: 600; }
 
   /* ROI panel */
   .roi-panel {
     margin-top: 14px; padding: 16px 18px;
-    background: #f0f7ff; border: 1px solid #bfdbfe;
+    background: #eef1f8; border: 1px solid #b8c4d8;
     border-radius: 10px; display: none;
   }
   .roi-panel h3 { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
@@ -126,7 +128,7 @@
 
   .ai-response {
     display: none; margin-top: 14px; padding: 18px;
-    background: #f8faff; border: 1px solid #bfdbfe;
+    background: #f2f4f8; border: 1px solid #b8c4d8;
     border-radius: 8px; font-size: 14px; line-height: 1.8;
     color: var(--text); white-space: pre-wrap;
   }
@@ -141,7 +143,7 @@
     pointer-events: none; z-index: 999; max-width: 300px;
   }
   #toast.show    { opacity: 1; transform: translateY(0); }
-  #toast.success { background: #276749; }
+  #toast.success { background: #1c2b4a; }
   #toast.error   { background: #c53030; }
 
   .source-note { font-size: 11px; color: var(--muted); margin-top: 6px; font-style: italic; }
@@ -150,10 +152,9 @@
 <body>
 
 <header>
-  <div class="logo">🎓</div>
   <div>
-    <h1>Student Financial Advisor</h1>
-    <p>Financial literacy guidance for undergraduates &amp; education counselors</p>
+    <h1>Astra AI Advisor</h1>
+    <p>Undergraduate Financial Planning</p>
   </div>
   <span class="badge">Testing Mode</span>
 </header>
@@ -163,7 +164,7 @@
   <!-- ── College Scorecard Search ── -->
   <div class="card">
     <div class="card-title">
-      🏫 College Search
+      College Search
       <span class="card-sub">— U.S. Dept. of Education · College Scorecard</span>
     </div>
 
@@ -199,7 +200,7 @@
   <!-- ── AI Financial Advisor ── -->
   <div class="card">
     <div class="card-title">
-      🤖 AI Financial Advisor
+      AI Financial Advisor
       <span class="card-sub">— Groq · llama-3.3-70b-versatile</span>
     </div>
     <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">
@@ -238,10 +239,10 @@
       <textarea id="aiQuestion" placeholder="e.g. I'm a first-generation student. My family also wants to take a PLUS loan. Is this manageable given my major?"></textarea>
     </div>
 
-    <button class="btn-ai" id="aiBtn" onclick="askAI()">🤖 Get AI Financial Guidance</button>
+    <button class="btn-ai" id="aiBtn" onclick="askAI()">AI Summary</button>
 
     <div class="ai-thinking" id="aiThinking">
-      ⏳ Analyzing your situation<span class="dots"><span>.</span><span>.</span><span>.</span></span>
+      Analyzing your situation<span class="dots"><span>.</span><span>.</span><span>.</span></span>
     </div>
     <div class="ai-response" id="aiResponse"></div>
   </div>
@@ -365,7 +366,7 @@ async function askAI() {
       body: JSON.stringify({
         model: GROQ_MODEL,
         messages: [{ role: "user", content: prompt }],
-        max_tokens: 700,
+        max_tokens: 1100,
         temperature: 0.65
       })
     });
@@ -377,7 +378,7 @@ async function askAI() {
     document.getElementById("aiResponse").textContent = reply;
     document.getElementById("aiResponse").classList.add("on");
   } catch (e) {
-    document.getElementById("aiResponse").textContent = "⚠️ " + e.message;
+    document.getElementById("aiResponse").textContent = "Error: " + e.message;
     document.getElementById("aiResponse").classList.add("on");
   } finally {
     document.getElementById("aiThinking").classList.remove("on");
@@ -386,32 +387,107 @@ async function askAI() {
 }
 
 function buildPrompt({ college, major, fedLoan, plusLoan, grant, scholarship, question }) {
-  const totalLoans = (fedLoan||0) + (plusLoan||0);
-  const totalFree  = (grant||0)   + (scholarship||0);
-  return `You are a compassionate, practical financial literacy advisor helping undergraduate students and education counselors make responsible decisions about student loans.
+  const annualFedLoan = fedLoan || 0;
+  const annualFree    = (grant || 0) + (scholarship || 0);
+  const netPrice      = school.netPrice;
+  const sixYrEarnings = school.sixYrEarnings;
 
+  // Unmet need = net price minus federal loans (what remains unfunded)
+  const unmetNeed = netPrice != null ? Math.max(0, netPrice - annualFedLoan) : null;
+
+  // 10-year standard repayment: P × r(1+r)^120 / ((1+r)^120 - 1), r = 6.5%/12
+  const r      = 0.065 / 12;
+  const n      = 120;
+  const factor = r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+
+  const s1p        = annualFedLoan * 4;
+  const s2p        = s1p + (unmetNeed != null ? unmetNeed * 4 : 0);
+  const s1Monthly  = Math.round(s1p * factor);
+  const s2Monthly  = Math.round(s2p * factor);
+  const s1Annual   = s1Monthly * 12;
+  const s2Annual   = s2Monthly * 12;
+  const s1Pct      = sixYrEarnings ? Math.round(s1Annual / sixYrEarnings * 100) : null;
+  const s2Pct      = sixYrEarnings ? Math.round(s2Annual / sixYrEarnings * 100) : null;
+
+  const d = v => '$' + Math.round(v).toLocaleString('en-US');
+
+  return `You are producing an AI Financial Summary for a student. Output structured plain text matching the exact format below. Use only the numbers provided — do not recalculate them.
+
+STUDENT DATA:
 College: ${college}
-${major ? `Major: ${major}` : ""}
-${school.netPrice      != null ? `Annual net price (College Scorecard): $${school.netPrice.toLocaleString()}` : ""}
-${school.sixYrEarnings != null ? `Median earnings 6 yrs after graduation: $${school.sixYrEarnings.toLocaleString()}` : ""}
-${school.roi           != null ? `ROI index: ${school.roi.toFixed(1)}K` : ""}
+Major: ${major || 'unspecified'}
+${netPrice      != null ? `Annual Net Price (Scorecard): ${d(netPrice)}`           : ''}
+${annualFedLoan  > 0    ? `Annual Federal Loans Offered: ${d(annualFedLoan)}`      : ''}
+${unmetNeed     != null ? `Annual Unmet Need (after federal loans): ${d(unmetNeed)}` : ''}
+${sixYrEarnings != null ? `Median Earnings 6 yrs: ${d(sixYrEarnings)}`            : ''}
+${annualFree     > 0    ? `Annual Free Aid (grants + scholarships): ${d(annualFree)}` : ''}
+${(plusLoan || 0) > 0   ? `Additional Loans (PLUS/private): ${d(plusLoan)}`        : ''}
+${question ? `\nStudent context: "${question}"` : ''}
 
-Financial Aid Package (per academic year):
-- Federal Student Loan: $${(fedLoan||0).toLocaleString()}
-- Parent PLUS Loan: $${(plusLoan||0).toLocaleString()}
-- Total loans: $${totalLoans.toLocaleString()}
-- Grants (free money): $${(grant||0).toLocaleString()}
-- Scholarships / Gift Aid: $${(scholarship||0).toLocaleString()}
-- Total free aid: $${totalFree.toLocaleString()}
-${question ? `\nStudent's question: "${question}"` : ""}
+REPAYMENT SCENARIOS (pre-calculated — use these exact figures, do not change them):
+Scenario 1 (Federal Loans Only): 4-yr total = ${d(s1p)}, monthly = ~${d(s1Monthly)}, annual = ~${d(s1Annual)}${s1Pct != null ? `, ~${s1Pct}% of 6-yr earnings` : ''}
+Scenario 2 (Maximum Borrowing):  4-yr total = ${d(s2p)}, monthly = ~${d(s2Monthly)}, annual = ~${d(s2Annual)}${s2Pct != null ? `, ~${s2Pct}% of 6-yr earnings` : ''}
 
-Please provide:
-1. A brief honest assessment of whether this loan situation is manageable given the earnings data
-2. 2–3 concrete, actionable steps this student should take
-3. One important risk specific to this situation
-4. A short encouraging note
+OUTPUT — respond using exactly this structure:
 
-Write for an 18–22 year old first-time borrower. Plain language, no jargon, keep it concise.`;
+Financial Summary
+Here is a snapshot of your financial picture for ${college} based on the information available.
+
+Net Price: [annual net price]
+Federal Loans Offered: [annual federal loans]
+Unmet Need (after loans): [annual unmet need]
+
+Note: Unmet need represents the remaining gap after federal loans are applied. This gap may be covered through additional borrowing, outside scholarships, family contributions, or employment. This tool does not predict how that gap will be filled.
+
+---
+
+For Context: Earnings Data
+
+Median Earnings – This Major (6 yrs): [value or "Not available"]
+Median Earnings – College-Wide (6 yrs): [use same value if only one is available]
+
+Note: These figures reflect median earnings approximately 2 years after completing a 4-year degree. They represent median outcomes and do not guarantee individual results. For majors where graduate school is common, early career earnings may be lower.
+
+---
+
+For Context: Estimated Repayment Scenarios (10-Year Standard Plan)
+
+                                  Scenario 1                Scenario 2
+                               Federal Loans Only        Maximum Borrowing
+Estimated 4-Year Borrowing:      [S1 value]                [S2 value]
+Estimated Monthly Payment:       ~[S1 monthly]             ~[S2 monthly]
+Estimated Annual Repayment:      ~[S1 annual]              ~[S2 annual]
+As % of 6-Year Median Earnings:  ~[S1 pct]%                ~[S2 pct]%
+
+Note: Repayment estimates assume a 6.5% federal loan interest rate. Actual rates may vary. Scenario 2 assumes all unmet need is borrowed across 4 years.
+
+---
+
+For Context: Debt-to-Income Benchmark
+
+Financial industry sources generally cite annual student loan repayment under 10% of income as a manageable threshold. This figure is provided for reference only.
+
+---
+
+Possible Employment Opportunities
+
+[Write 2-3 sentences on realistic part-time or campus employment paths for this student, specific to their major if provided. Mention how earning while in school reduces borrowing and builds professional experience.]
+
+---
+
+Additional Resources to Explore
+
+For scholarship opportunities that may apply to your profile, visit:
+https://the.ismaili/us/en/resources/scholarships
+
+---
+
+Key Considerations
+
+[Write 3-5 concise, actionable key considerations for this student's specific financial picture. Reference the debt-to-income benchmark. Be honest about risks, remain supportive. Plain language for an 18-22 year old.]
+
+---
+This document is for informational purposes only.`;
 }
 
 // ── Helpers ──────────────────────────────────────

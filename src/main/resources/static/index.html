@@ -2,20 +2,20 @@
 <html lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Financial Advisor</title>
+    <title>Astra AI Advisor</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/ui-lightness/jquery-ui.css">
     <style>
         :root {
-            --primary:   #1a73e8;
-            --primary-dk:#1558b0;
-            --accent:    #00897b;
-            --bg:        #f5f7fa;
+            --primary:   #1c2b4a;
+            --primary-dk:#111d33;
+            --accent:    #b8960c;
+            --bg:        #f4f2ee;
             --card:      #ffffff;
-            --text:      #2d3748;
-            --muted:     #718096;
-            --border:    #e2e8f0;
+            --text:      #1a1a2e;
+            --muted:     #6b7280;
+            --border:    #ddd8ce;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -28,24 +28,28 @@
 
         /* ── Header ── */
         header {
-            background: linear-gradient(135deg, #1558b0 0%, #1a73e8 60%, #0097a7 100%);
+            background: #1c2b4a;
             color: white;
             padding: 20px 32px;
             display: flex;
             align-items: center;
             gap: 14px;
-            box-shadow: 0 2px 8px rgba(21,88,176,0.2);
+            box-shadow: 0 2px 10px rgba(17,29,51,0.35);
+            border-bottom: 2px solid #b8960c;
         }
-        header h1  { font-size: 20px; font-weight: 700; }
-        header p   { font-size: 13px; opacity: .82; margin-top: 2px; }
+        header h1  { font-size: 20px; font-weight: 700; letter-spacing: 0.02em; }
+        header p   { font-size: 12px; opacity: .72; margin-top: 3px; letter-spacing: 0.04em; text-transform: uppercase; }
         .hdr-badge {
             margin-left: auto;
-            background: rgba(255,255,255,.15);
-            border: 1px solid rgba(255,255,255,.3);
-            border-radius: 20px;
+            background: rgba(184,150,12,.18);
+            border: 1px solid rgba(184,150,12,.5);
+            border-radius: 4px;
             padding: 4px 14px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #e8c84a;
         }
 
         /* ── Container ── */
@@ -102,8 +106,8 @@
         #results .roi-card {
             margin-top: 12px;
             padding: 14px 16px;
-            background: #f0f7ff;
-            border: 1px solid #bfdbfe;
+            background: #eef1f8;
+            border: 1px solid #b8c4d8;
             border-radius: 8px;
         }
         #results .roi-card h3 {
@@ -152,8 +156,8 @@
         #majorEarningsCard {
             margin-top: 12px;
             padding: 14px 16px;
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
+            background: #eef1f8;
+            border: 1px solid #b8c4d8;
             border-radius: 8px;
             display: none;
         }
@@ -227,8 +231,8 @@
 
         /* ── AI section ── */
         #aiSection {
-            background: #f0f7ff;
-            border: 1px solid #bfdbfe;
+            background: #eef1f8;
+            border: 1px solid #b8c4d8;
             border-radius: 10px;
             padding: 24px;
         }
@@ -247,7 +251,7 @@
 
         .groq-tag {
             display: inline-block;
-            background: #dbeafe;
+            background: #d6dce8;
             color: var(--primary-dk);
             font-size: 11px;
             font-weight: 700;
@@ -345,7 +349,7 @@
         .gap-row:last-child { border-bottom: none; }
         .gap-label { color: var(--muted); }
         .gap-value { font-weight: 600; color: var(--text); }
-        .gap-cost-row { background: #f8faff; border-radius: 6px; padding: 10px 12px !important; margin-bottom: 4px; }
+        .gap-cost-row { background: #f2f4f8; border-radius: 6px; padding: 10px 12px !important; margin-bottom: 4px; }
         .gap-cost-row .gap-label { color: var(--primary-dk); font-weight: 700; font-size: 13px; }
         .gap-cost-row .gap-value { color: var(--primary-dk); font-size: 15px; }
         .gap-total-row {
@@ -368,7 +372,7 @@
             line-height: 1.55;
         }
         .gap-alert.alert-red  { background: #fff5f5; border: 1px solid #fed7d7; color: #c53030; }
-        .gap-alert.alert-green{ background: #f0fdf4; border: 1px solid #bbf7d0; color: #276749; }
+        .gap-alert.alert-green{ background: #eef1f8; border: 1px solid #b8c4d8; color: #1c2b4a; }
         .gap-placeholder { font-size: 13px; color: var(--muted); text-align: center; padding: 14px 0; }
 
         /* override jQuery UI autocomplete to match theme */
@@ -379,7 +383,7 @@
             font-size: 14px !important;
         }
         .ui-menu-item-wrapper.ui-state-active {
-            background: #dbeafe !important;
+            background: #d6dce8 !important;
             color: var(--primary-dk) !important;
             border: none !important;
         }
@@ -389,17 +393,17 @@
 
 <header>
     <div>
-        <h1>🎓 Student Financial Advisor</h1>
-        <p>Financial literacy guidance for undergraduates &amp; education counselors</p>
+        <h1>Astra AI Advisor</h1>
+        <p>Undergraduate Financial Planning</p>
     </div>
-    <span class="hdr-badge">College Scorecard + Groq AI</span>
+    <span class="hdr-badge">College Scorecard &middot; Groq AI</span>
 </header>
 
 <div class="container">
 
     <!-- ── College Search ── -->
     <div class="card">
-        <h2>🏫 Search College</h2>
+        <h2>Search College</h2>
         <div class="field-group">
             <label>College or University</label>
             <input type="text" id="collegeSearch" placeholder="Type 2+ characters (e.g. Michigan, Howard, NYU)…">
@@ -435,7 +439,7 @@
 
     <!-- ── Major / Program Earnings ── -->
     <div class="card" id="majorSection">
-        <h2>📚 Earnings by Major</h2>
+        <h2>Earnings by Major</h2>
         <div class="field-group" style="margin-bottom:0">
             <label>Select a Major</label>
             <select id="majorSelect">
@@ -459,7 +463,7 @@
 
     <!-- ── FAFSA Package ── -->
     <div class="card">
-        <h2>📋 FAFSA Aid Package — One Academic Year</h2>
+        <h2>FAFSA Aid Package — One Academic Year</h2>
         <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Enter amounts from your Student Aid Report (SAR) or financial aid offer letter.</p>
 
         <div class="field-group">
@@ -494,18 +498,18 @@
 
     <!-- ── Financial Gap Analysis ── -->
     <div class="card" id="gapAnalysisCard">
-        <h2>📊 Financial Gap Analysis</h2>
+        <h2>Financial Gap Analysis</h2>
         <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">
             Auto-calculated as you enter aid amounts — shows exactly how much of your cost is covered and what remains.
         </p>
         <div id="gapAnalysisContent">
-            <p class="gap-placeholder">🏫 Search and select a college above to activate gap analysis.</p>
+            <p class="gap-placeholder">Search and select a college above to activate gap analysis.</p>
         </div>
     </div>
 
     <!-- ── Student Profile ── -->
     <div class="card">
-        <h2>👤 Student Profile</h2>
+        <h2>Student Profile</h2>
         <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Help us personalize your financial advice and surface targeted scholarships.</p>
 
         <div class="field-group" style="display:flex;gap:14px;flex-wrap:wrap;">
@@ -560,16 +564,16 @@
     <!-- ── AI Advisor ── -->
     <div id="aiSection">
         <h2>
-            🤖 AI Financial Advisor
+            AI Financial Summary
             <span class="groq-tag">Groq · llama-3.3-70b</span>
         </h2>
         <p class="desc">
-            Enter your aid package above, select a college, then click below for personalized guidance on responsible borrowing.
+            Enter your aid package above, select a college, then click below for personalized summary.
         </p>
 
-        <button id="aiButton" class="btn-ai">Get AI Financial Advice</button>
+        <button id="aiButton" class="btn-ai">AI Summary</button>
 
-        <div id="aiSpinner">⏳ Analyzing your financial package…</div>
+        <div id="aiSpinner">Analyzing your financial package…</div>
         <div id="aiAdviceBox" style="display:none;"></div>
     </div>
 
@@ -815,7 +819,8 @@
             livingSituation:      $("#livingSelect").val(),
             // College earnings data
             netPrice:             selectedCollege.netPrice,
-            sixYrEarnings:        effectiveEarnings
+            sixYrEarnings:        effectiveEarnings,
+            collegeWideEarnings:  selectedCollege.sixYrEarnings || null
         };
 
         function renderMarkdown(text) {
@@ -841,13 +846,14 @@
             data: JSON.stringify(payload),
             success: function(resp) {
                 $("#aiSpinner").hide();
-                $("#aiAdviceBox").html(renderMarkdown(resp.advice || "No advice returned.")).show();
+                // Response is HTML — inject directly without markdown escaping
+                $("#aiAdviceBox").html(resp.advice || "No advice returned.").show();
                 $("#aiButton").prop("disabled", false);
             },
             error: function(xhr) {
                 $("#aiSpinner").hide();
                 const msg = xhr.responseJSON?.error || "Something went wrong. Please try again.";
-                $("#aiAdviceBox").html("⚠️ " + msg).show();
+                $("#aiAdviceBox").html("Error: " + msg).show();
                 $("#aiButton").prop("disabled", false);
             }
         });
@@ -867,7 +873,7 @@
         const totalCost = computeCOA();
 
         if (!selectedCollege.name || !totalCost) {
-            $("#gapAnalysisContent").html('<p class="gap-placeholder">🏫 Search and select a college above to activate gap analysis.</p>');
+            $("#gapAnalysisContent").html('<p class="gap-placeholder">Search and select a college above to activate gap analysis.</p>');
             return;
         }
 
@@ -891,24 +897,24 @@
         const sub = (n, color) => n > 0 ? `<span class="gap-value" style="color:${color}">−${d(n)}</span>` : `<span class="gap-value" style="color:var(--muted)">—</span>`;
 
         const unmetClass = unmetNeed > 0 ? 'gap-unmet' : 'gap-met';
-        const unmetIcon  = unmetNeed > 0 ? '⚠️' : '✅';
+        const unmetIcon  = unmetNeed > 0 ? 'Unmet Need' : 'Fully Covered';
 
         // ── 3 Key Numbers ──
         const keyNumbers = `
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px;">
                 <div style="background:#f0f4ff;border:1.5px solid #c7d7f8;border-radius:8px;padding:12px;text-align:center;">
-                    <div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">💰 Total COA</div>
+                    <div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total COA</div>
                     <div style="font-size:18px;font-weight:800;color:var(--primary-dk)">${d(totalCost)}</div>
                     <div style="font-size:10px;color:var(--muted);margin-top:2px;">per year</div>
                 </div>
-                <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:8px;padding:12px;text-align:center;">
-                    <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">🏷️ Net Price</div>
-                    <div style="font-size:18px;font-weight:800;color:#276749">${d(netPrice)}</div>
+                <div style="background:#eef1f8;border:1.5px solid #b8c4d8;border-radius:8px;padding:12px;text-align:center;">
+                    <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Net Price</div>
+                    <div style="font-size:18px;font-weight:800;color:#1c2b4a">${d(netPrice)}</div>
                     <div style="font-size:10px;color:var(--muted);margin-top:2px;">after free aid</div>
                 </div>
-                <div style="background:${unmetNeed > 0 ? '#fff5f5' : '#f0fdf4'};border:1.5px solid ${unmetNeed > 0 ? '#fed7d7' : '#bbf7d0'};border-radius:8px;padding:12px;text-align:center;">
+                <div style="background:${unmetNeed > 0 ? '#fff5f5' : '#eef1f8'};border:1.5px solid ${unmetNeed > 0 ? '#fed7d7' : '#b8c4d8'};border-radius:8px;padding:12px;text-align:center;">
                     <div style="font-size:11px;font-weight:700;color:${unmetNeed > 0 ? '#c53030' : 'var(--accent)'};text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">${unmetIcon} Unmet Need</div>
-                    <div style="font-size:18px;font-weight:800;color:${unmetNeed > 0 ? '#c53030' : '#276749'}">${d(unmetNeed)}</div>
+                    <div style="font-size:18px;font-weight:800;color:${unmetNeed > 0 ? '#c53030' : '#1c2b4a'}">${d(unmetNeed)}</div>
                     <div style="font-size:10px;color:var(--muted);margin-top:2px;">true gap remaining</div>
                 </div>
             </div>
@@ -942,7 +948,7 @@
 
             <div class="gap-row" style="border-top:1px solid var(--border);margin-top:6px;padding-top:8px;font-weight:600;">
                 <span class="gap-label">= Net Price (What You Pay)</span>
-                <span class="gap-value" style="color:#276749;font-size:14px;">${d(netPrice)}</span>
+                <span class="gap-value" style="color:#1c2b4a;font-size:14px;">${d(netPrice)}</span>
             </div>
 
             <div style="margin:10px 0 4px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Financing Sources (Reduce Unmet Need)</div>
@@ -975,7 +981,7 @@
                     Look for additional scholarships or meet with your financial aid office before taking on more debt.
                    </div>`
                 : `<div class="gap-alert alert-green">
-                    ✅ Your aid package fully covers the cost of attendance — great position to be in!
+                    Your aid package fully covers the cost of attendance — strong financial position.
                     Any unused loan eligibility you decline now means less debt at graduation.
                    </div>`
             }
