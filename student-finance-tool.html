@@ -841,9 +841,12 @@ async function generateRoadmap() {
     if (!m) throw new Error("AI returned an unexpected format. Please try again.");
     renderDAG(JSON.parse(m[0]), profile, collegeName);
   } catch(e) {
+    const hint = (e.message === "Failed to fetch")
+      ? "Cannot reach the server — make sure the Spring Boot app is running and GROQ_API_KEY is set."
+      : escHtml(e.message);
     content.innerHTML = `<div style="text-align:center;padding:36px;color:var(--danger)">
       <div style="font-weight:700;font-size:15px;margin-bottom:8px">Could not generate RoadMap</div>
-      <div style="font-size:13px;color:var(--muted)">${escHtml(e.message)}</div>
+      <div style="font-size:13px;color:var(--muted)">${hint}</div>
     </div>`;
   } finally {
     btn.disabled = false;

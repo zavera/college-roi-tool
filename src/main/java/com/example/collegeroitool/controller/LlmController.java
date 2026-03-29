@@ -23,8 +23,9 @@ public class LlmController {
             String advice = groqService.getFinancialAdvice(request);
             return ResponseEntity.ok(Map.of("advice", advice));
         } catch (Exception e) {
+            String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
             return ResponseEntity.internalServerError()
-                    .body(Map.of("error", "Could not fetch advice: " + e.getMessage()));
+                    .body(Map.of("error", "Could not fetch advice: " + msg));
         }
     }
 
@@ -40,8 +41,9 @@ public class LlmController {
             String content = groqService.getCompletion(prompt);
             return ResponseEntity.ok(Map.of("content", content));
         } catch (Exception e) {
+            String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
             return ResponseEntity.internalServerError()
-                    .body(Map.of("error", e.getMessage()));
+                    .body(Map.of("error", msg));
         }
     }
 }
