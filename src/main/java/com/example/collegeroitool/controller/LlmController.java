@@ -27,4 +27,21 @@ public class LlmController {
                     .body(Map.of("error", "Could not fetch advice: " + e.getMessage()));
         }
     }
+
+    /** Generic chat endpoint — accepts {"prompt":"..."} and returns {"content":"..."}.
+     *  Used by the College RoadMap feature to call Groq server-side. */
+    @PostMapping("/chat")
+    public ResponseEntity<Map<String, String>> chat(@RequestBody Map<String, String> body) {
+        try {
+            String prompt = body.get("prompt");
+            if (prompt == null || prompt.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "prompt is required"));
+            }
+            String content = groqService.getCompletion(prompt);
+            return ResponseEntity.ok(Map.of("content", content));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
 }

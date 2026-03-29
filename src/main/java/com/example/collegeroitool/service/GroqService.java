@@ -22,6 +22,31 @@ public class GroqService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
+    /** Generic single-prompt completion — used by the RoadMap and any ad-hoc front-end call. */
+    public String getCompletion(String prompt) {
+        Map<String, Object> message = new HashMap<>();
+        message.put("role", "user");
+        message.put("content", prompt);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("model", model);
+        body.put("messages", List.of(message));
+        body.put("max_tokens", 1400);
+        body.put("temperature", 0.45);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(apiKey);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+        ResponseEntity<Map> response = restTemplate.postForEntity(apiUrl, entity, Map.class);
+
+        List<Map<String, Object>> choices = (List<Map<String, Object>>) response.getBody().get("choices");
+        Map<String, Object> firstChoice = choices.get(0);
+        Map<String, Object> messageResp = (Map<String, Object>) firstChoice.get("message");
+        return (String) messageResp.get("content");
+    }
+
     public String getFinancialAdvice(LlmAdviceRequest req) {
         String prompt = buildPrompt(req);
 

@@ -3,12 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Student Finance Tool — Financial Literacy & Money Transfer Simulator</title>
+<title>Δ Astra AI Counseling</title>
 <style>
   :root {
     --primary: #2d7a2d;
     --primary-dark: #1e5c1e;
-    --accent: #2d7a2d;
     --danger: #e74c3c;
     --success: #27ae60;
     --warning: #f39c12;
@@ -26,20 +25,48 @@
   /* ── Header ── */
   header {
     background: #1e5c1e;
-    color: white; padding: 20px 32px;
+    color: white; padding: 16px 32px;
     display: flex; align-items: center; gap: 16px;
-    box-shadow: 0 2px 12px rgba(30,92,30,0.3);
+    box-shadow: 0 2px 12px rgba(30,92,30,0.35);
   }
-  header .logo { font-size: 28px; }
-  header h1 { font-size: 20px; font-weight: 700; }
-  header p  { font-size: 13px; opacity: 0.85; }
+  .delta-logo {
+    font-size: 32px; font-weight: 900;
+    width: 52px; height: 52px; border-radius: 10px;
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.35);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; letter-spacing: -1px; color: white;
+  }
+  header h1 { font-size: 21px; font-weight: 800; letter-spacing: -.3px; }
+  header p  { font-size: 13px; opacity: .82; margin-top: 2px; }
   .badge {
     margin-left: auto;
-    background: rgba(255,255,255,0.18);
-    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.16);
+    border: 1px solid rgba(255,255,255,0.28);
     border-radius: 20px; padding: 4px 14px;
-    font-size: 12px; font-weight: 600;
+    font-size: 12px; font-weight: 600; white-space: nowrap;
   }
+
+  /* ── Main Nav ── */
+  .main-nav {
+    background: white; border-bottom: 2px solid var(--border);
+    display: flex; padding: 0 28px; gap: 2px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    overflow-x: auto;
+  }
+  .main-tab {
+    padding: 14px 22px; font-size: 14px; font-weight: 600;
+    border: none; background: none; cursor: pointer;
+    color: var(--muted); border-bottom: 3px solid transparent;
+    transition: all .18s; display: flex; align-items: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .main-tab:hover { color: var(--primary); background: #f5fff5; }
+  .main-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+  /* ── Tab panes ── */
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
 
   /* ── Layout ── */
   .main { max-width: 1100px; margin: 0 auto; padding: 28px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -49,37 +76,84 @@
   /* ── Card ── */
   .card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); padding: 22px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
   .card-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
-  .card-title span { font-size: 18px; }
+  .card-title .icon { font-size: 18px; }
+
+  /* ── Form elements ── */
+  .field { margin-bottom: 14px; }
+  .field:last-of-type { margin-bottom: 0; }
+  label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .5px; }
+  input, select, textarea {
+    width: 100%; padding: 10px 12px; font-size: 14px;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    background: #fafbfc; color: var(--text); transition: border-color .2s; font-family: inherit;
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); background: white; }
+  textarea { resize: vertical; min-height: 90px; }
+
+  /* ── File Upload ── */
+  .file-upload-area {
+    border: 2px dashed var(--border); border-radius: 8px;
+    padding: 22px; text-align: center; background: #fafbfc;
+    cursor: pointer; transition: all .2s;
+  }
+  .file-upload-area:hover { border-color: var(--primary); background: #f0faf0; }
+  .file-upload-area input[type="file"] { display: none; }
+  .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-text { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .upload-text strong { color: var(--primary); }
+  .file-attached {
+    display: flex; align-items: center; gap: 10px;
+    background: #f0faf0; border: 1px solid #a8d5a8;
+    border-radius: 8px; padding: 10px 14px; margin-top: 8px; font-size: 13px;
+  }
+
+  /* ── Buttons ── */
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 11px 22px; font-size: 14px; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; transition: background .18s, transform .1s; }
+  .btn:active { transform: scale(.98); }
+  .btn-primary { background: var(--primary); color: white; width: 100%; justify-content: center; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-primary:disabled { background: #bbb; cursor: not-allowed; }
+  .btn-ai { background: #1e5c1e; color: white; width: 100%; justify-content: center; font-size: 15px; padding: 13px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; transition: filter .18s; }
+  .btn-ai:hover { filter: brightness(1.12); }
+  .btn-ai:disabled { background: #bbb; cursor: not-allowed; filter: none; }
+  .btn-sm { padding: 6px 14px; font-size: 12px; border-radius: 6px; background: var(--bg); color: var(--muted); border: 1px solid var(--border); cursor: pointer; }
+  .btn-sm:hover { background: var(--border); }
+  .btn-outline { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s; }
+  .btn-outline:hover { background: #f0faf0; }
+  .btn-danger { background: var(--danger); color: white; padding: 6px 12px; font-size: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; }
+
+  /* ── Profile Form Grid ── */
+  .profile-form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+  @media(max-width:760px){ .profile-form-grid { grid-template-columns: 1fr; } }
+
+  /* ── Profile Cards ── */
+  .profiles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .profile-card { background: white; border: 1.5px solid var(--border); border-radius: 10px; padding: 16px; transition: box-shadow .2s, border-color .2s; }
+  .profile-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.1); border-color: var(--primary); }
+  .pc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .pc-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg,#2d7a2d,#4aa34a); display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; font-weight: 800; flex-shrink: 0; }
+  .pc-name { font-size: 15px; font-weight: 700; }
+  .pc-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .pc-stats { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .pc-stat { background: var(--bg); border-radius: 6px; padding: 6px 10px; text-align: center; min-width: 60px; }
+  .pc-stat .v { font-size: 14px; font-weight: 800; color: var(--primary); }
+  .pc-stat .l { font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: 600; margin-top: 1px; }
+  .pc-struggles { font-size: 12px; color: var(--muted); background: #fafbfc; border-radius: 6px; padding: 8px 10px; border: 1px solid var(--border); max-height: 55px; overflow-y: auto; line-height: 1.5; margin-bottom: 8px; }
+  .pc-attachment { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--primary); font-weight: 600; margin-bottom: 10px; }
+  .pc-actions { display: flex; gap: 8px; }
 
   /* ── College Scorecard Search ── */
   .search-wrap { position: relative; }
   .search-wrap input { padding-right: 40px; }
-  .search-spinner {
-    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-    width: 16px; height: 16px; border: 2px solid var(--border);
-    border-top-color: var(--primary); border-radius: 50%;
-    animation: spin .7s linear infinite; display: none;
-  }
+  .search-spinner { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .7s linear infinite; display: none; }
   @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
-
-  .suggestions {
-    position: absolute; top: 100%; left: 0; right: 0; z-index: 50;
-    background: white; border: 1.5px solid var(--primary); border-top: none;
-    border-radius: 0 0 8px 8px; max-height: 220px; overflow-y: auto;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: none;
-  }
-  .suggestions li {
-    padding: 10px 14px; font-size: 14px; cursor: pointer; list-style: none;
-    border-bottom: 1px solid var(--border); transition: background .1s;
-  }
+  .suggestions { position: absolute; top: 100%; left: 0; right: 0; z-index: 100; background: white; border: 1.5px solid var(--primary); border-top: none; border-radius: 0 0 8px 8px; max-height: 220px; overflow-y: auto; box-shadow: 0 6px 16px rgba(0,0,0,0.12); display: none; }
+  .suggestions li { padding: 10px 14px; font-size: 14px; cursor: pointer; list-style: none; border-bottom: 1px solid var(--border); transition: background .1s; }
   .suggestions li:last-child { border-bottom: none; }
-  .suggestions li:hover, .suggestions li.active { background: #f0eaff; color: var(--primary); font-weight: 600; }
+  .suggestions li:hover, .suggestions li.active { background: #f0faf0; color: var(--primary); font-weight: 600; }
 
   /* ── ROI Panel ── */
-  .roi-panel {
-    margin-top: 14px; padding: 16px; background: #f0faf0;
-    border-radius: 10px; border: 1px solid #a8d5a8; display: none;
-  }
+  .roi-panel { margin-top: 14px; padding: 16px; background: #f0faf0; border-radius: 10px; border: 1px solid #a8d5a8; display: none; }
   .roi-panel h3 { font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
   .roi-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
   .roi-stat { background: white; border-radius: 8px; padding: 11px 14px; text-align: center; border: 1px solid var(--border); }
@@ -88,13 +162,11 @@
   .roi-stat .val.blue  { color: var(--primary); }
   .roi-stat .val.warn  { color: var(--warning); }
   .roi-stat .lbl { font-size: 11px; color: var(--muted); margin-top: 3px; font-weight: 600; text-transform: uppercase; }
+  .scorecard-note { font-size: 11px; color: var(--muted); margin-top: 6px; font-style: italic; }
 
   /* ── Account pills ── */
   .accounts { display: flex; gap: 12px; flex-wrap: wrap; }
-  .account-pill {
-    flex: 1; min-width: 160px; border-radius: 10px; padding: 14px 16px;
-    color: white; border: 3px solid transparent; transition: transform .15s, border-color .15s;
-  }
+  .account-pill { flex: 1; min-width: 160px; border-radius: 10px; padding: 14px 16px; color: white; }
   .account-pill.checking { background: linear-gradient(135deg,#2d7a2d,#4aa34a); }
   .account-pill.savings  { background: linear-gradient(135deg,#1e5c1e,#2d7a2d); }
   .account-pill.loan     { background: linear-gradient(135deg,#e74c3c,#c0392b); }
@@ -102,34 +174,10 @@
   .account-pill .acc-bal  { font-size: 22px; font-weight: 800; }
   .account-pill .acc-sub  { font-size: 11px; opacity: .75; margin-top: 4px; }
 
-  /* ── Form ── */
-  .field { margin-bottom: 14px; }
-  label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .4px; }
-  input, select, textarea {
-    width: 100%; padding: 10px 12px; font-size: 14px;
-    border: 1.5px solid var(--border); border-radius: 8px;
-    background: #fafbfc; color: var(--text); transition: border-color .2s; font-family: inherit;
-  }
-  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); background: white; }
-  textarea { resize: vertical; min-height: 70px; }
-
-  /* ── Buttons ── */
-  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 11px 22px; font-size: 14px; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; transition: background .2s, transform .1s; }
-  .btn:active { transform: scale(.98); }
-  .btn-primary { background: var(--primary); color: white; width: 100%; justify-content: center; }
-  .btn-primary:hover { background: var(--primary-dark); }
-  .btn-primary:disabled { background: #bbb; cursor: not-allowed; }
-  .btn-ai { background: #2d7a2d; color: white; width: 100%; justify-content: center; font-size: 15px; padding: 13px; }
-  .btn-ai:hover { filter: brightness(1.07); }
-  .btn-ai:disabled { background: #bbb; cursor: not-allowed; filter: none; }
-  .btn-sm { padding: 6px 14px; font-size: 12px; border-radius: 6px; background: var(--bg); color: var(--muted); border: 1px solid var(--border); cursor: pointer; }
-  .btn-sm:hover { background: var(--border); }
-
-  /* ── Tabs ── */
+  /* ── Transfer sub-tabs ── */
   .tabs { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
   .tab { padding: 7px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: var(--bg); color: var(--muted); transition: all .15s; }
   .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
-
 
   /* ── Loan calc ── */
   .loan-summary { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 14px; }
@@ -137,9 +185,9 @@
   .loan-stat .val { font-size: 18px; font-weight: 800; color: var(--primary); }
   .loan-stat .lbl { font-size: 11px; color: var(--muted); margin-top: 3px; font-weight: 600; text-transform: uppercase; }
 
-  /* ── AI Section ── */
+  /* ── AI advisor ── */
   .ai-box { background: #f0faf0; border: 1.5px solid #a8d5a8; border-radius: var(--radius); padding: 20px; }
-  .ai-response { margin-top: 14px; background: white; border-radius: 8px; padding: 16px; font-size: 14px; line-height: 1.75; color: var(--text); border: 1px solid #a8d5a8; min-height: 60px; white-space: pre-wrap; display: none; }
+  .ai-response { margin-top: 14px; background: white; border-radius: 8px; padding: 16px; font-size: 14px; line-height: 1.8; color: var(--text); border: 1px solid #a8d5a8; min-height: 60px; white-space: pre-wrap; display: none; }
   .ai-response.visible { display: block; }
   .ai-thinking { display: none; align-items: center; gap: 10px; color: var(--primary); font-style: italic; font-size: 14px; padding: 12px 0; }
   .ai-thinking.visible { display: flex; }
@@ -147,186 +195,277 @@
   .dots span:nth-child(2) { animation-delay: .2s; }
   .dots span:nth-child(3) { animation-delay: .4s; }
   @keyframes blink { 0%,80%,100%{opacity:0} 40%{opacity:1} }
+  .ai-avatar { width: 36px; height: 36px; border-radius: 50%; background: #2d7a2d; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: white; flex-shrink: 0; }
+
+  /* ── RoadMap tab ── */
+  .rm-select-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 16px; }
+  @media(max-width:760px){ .rm-select-grid { grid-template-columns: 1fr; } }
+
+  /* ── DAG visualization ── */
+  .dag-stage-label { text-align: center; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); margin-bottom: 10px; }
+  .dag-nodes { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+  .dag-node {
+    flex: 1; min-width: 180px; max-width: 300px;
+    border-radius: 10px; padding: 14px 16px 14px 16px;
+    border: 2px solid var(--border); background: white;
+    position: relative; cursor: pointer; transition: transform .18s, box-shadow .18s;
+  }
+  .dag-node:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+  .dag-node.completed  { border-color: #16a34a; background: #f0fff4; }
+  .dag-node.in_progress{ border-color: #ca8a04; background: #fffbf0; }
+  .dag-node.pending    { border-color: var(--border); background: #fafbfc; }
+  .dag-node-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px;
+    padding: 2px 8px; border-radius: 20px; margin-bottom: 8px;
+  }
+  .dag-node.completed  .dag-node-badge { background: #dcfce7; color: #16a34a; }
+  .dag-node.in_progress .dag-node-badge { background: #fef9c3; color: #ca8a04; }
+  .dag-node.pending    .dag-node-badge { background: #f1f5f9; color: #64748b; }
+  .dag-node-label  { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+  .dag-node-detail { font-size: 12px; color: var(--muted); line-height: 1.5; display: none; margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--border); }
+  .dag-node-detail.open { display: block; }
+  .dag-priority-dot { position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; border-radius: 50%; }
+  .dag-priority-dot.high   { background: var(--danger); }
+  .dag-priority-dot.medium { background: var(--warning); }
+  .dag-priority-dot.low    { background: #94a3b8; }
+  .dag-arrow { text-align: center; padding: 8px 0; color: #94a3b8; font-size: 22px; }
 
   /* ── Toast ── */
-  #toast { position: fixed; bottom: 28px; right: 28px; background: #2c3e50; color: white; padding: 12px 22px; border-radius: 8px; font-size: 14px; font-weight: 600; opacity: 0; transform: translateY(10px); transition: all .3s; pointer-events: none; z-index: 999; max-width: 320px; }
+  #toast { position: fixed; bottom: 28px; right: 28px; background: #2c3e50; color: white; padding: 12px 22px; border-radius: 8px; font-size: 14px; font-weight: 600; opacity: 0; transform: translateY(10px); transition: all .3s; pointer-events: none; z-index: 9999; max-width: 340px; }
   #toast.show { opacity: 1; transform: translateY(0); }
   #toast.success { background: var(--success); }
   #toast.error   { background: var(--danger); }
 
-  .ai-avatar { width: 38px; height: 38px; border-radius: 50%; background: #2d7a2d; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: white; flex-shrink: 0; }
-
-  .scorecard-note { font-size: 11px; color: var(--muted); margin-top: 6px; font-style: italic; }
+  /* ── Empty state ── */
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+  .empty-state .ei { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
 </style>
 </head>
 <body>
 
+<!-- ══════════════════════════════
+     HEADER
+══════════════════════════════ -->
 <header>
-  <div class="logo"></div>
+  <div class="delta-logo">Δ</div>
   <div>
-    <h1>Student Finance Tool</h1>
-    <p>AKEB – Aga Khan Education Board</p>
+    <h1>Δ Astra AI Counseling</h1>
+    <p>College Readiness &amp; Financial Planning Platform</p>
   </div>
-  <span class="badge">🔒 Testing Mode — No data saved</span>
+  <span class="badge">🔒 Demo Mode — Test Data</span>
 </header>
 
-<div class="main">
+<!-- ══════════════════════════════
+     MAIN NAV TABS
+══════════════════════════════ -->
+<nav class="main-nav">
+  <button class="main-tab active" onclick="switchTab('profile')" id="nav-profile">👤 Profile</button>
+  <button class="main-tab" onclick="switchTab('cost')" id="nav-cost">💰 Cost of Attendance</button>
+  <button class="main-tab" onclick="switchTab('roadmap')" id="nav-roadmap">🗺️ College RoadMap</button>
+</nav>
 
-  <!-- ══════════════════════════════════════════
-       COLLEGE SCORECARD SEARCH
-  ══════════════════════════════════════════ -->
-  <div class="card full">
-    <div class="card-title"><span>🏫</span> College Scorecard Search <small style="font-size:11px;font-weight:400;color:var(--muted);margin-left:4px">— U.S. Dept. of Education live data</small></div>
 
-    <div class="field" style="margin-bottom:0">
-      <label>Search College / University</label>
-      <div class="search-wrap">
-        <input type="text" id="collegeInput" placeholder="Type at least 2 characters (e.g. Michigan, Stanford, Howard)..." autocomplete="off">
-        <div class="search-spinner" id="searchSpinner"></div>
-        <ul class="suggestions" id="suggestions"></ul>
-      </div>
-      <div class="scorecard-note">Powered by the U.S. College Scorecard API · data.gov</div>
-    </div>
+<!-- ══════════════════════════════════════════════════════
+     TAB: PROFILE
+══════════════════════════════════════════════════════ -->
+<div id="tab-profile" class="tab-pane active">
+  <div class="main">
 
-    <!-- ROI Result Panel -->
-    <div class="roi-panel" id="roiPanel">
-      <h3 id="roiCollegeName"></h3>
-      <div class="roi-grid">
-        <div class="roi-stat">
-          <div class="val blue" id="roiNetPrice">—</div>
-          <div class="lbl">Net Price / Year</div>
+    <!-- Add Student -->
+    <div class="card full">
+      <div class="card-title"><span class="icon">➕</span> Add Student Profile</div>
+
+      <div class="profile-form-grid">
+        <div class="field" style="margin:0"><label>Student Name</label><input type="text" id="pName" placeholder="e.g. Aisha Rahman"></div>
+        <div class="field" style="margin:0">
+          <label>Grade Level</label>
+          <select id="pGrade">
+            <option value="">Select grade…</option>
+            <option value="9">Grade 9 (Freshman)</option>
+            <option value="10">Grade 10 (Sophomore)</option>
+            <option value="11">Grade 11 (Junior)</option>
+            <option value="12">Grade 12 (Senior)</option>
+          </select>
         </div>
-        <div class="roi-stat">
-          <div class="val green" id="roiEarnings">—</div>
-          <div class="lbl">Median Earnings (6 yrs)</div>
+        <div class="field" style="margin:0"><label>GPA (Unweighted, 0–4.0)</label><input type="number" id="pGpa" placeholder="e.g. 3.8" min="0" max="4.0" step="0.01"></div>
+        <div class="field" style="margin:0"><label>SAT Score (optional)</label><input type="number" id="pSat" placeholder="e.g. 1200" min="400" max="1600"></div>
+        <div class="field" style="margin:0"><label>ACT Score (optional)</label><input type="number" id="pAct" placeholder="e.g. 26" min="1" max="36"></div>
+        <div class="field" style="margin:0"><label>Graduation Year</label><input type="number" id="pGradYear" placeholder="e.g. 2026" min="2025" max="2032"></div>
+      </div>
+
+      <div class="field">
+        <label>High School Transcript</label>
+        <div class="file-upload-area" id="uploadArea" onclick="document.getElementById('transcriptFile').click()">
+          <input type="file" id="transcriptFile" accept=".pdf,.doc,.docx,.jpg,.png" onchange="handleFileUpload(this)">
+          <div class="upload-icon">📄</div>
+          <div class="upload-text"><strong>Click to upload</strong> or drag &amp; drop<br>PDF, DOC, DOCX, JPG, PNG supported</div>
         </div>
-        <div class="roi-stat">
-          <div class="val" id="roiValue">—</div>
-          <div class="lbl">Est. ROI Index</div>
+        <div id="fileAttached" class="file-attached" style="display:none">
+          <span>📎</span>
+          <span id="fileName" style="font-weight:700;color:var(--primary)"></span>
+          <button onclick="removeFile()" style="margin-left:auto;background:none;border:none;color:var(--danger);cursor:pointer;font-size:13px;font-weight:700">✕ Remove</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Current Struggles &amp; Context</label>
+        <textarea id="pStruggles" placeholder="Describe the student's academic challenges, personal circumstances, or any context relevant to college planning. This text will be read by the AI RoadMap to give personalized guidance…" rows="4"></textarea>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px">💡 The more detail you provide, the more tailored the AI RoadMap will be.</div>
+      </div>
+
+      <button class="btn btn-primary" onclick="saveProfile()" style="margin-top:4px">💾 Save Student Profile</button>
+    </div>
+
+    <!-- Saved Profiles -->
+    <div class="card full">
+      <div class="card-title">
+        <span class="icon">📋</span> Saved Student Profiles
+        <span id="profileCount" style="margin-left:auto;font-size:12px;font-weight:400;color:var(--muted)"></span>
+      </div>
+      <div id="profilesGrid" class="profiles-grid"></div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     TAB: COST OF ATTENDANCE
+══════════════════════════════════════════════════════ -->
+<div id="tab-cost" class="tab-pane">
+  <div class="main">
+
+    <!-- College Scorecard Search -->
+    <div class="card full">
+      <div class="card-title"><span class="icon">🏫</span> College Scorecard Search <small style="font-size:11px;font-weight:400;color:var(--muted);margin-left:6px">— U.S. Dept. of Education live data</small></div>
+      <div class="field" style="margin-bottom:0">
+        <label>Search College / University</label>
+        <div class="search-wrap">
+          <input type="text" id="collegeInput" placeholder="Type at least 2 characters (e.g. Michigan, Stanford, Howard)…" autocomplete="off">
+          <div class="search-spinner" id="searchSpinner"></div>
+          <ul class="suggestions" id="suggestions"></ul>
+        </div>
+        <div class="scorecard-note">Powered by the U.S. College Scorecard API · data.gov</div>
+      </div>
+      <div class="roi-panel" id="roiPanel">
+        <h3 id="roiCollegeName"></h3>
+        <div class="roi-grid">
+          <div class="roi-stat"><div class="val blue" id="roiNetPrice">—</div><div class="lbl">Net Price / Year</div></div>
+          <div class="roi-stat"><div class="val green" id="roiEarnings">—</div><div class="lbl">Median Earnings (6 yrs)</div></div>
+          <div class="roi-stat"><div class="val" id="roiValue">—</div><div class="lbl">Est. ROI Index</div></div>
         </div>
       </div>
     </div>
+
+    <!-- Accounts -->
+    <div class="card full">
+      <div class="card-title"><span class="icon">💳</span> Simulated Accounts</div>
+      <div class="accounts" id="accountsContainer"></div>
+    </div>
+
+    <!-- Transfer -->
+    <div class="card">
+      <div class="card-title"><span class="icon">↔️</span> Money Transfer Simulator</div>
+      <div class="tabs" id="tabsContainer">
+        <div class="tab active" data-type="Transfer">Transfer</div>
+        <div class="tab" data-type="Loan Disbursement">Loan In</div>
+        <div class="tab" data-type="Loan Payment">Loan Payment</div>
+        <div class="tab" data-type="Scholarship">Scholarship</div>
+      </div>
+      <div class="field"><label>From Account</label><select id="fromAccount"></select></div>
+      <div class="field"><label>To Account</label><select id="toAccount"></select></div>
+      <div class="field"><label>Amount ($)</label><input type="number" id="transferAmount" placeholder="0.00" min="0.01" step="0.01"></div>
+      <div class="field"><label>Note (optional)</label><input type="text" id="transferNote" placeholder="e.g. Fall semester tuition"></div>
+      <button class="btn btn-primary" id="transferBtn">⚡ Execute Transfer</button>
+    </div>
+
+    <!-- Loan Calculator -->
+    <div class="card">
+      <div class="card-title"><span class="icon">📊</span> Student Loan Planner</div>
+      <div class="field"><label>Total Loan Amount ($)</label><input type="number" id="loanPrincipal" placeholder="e.g. 27000" value="27000"></div>
+      <div class="field"><label>Annual Interest Rate (%)</label><input type="number" id="loanRate" placeholder="e.g. 5.5" value="5.5" step="0.1"></div>
+      <div class="field">
+        <label>Repayment Term (years)</label>
+        <select id="loanTerm">
+          <option value="10" selected>10 years (Standard)</option>
+          <option value="20">20 years (Extended)</option>
+          <option value="25">25 years (Income-driven)</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="calcLoan()">📐 Calculate</button>
+      <div class="loan-summary" id="loanSummary" style="display:none"></div>
+    </div>
+
+    <!-- AI Financial Advisor -->
+    <div class="card full ai-box">
+      <div class="card-title" style="color:var(--primary)">
+        <div class="ai-avatar">AI</div>
+        AI Financial Advisor
+        <small style="font-weight:400;color:var(--muted);font-size:12px;margin-left:6px">— Groq · llama-3.3-70b-versatile</small>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Uses your selected college's real Scorecard data together with your inputs to give personalized, responsible borrowing guidance.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div class="field" style="margin:0"><label>College (auto-filled from search)</label><input type="text" id="aiCollege" placeholder="Select a college above or type here"></div>
+        <div class="field" style="margin:0"><label>Planned Major / Field</label><input type="text" id="aiMajor" placeholder="e.g. Computer Science"></div>
+        <div class="field" style="margin:0"><label>Annual Federal Loan ($)</label><input type="number" id="aiFederalLoan" placeholder="e.g. 5500"></div>
+        <div class="field" style="margin:0"><label>Annual Parent PLUS Loan ($)</label><input type="number" id="aiPlusLoan" placeholder="e.g. 8000"></div>
+        <div class="field" style="margin:0"><label>Grants / Free Aid ($)</label><input type="number" id="aiGrant" placeholder="e.g. 3000"></div>
+        <div class="field" style="margin:0"><label>Scholarships / Gift Aid ($)</label><input type="number" id="aiScholarship" placeholder="e.g. 2000"></div>
+      </div>
+      <div class="field"><label>Your question or situation (optional)</label><textarea id="aiQuestion" placeholder="e.g. I'm a first-gen student. My family wants to take a PLUS loan on top of mine. Is this manageable?"></textarea></div>
+      <button class="btn btn-ai" id="aiBtn" onclick="askAI()">✨ AI Summary</button>
+      <div class="ai-thinking" id="aiThinking">
+        <div class="ai-avatar">AI</div>
+        Analyzing your situation<span class="dots"><span>.</span><span>.</span><span>.</span></span>
+      </div>
+      <div class="ai-response" id="aiResponse"></div>
+    </div>
+
   </div>
+</div>
 
-  <!-- ══════════════════════════════════════════
-       ACCOUNTS
-  ══════════════════════════════════════════ -->
-  <div class="card full">
-    <div class="card-title"><span>💳</span> Simulated Accounts</div>
-    <div class="accounts" id="accountsContainer"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB: COLLEGE ROADMAP
+══════════════════════════════════════════════════════ -->
+<div id="tab-roadmap" class="tab-pane">
+  <div class="main">
+
+    <div class="card full">
+      <div class="card-title">
+        <span class="icon">🗺️</span> College RoadMap Generator
+        <small style="font-size:11px;font-weight:400;color:var(--muted);margin-left:6px">— AI-powered admissions DAG · confidence scored from transcript</small>
+      </div>
+
+      <div class="rm-select-grid">
+        <div class="field" style="margin:0">
+          <label>Select Student Profile</label>
+          <select id="rmProfile" onchange="onRmProfileChange()">
+            <option value="">— Choose a student profile —</option>
+          </select>
+        </div>
+        <div class="field" style="margin:0">
+          <label>Target College (search US colleges)</label>
+          <div class="search-wrap">
+            <input type="text" id="rmCollegeInput" placeholder="Type college name…" autocomplete="off">
+            <div class="search-spinner" id="rmSpinner"></div>
+            <ul class="suggestions" id="rmSuggestions"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div id="rmProfilePreview" style="display:none;margin-bottom:16px"></div>
+
+      <button class="btn btn-ai" id="rmBtn" onclick="generateRoadmap()">🧠 Generate AI RoadMap</button>
+    </div>
+
+    <div id="dagContainer" class="card full" style="display:none">
+      <div id="dagContent"></div>
+    </div>
+
   </div>
-
-  <!-- ══════════════════════════════════════════
-       TRANSFER
-  ══════════════════════════════════════════ -->
-  <div class="card">
-    <div class="card-title"><span>↔️</span> Money Transfer Simulator</div>
-
-    <div class="tabs" id="tabsContainer">
-      <div class="tab active" data-type="Transfer">Transfer</div>
-      <div class="tab" data-type="Loan Disbursement">Loan In</div>
-      <div class="tab" data-type="Loan Payment">Loan Payment</div>
-      <div class="tab" data-type="Scholarship">Scholarship</div>
-    </div>
-
-    <div class="field">
-      <label>From Account</label>
-      <select id="fromAccount"></select>
-    </div>
-    <div class="field">
-      <label>To Account</label>
-      <select id="toAccount"></select>
-    </div>
-    <div class="field">
-      <label>Amount ($)</label>
-      <input type="number" id="transferAmount" placeholder="0.00" min="0.01" step="0.01">
-    </div>
-    <div class="field">
-      <label>Note (optional)</label>
-      <input type="text" id="transferNote" placeholder="e.g. Fall semester tuition">
-    </div>
-    <button class="btn btn-primary" id="transferBtn">⚡ Execute Transfer</button>
-  </div>
-
-  <!-- ══════════════════════════════════════════
-       LOAN CALCULATOR
-  ══════════════════════════════════════════ -->
-  <div class="card">
-    <div class="card-title"><span>📊</span> Student Loan Planner</div>
-    <div class="field">
-      <label>Total Loan Amount ($)</label>
-      <input type="number" id="loanPrincipal" placeholder="e.g. 27000" value="27000">
-    </div>
-    <div class="field">
-      <label>Annual Interest Rate (%)</label>
-      <input type="number" id="loanRate" placeholder="e.g. 5.5" value="5.5" step="0.1">
-    </div>
-    <div class="field">
-      <label>Repayment Term (years)</label>
-      <select id="loanTerm">
-        <option value="10" selected>10 years (Standard)</option>
-        <option value="20">20 years (Extended)</option>
-        <option value="25">25 years (Income-driven)</option>
-      </select>
-    </div>
-    <button class="btn btn-primary" onclick="calcLoan()" style="margin-bottom:0">📐 Calculate</button>
-    <div class="loan-summary" id="loanSummary" style="display:none"></div>
-  </div>
-
-  <!-- ══════════════════════════════════════════
-       AI FINANCIAL ADVISOR
-  ══════════════════════════════════════════ -->
-  <div class="card full ai-box">
-    <div class="card-title" style="color:var(--primary)">
-      <div class="ai-avatar">AI</div>
-      AI Financial Advisor
-      <small style="font-weight:400;color:var(--muted);font-size:12px;margin-left:4px">— Groq · llama3-8b-8192</small>
-    </div>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">
-      The advisor uses your selected college's real Scorecard data (net price, earnings) together with your inputs to give personalized, responsible borrowing guidance.
-    </p>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-      <div class="field" style="margin:0">
-        <label>College (auto-filled from search)</label>
-        <input type="text" id="aiCollege" placeholder="Select a college above or type here">
-      </div>
-      <div class="field" style="margin:0">
-        <label>Planned Major / Field</label>
-        <input type="text" id="aiMajor" placeholder="e.g. Computer Science">
-      </div>
-      <div class="field" style="margin:0">
-        <label>Annual Federal Loan ($)</label>
-        <input type="number" id="aiFederalLoan" placeholder="e.g. 5500">
-      </div>
-      <div class="field" style="margin:0">
-        <label>Annual Parent PLUS Loan ($)</label>
-        <input type="number" id="aiPlusLoan" placeholder="e.g. 8000">
-      </div>
-      <div class="field" style="margin:0">
-        <label>Grants / Free Aid ($)</label>
-        <input type="number" id="aiGrant" placeholder="e.g. 3000">
-      </div>
-      <div class="field" style="margin:0">
-        <label>Scholarships / Gift Aid ($)</label>
-        <input type="number" id="aiScholarship" placeholder="e.g. 2000">
-      </div>
-    </div>
-
-    <div class="field">
-      <label>Your question or situation (optional)</label>
-      <textarea id="aiQuestion" placeholder="e.g. I'm a first-gen student. My family wants to take a PLUS loan on top of mine. Is this manageable with my projected major?"></textarea>
-    </div>
-
-    <button class="btn btn-ai" id="aiBtn" onclick="askAI()">AI Summary</button>
-
-    <div class="ai-thinking" id="aiThinking">
-      <div class="ai-avatar">AI</div>
-      Analyzing your situation<span class="dots"><span>.</span><span>.</span><span>.</span></span>
-    </div>
-    <div class="ai-response" id="aiResponse"></div>
-  </div>
-
 </div>
 
 <div id="toast"></div>
@@ -335,28 +474,482 @@
 // ═══════════════════════════════════════
 //  CONFIG
 // ═══════════════════════════════════════
-const GROQ_API_KEY       = "GROQ_KEY_SET_VIA_ENV";
-const GROQ_MODEL         = "llama-3.3-70b-versatile";
-const SCORECARD_API_KEY  = "hMS6qvCYkVlttQ1LaAYyeC4gPIWiUNa749oDfKFl";
-const SCORECARD_BASE     = "https://api.data.gov/ed/collegescorecard/v1/schools";
+const GROQ_API_KEY      = "GROQ_KEY_SET_VIA_ENV";
+const GROQ_MODEL        = "llama-3.3-70b-versatile";
+const SCORECARD_API_KEY = "hMS6qvCYkVlttQ1LaAYyeC4gPIWiUNa749oDfKFl";
+const SCORECARD_BASE    = "https://api.data.gov/ed/collegescorecard/v1/schools";
 
 // ═══════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════
+let profiles = [
+  {
+    id: "demo1",
+    name: "Aisha Rahman",
+    grade: "11",
+    gpa: 3.7,
+    sat: 1240,
+    act: null,
+    gradYear: 2026,
+    transcriptName: "aisha_transcript_fall2025.pdf",
+    struggles: "Struggles with standardized testing despite strong GPA — exam anxiety significantly impacts performance. First-generation college student with limited family guidance. Strong in STEM, considering pre-med. Balances extracurriculars with family responsibilities at home.",
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: "demo2",
+    name: "Marcus Johnson",
+    grade: "10",
+    gpa: 3.2,
+    sat: null,
+    act: 22,
+    gradYear: 2027,
+    transcriptName: "marcus_unofficial_transcript.pdf",
+    struggles: "First-generation college student from a low-income household. Works 15 hrs/week after school, which impacts dedicated study time. Passionate about engineering but his school has limited AP course offerings. Financial aid will be essential — family EFC is near zero.",
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: "demo3",
+    name: "Sofia Chen",
+    grade: "12",
+    gpa: 3.95,
+    sat: 1480,
+    act: 34,
+    gradYear: 2026,
+    transcriptName: "sofia_chen_official_transcript.pdf",
+    struggles: "High achiever but deeply uncertain about major — oscillates between Computer Science and Molecular Biology. Applying to highly selective schools (T20). Worried her essay won't differentiate her in a competitive applicant pool. Parental pressure adds stress.",
+    createdAt: new Date().toISOString()
+  }
+];
+
+let selectedTranscriptFile = null;
+let selectedSchool   = { name: null, netPrice: null, sixYrEarnings: null, roi: null };
+let rmSelectedCollege = { name: null, netPrice: null, sixYrEarnings: null };
+let activeTransferTab = "Transfer";
+
 const accounts = [
   { id: "checking", name: "Checking Account",    balance:  1240.00, type: "checking" },
   { id: "savings",  name: "Savings Account",      balance:  3800.00, type: "savings"  },
   { id: "loan",     name: "Student Loan Account", balance: -27500.00, type: "loan"    },
 ];
 
-let activeTab     = "Transfer";
-let selectedSchool = { name: null, netPrice: null, sixYrEarnings: null, roi: null };
-let searchTimeout = null;
-let activeSuggestionIndex = -1;
+// ═══════════════════════════════════════
+//  MAIN TAB SWITCHING
+// ═══════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".main-tab").forEach(t => t.classList.remove("active"));
+  document.getElementById("tab-" + name).classList.add("active");
+  document.getElementById("nav-" + name).classList.add("active");
+  if (name === "roadmap") populateRoadmapDropdown();
+}
 
 // ═══════════════════════════════════════
-//  COLLEGE SCORECARD — SEARCH (autocomplete)
+//  PROFILE TAB
 // ═══════════════════════════════════════
+function handleFileUpload(input) {
+  if (input.files && input.files[0]) {
+    selectedTranscriptFile = input.files[0];
+    document.getElementById("fileName").textContent = selectedTranscriptFile.name;
+    document.getElementById("fileAttached").style.display = "flex";
+    document.getElementById("uploadArea").style.display = "none";
+  }
+}
+
+function removeFile() {
+  selectedTranscriptFile = null;
+  document.getElementById("transcriptFile").value = "";
+  document.getElementById("fileAttached").style.display = "none";
+  document.getElementById("uploadArea").style.display = "block";
+}
+
+function saveProfile() {
+  const name     = document.getElementById("pName").value.trim();
+  const grade    = document.getElementById("pGrade").value;
+  const gpaRaw   = document.getElementById("pGpa").value;
+  const gpa      = parseFloat(gpaRaw);
+  const sat      = document.getElementById("pSat").value     ? parseInt(document.getElementById("pSat").value)     : null;
+  const act      = document.getElementById("pAct").value     ? parseInt(document.getElementById("pAct").value)     : null;
+  const gradYear = document.getElementById("pGradYear").value? parseInt(document.getElementById("pGradYear").value): null;
+  const struggles = document.getElementById("pStruggles").value.trim();
+
+  if (!name)                              return toast("Please enter the student's name.", "error");
+  if (!grade)                             return toast("Please select a grade level.", "error");
+  if (isNaN(gpa) || gpa < 0 || gpa > 4.0) return toast("Please enter a valid GPA (0–4.0).", "error");
+
+  const profile = {
+    id: "p" + Date.now(),
+    name, grade, gpa, sat, act, gradYear, struggles,
+    transcriptName: selectedTranscriptFile ? selectedTranscriptFile.name : null,
+    createdAt: new Date().toISOString()
+  };
+  profiles.push(profile);
+  renderProfiles();
+  resetProfileForm();
+  toast("✅ Profile saved for " + name + "!", "success");
+}
+
+function resetProfileForm() {
+  ["pName","pGpa","pSat","pAct","pGradYear","pStruggles"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("pGrade").value = "";
+  removeFile();
+}
+
+function deleteProfile(id) {
+  if (!confirm("Remove this profile?")) return;
+  profiles = profiles.filter(p => p.id !== id);
+  renderProfiles();
+  toast("Profile removed.", "");
+}
+
+function renderProfiles() {
+  const grid  = document.getElementById("profilesGrid");
+  const count = document.getElementById("profileCount");
+  count.textContent = profiles.length + " profile" + (profiles.length !== 1 ? "s" : "");
+
+  if (!profiles.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="ei">👤</div><p>No profiles yet — add one above to get started.</p></div>`;
+    return;
+  }
+
+  const gradeLabels = { "9":"9th","10":"10th","11":"11th","12":"12th" };
+
+  grid.innerHTML = profiles.map(p => {
+    const initials = p.name.split(" ").map(n => n[0]).join("").slice(0,2).toUpperCase();
+    return `
+    <div class="profile-card">
+      <div class="pc-header">
+        <div class="pc-avatar">${initials}</div>
+        <div>
+          <div class="pc-name">${escHtml(p.name)}</div>
+          <div class="pc-sub">Grade ${gradeLabels[p.grade]||p.grade} · Class of ${p.gradYear||"N/A"}</div>
+        </div>
+      </div>
+      <div class="pc-stats">
+        <div class="pc-stat"><div class="v">${p.gpa.toFixed(2)}</div><div class="l">GPA</div></div>
+        ${p.sat ? `<div class="pc-stat"><div class="v">${p.sat}</div><div class="l">SAT</div></div>` : ""}
+        ${p.act ? `<div class="pc-stat"><div class="v">${p.act}</div><div class="l">ACT</div></div>` : ""}
+      </div>
+      ${p.struggles ? `<div class="pc-struggles">${escHtml(p.struggles)}</div>` : ""}
+      ${p.transcriptName ? `<div class="pc-attachment">📎 ${escHtml(p.transcriptName)}</div>` : ""}
+      <div class="pc-actions">
+        <button class="btn-outline" onclick="goToRoadmap('${p.id}')" style="flex:1;text-align:center">🗺️ Generate RoadMap</button>
+        <button class="btn-danger" onclick="deleteProfile('${p.id}')">✕</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function goToRoadmap(id) {
+  switchTab("roadmap");
+  setTimeout(() => {
+    const sel = document.getElementById("rmProfile");
+    sel.value = id;
+    showProfilePreview(id);
+  }, 80);
+}
+
+// ═══════════════════════════════════════
+//  ROADMAP — PROFILE DROPDOWN
+// ═══════════════════════════════════════
+function populateRoadmapDropdown() {
+  const sel  = document.getElementById("rmProfile");
+  const prev = sel.value;
+  sel.innerHTML = `<option value="">— Choose a student profile —</option>` +
+    profiles.map(p => `<option value="${p.id}">${escHtml(p.name)} · Grade ${p.grade} · GPA ${p.gpa.toFixed(2)}</option>`).join("");
+  if (prev && profiles.find(p => p.id === prev)) sel.value = prev;
+}
+
+function onRmProfileChange() {
+  const id = document.getElementById("rmProfile").value;
+  if (id) showProfilePreview(id);
+  else document.getElementById("rmProfilePreview").style.display = "none";
+}
+
+function showProfilePreview(id) {
+  const p = profiles.find(x => x.id === id);
+  if (!p) return;
+  const box = document.getElementById("rmProfilePreview");
+  const initials = p.name.split(" ").map(n => n[0]).join("").slice(0,2).toUpperCase();
+  box.style.display = "block";
+  box.innerHTML = `
+    <div style="background:#f0faf0;border:1.5px solid #a8d5a8;border-radius:10px;padding:16px;display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+      <div class="pc-avatar" style="width:46px;height:46px;font-size:16px">${initials}</div>
+      <div style="flex:1;min-width:200px">
+        <div style="font-weight:800;font-size:15px;margin-bottom:8px">${escHtml(p.name)}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+          <span style="background:white;border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700">Grade ${p.grade}</span>
+          <span style="background:white;border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700">GPA ${p.gpa.toFixed(2)}</span>
+          ${p.sat ? `<span style="background:white;border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700">SAT ${p.sat}</span>` : ""}
+          ${p.act ? `<span style="background:white;border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700">ACT ${p.act}</span>` : ""}
+          ${p.transcriptName ? `<span style="background:white;border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;color:var(--primary);font-weight:700">📎 ${escHtml(p.transcriptName)}</span>` : ""}
+        </div>
+        ${p.struggles ? `<div style="font-size:12px;color:var(--muted);line-height:1.55"><strong>Struggles:</strong> ${escHtml(p.struggles.slice(0,220))}${p.struggles.length>220?"…":""}</div>` : ""}
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════
+//  ROADMAP — COLLEGE SEARCH
+// ═══════════════════════════════════════
+let rmSearchTimer = null;
+let rmSugIdx = -1;
+
+document.addEventListener("DOMContentLoaded", () => {
+  const inp = document.getElementById("rmCollegeInput");
+  const sug = document.getElementById("rmSuggestions");
+  const spn = document.getElementById("rmSpinner");
+
+  inp.addEventListener("input", () => {
+    const term = inp.value.trim();
+    rmSugIdx = -1;
+    clearTimeout(rmSearchTimer);
+    rmHide(sug);
+    if (term.length < 2) return;
+    spn.style.display = "block";
+    rmSearchTimer = setTimeout(() => fetchRmSuggestions(term, sug, spn), 320);
+  });
+
+  inp.addEventListener("keydown", e => {
+    const items = sug.querySelectorAll("li");
+    if (!items.length) return;
+    if (e.key === "ArrowDown") { rmSugIdx = Math.min(rmSugIdx+1, items.length-1); rmHL(items); e.preventDefault(); }
+    else if (e.key === "ArrowUp")  { rmSugIdx = Math.max(rmSugIdx-1, 0); rmHL(items); e.preventDefault(); }
+    else if (e.key === "Enter" && rmSugIdx >= 0) { items[rmSugIdx].click(); e.preventDefault(); }
+    else if (e.key === "Escape") rmHide(sug);
+  });
+});
+
+function rmHL(items) { items.forEach((li,i) => li.classList.toggle("active", i===rmSugIdx)); }
+function rmHide(el) { if(el){ el.style.display="none"; el.innerHTML=""; } }
+
+async function fetchRmSuggestions(term, sug, spn) {
+  try {
+    const url = `${SCORECARD_BASE}?api_key=${SCORECARD_API_KEY}&school.name=${encodeURIComponent(term.replace(/&/g," ").trim())}&fields=school.name&per_page=10`;
+    const data = await (await fetch(url)).json();
+    const names = (data.results||[]).map(r=>r["school.name"]).filter(Boolean);
+    spn.style.display = "none";
+    if (!names.length) { rmHide(sug); return; }
+    sug.innerHTML = names.map(n=>`<li data-name="${escHtml(n)}">${escHtml(n)}</li>`).join("");
+    sug.style.display = "block";
+    sug.querySelectorAll("li").forEach(li => li.addEventListener("click", () => selectRmCollege(li.dataset.name, sug, spn)));
+  } catch { spn.style.display = "none"; }
+}
+
+async function selectRmCollege(name, sug, spn) {
+  document.getElementById("rmCollegeInput").value = name;
+  rmHide(sug || document.getElementById("rmSuggestions"));
+  const spinner = spn || document.getElementById("rmSpinner");
+  spinner.style.display = "block";
+  try {
+    const ln = name.replace(/&/g," ").trim();
+    const url = `${SCORECARD_BASE}?api_key=${SCORECARD_API_KEY}&school.name=${encodeURIComponent(ln)}&fields=school.name,latest.cost.net_price.overall,latest.earnings.6_yrs_after_entry.median`;
+    const data = await (await fetch(url)).json();
+    const r = (data.results||[])[0];
+    rmSelectedCollege = {
+      name,
+      netPrice:      r ? (r["latest.cost.net_price.overall"] ?? null) : null,
+      sixYrEarnings: r ? (r["latest.earnings.6_yrs_after_entry.median"] ?? null) : null
+    };
+    toast("✅ Selected: " + name, "success");
+  } catch { rmSelectedCollege = { name, netPrice: null, sixYrEarnings: null }; }
+  finally { spinner.style.display = "none"; }
+}
+
+// ═══════════════════════════════════════
+//  ROADMAP — AI GENERATION
+// ═══════════════════════════════════════
+async function generateRoadmap() {
+  const profileId   = document.getElementById("rmProfile").value;
+  const collegeName = document.getElementById("rmCollegeInput").value.trim();
+  if (!profileId)   return toast("Please select a student profile.", "error");
+  if (!collegeName) return toast("Please search and select a target college.", "error");
+
+  const profile = profiles.find(p => p.id === profileId);
+  if (!profile) return toast("Profile not found.", "error");
+
+  const btn = document.getElementById("rmBtn");
+  btn.disabled = true;
+  btn.innerHTML = `<span class="dots"><span>.</span><span>.</span><span>.</span></span>&nbsp; Generating RoadMap…`;
+
+  const dag = document.getElementById("dagContainer");
+  const content = document.getElementById("dagContent");
+  dag.style.display = "block";
+  content.innerHTML = `
+    <div style="text-align:center;padding:48px 20px;color:var(--primary)">
+      <div style="font-size:36px;margin-bottom:14px">🧠</div>
+      <div style="font-size:15px;font-weight:700">Analyzing ${escHtml(profile.name)}'s profile for ${escHtml(collegeName)}</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:6px">Evaluating GPA, test scores &amp; academic standing<span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
+    </div>`;
+  dag.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  try {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + GROQ_API_KEY },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages: [{ role: "user", content: buildRoadmapPrompt(profile, collegeName) }],
+        max_tokens: 1400, temperature: 0.45
+      })
+    });
+    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e?.error?.message||"Groq "+res.status); }
+    const reply = (await res.json()).choices?.[0]?.message?.content || "";
+
+    // Extract JSON blob
+    const m = reply.match(/\{[\s\S]*\}/);
+    if (!m) throw new Error("AI returned non-JSON: " + reply.slice(0,200));
+    const roadmap = JSON.parse(m[0]);
+    renderDAG(roadmap, profile, collegeName);
+  } catch(e) {
+    content.innerHTML = `
+      <div style="text-align:center;padding:36px;color:var(--danger)">
+        <div style="font-size:28px;margin-bottom:10px">⚠️</div>
+        <div style="font-weight:700">Could not generate RoadMap</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:6px">${escHtml(e.message)}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">Ensure a valid Groq API key is set in the GROQ_API_KEY variable.</div>
+      </div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "🧠 Generate AI RoadMap";
+  }
+}
+
+function buildRoadmapPrompt(profile, collegeName) {
+  const gl = {"9":"9th grade (Freshman)","10":"10th grade (Sophomore)","11":"11th grade (Junior)","12":"12th grade (Senior)"};
+  return `You are an expert AI college admissions counselor. Evaluate this student profile and generate a personalized college admission roadmap as a DAG.
+
+STUDENT PROFILE:
+- Name: ${profile.name}
+- Current Level: ${gl[profile.grade]||"Grade "+profile.grade}
+- Unweighted GPA: ${profile.gpa.toFixed(2)} / 4.0${profile.sat?"\n- SAT Score: "+profile.sat+" / 1600":""}${profile.act?"\n- ACT Score: "+profile.act+" / 36":""}
+- Graduation Year: ${profile.gradYear||"Unknown"}${profile.transcriptName?"\n- Transcript on file: "+profile.transcriptName:""}
+- Current Struggles: "${profile.struggles||"None specified"}"
+
+TARGET COLLEGE: ${collegeName}${rmSelectedCollege.netPrice?"\n- Annual Net Price: $"+rmSelectedCollege.netPrice.toLocaleString():""}${rmSelectedCollege.sixYrEarnings?"\n- Median Earnings 6yr: $"+rmSelectedCollege.sixYrEarnings.toLocaleString():""}
+
+CRITICAL: The confidence_score must be based SOLELY on academic data (GPA, SAT/ACT). The struggles text is for personalizing node details only — not for the score.
+
+Return ONLY a valid JSON object — no markdown, no code fences, no text before or after. Use this exact schema:
+{
+  "confidence_score": <integer 0-100>,
+  "confidence_reasoning": "<2 sentences: explain score based only on GPA/test scores vs typical admission benchmarks for this college tier>",
+  "stages": [
+    {
+      "id": "stage1",
+      "stage_name": "Current Academic Foundation",
+      "nodes": [
+        { "id": "n1", "label": "<max 6 words>", "detail": "<specific 1-2 sentence recommendation for this student>", "status": "completed", "priority": "high" }
+      ]
+    },
+    {
+      "id": "stage2",
+      "stage_name": "Academic Strengthening",
+      "nodes": [
+        { "id": "n2", "label": "...", "detail": "...", "status": "in_progress", "priority": "high" },
+        { "id": "n3", "label": "...", "detail": "...", "status": "pending", "priority": "medium" }
+      ]
+    },
+    {
+      "id": "stage3",
+      "stage_name": "Application Preparation",
+      "nodes": [
+        { "id": "n4", "label": "...", "detail": "...", "status": "pending", "priority": "high" },
+        { "id": "n5", "label": "...", "detail": "...", "status": "pending", "priority": "medium" },
+        { "id": "n6", "label": "...", "detail": "...", "status": "pending", "priority": "low" }
+      ]
+    },
+    {
+      "id": "stage4",
+      "stage_name": "Final Submission",
+      "nodes": [
+        { "id": "n7", "label": "Submit Applications", "detail": "...", "status": "pending", "priority": "high" }
+      ]
+    }
+  ]
+}
+
+Rules: status values are "completed" | "in_progress" | "pending". Priority values are "high" | "medium" | "low". Personalize every detail to the specific student. Address struggles in relevant node details.`;
+}
+
+function renderDAG(rm, profile, collegeName) {
+  const score = rm.confidence_score || 0;
+  const isHigh = score >= 70, isMid = score >= 45;
+  const bg    = isHigh ? "linear-gradient(135deg,#1a5c1a,#27ae60)" : isMid ? "linear-gradient(135deg,#9a6100,#f39c12)" : "linear-gradient(135deg,#a93226,#e74c3c)";
+  const label = isHigh ? "Strong Candidate" : isMid ? "Developing Candidate" : "Needs Significant Work";
+
+  let h = `
+  <div style="background:${bg};color:white;border-radius:12px;padding:24px 28px;display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin-bottom:24px">
+    <div style="width:88px;height:88px;border-radius:50%;background:rgba(255,255,255,.18);border:3px solid rgba(255,255,255,.4);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+      <div style="font-size:30px;font-weight:900;line-height:1">${score}</div>
+      <div style="font-size:12px;opacity:.8">/ 100</div>
+    </div>
+    <div style="flex:1;min-width:180px">
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;opacity:.8;margin-bottom:4px">Admission Confidence Score</div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:6px">${label}</div>
+      <div style="font-size:13px;opacity:.9;line-height:1.55">${escHtml(rm.confidence_reasoning||"")}</div>
+    </div>
+    <div style="background:rgba(255,255,255,.18);border-radius:10px;padding:14px 20px;min-width:150px;text-align:center;flex-shrink:0">
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;opacity:.8;margin-bottom:4px;letter-spacing:.8px">Target College</div>
+      <div style="font-size:14px;font-weight:700">${escHtml(collegeName)}</div>
+      <div style="font-size:11px;opacity:.8;margin-top:3px">${escHtml(profile.name)}</div>
+    </div>
+  </div>
+
+  <div style="font-size:15px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px">
+    <span>🔗</span> Admission Pathway
+    <span style="font-size:12px;font-weight:400;color:var(--muted);margin-left:4px">— Click any node to expand details</span>
+  </div>
+
+  <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;align-items:center">
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><span style="width:11px;height:11px;border-radius:2px;background:#dcfce7;border:2px solid #16a34a;display:inline-block"></span>Completed</div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><span style="width:11px;height:11px;border-radius:2px;background:#fef9c3;border:2px solid #ca8a04;display:inline-block"></span>In Progress</div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><span style="width:11px;height:11px;border-radius:2px;background:#f1f5f9;border:2px solid #94a3b8;display:inline-block"></span>Pending</div>
+    <div style="margin-left:auto;display:flex;gap:12px">
+      <span style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:var(--danger);display:inline-block"></span>High priority</span>
+      <span style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:var(--warning);display:inline-block"></span>Medium</span>
+      <span style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#94a3b8;display:inline-block"></span>Low</span>
+    </div>
+  </div>`;
+
+  const statusLabel = { completed:"✅ Completed", in_progress:"🔄 In Progress", pending:"⏳ Pending" };
+
+  (rm.stages||[]).forEach((stage, si) => {
+    if (si > 0) h += `<div class="dag-arrow">↓</div>`;
+    h += `<div class="dag-stage">
+      <div class="dag-stage-label">Stage ${si+1} · ${escHtml(stage.stage_name)}</div>
+      <div class="dag-nodes">`;
+    (stage.nodes||[]).forEach(node => {
+      const nid = "node_" + escHtml(node.id);
+      h += `
+        <div class="dag-node ${escHtml(node.status||"pending")}" onclick="toggleNodeDetail('${nid}')">
+          <div class="dag-priority-dot ${escHtml(node.priority||'medium')}"></div>
+          <div class="dag-node-badge">${statusLabel[node.status]||node.status}</div>
+          <div class="dag-node-label">${escHtml(node.label)}</div>
+          <div class="dag-node-detail" id="${nid}">${escHtml(node.detail)}</div>
+        </div>`;
+    });
+    h += `</div></div>`;
+  });
+
+  h += `
+    <div class="dag-arrow">↓</div>
+    <div style="text-align:center;padding:16px 24px;background:${bg};border-radius:10px;color:white;font-weight:700;font-size:15px">
+      🎓 Admission Projection: <span style="font-size:19px;font-weight:900">${score}%</span> Confidence
+    </div>`;
+
+  document.getElementById("dagContent").innerHTML = h;
+}
+
+function toggleNodeDetail(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle("open");
+}
+
+// ═══════════════════════════════════════
+//  COLLEGE SCORECARD (Cost tab)
+// ═══════════════════════════════════════
+let searchTimeout = null;
+let activeSuggestionIndex = -1;
 const collegeInput  = document.getElementById("collegeInput");
 const suggestionsEl = document.getElementById("suggestions");
 const spinner       = document.getElementById("searchSpinner");
@@ -366,9 +959,7 @@ collegeInput.addEventListener("input", () => {
   activeSuggestionIndex = -1;
   clearTimeout(searchTimeout);
   hideSuggestions();
-
   if (term.length < 2) return;
-
   spinner.style.display = "block";
   searchTimeout = setTimeout(() => fetchSuggestions(term), 320);
 });
@@ -376,115 +967,59 @@ collegeInput.addEventListener("input", () => {
 collegeInput.addEventListener("keydown", e => {
   const items = suggestionsEl.querySelectorAll("li");
   if (!items.length) return;
-  if (e.key === "ArrowDown") {
-    activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, items.length - 1);
-    highlightSuggestion(items);
-    e.preventDefault();
-  } else if (e.key === "ArrowUp") {
-    activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, 0);
-    highlightSuggestion(items);
-    e.preventDefault();
-  } else if (e.key === "Enter" && activeSuggestionIndex >= 0) {
-    items[activeSuggestionIndex].click();
-    e.preventDefault();
-  } else if (e.key === "Escape") {
-    hideSuggestions();
-  }
+  if (e.key==="ArrowDown"){ activeSuggestionIndex=Math.min(activeSuggestionIndex+1,items.length-1); hlSug(items); e.preventDefault(); }
+  else if(e.key==="ArrowUp"){ activeSuggestionIndex=Math.max(activeSuggestionIndex-1,0); hlSug(items); e.preventDefault(); }
+  else if(e.key==="Enter"&&activeSuggestionIndex>=0){ items[activeSuggestionIndex].click(); e.preventDefault(); }
+  else if(e.key==="Escape") hideSuggestions();
 });
+
+function hlSug(items){ items.forEach((li,i)=>li.classList.toggle("active",i===activeSuggestionIndex)); }
 
 document.addEventListener("click", e => {
-  if (!e.target.closest(".search-wrap")) hideSuggestions();
+  if (!e.target.closest(".search-wrap")) {
+    hideSuggestions();
+    rmHide(document.getElementById("rmSuggestions"));
+  }
 });
-
-function highlightSuggestion(items) {
-  items.forEach((li, i) => li.classList.toggle("active", i === activeSuggestionIndex));
-}
 
 async function fetchSuggestions(term) {
   try {
-    // Normalize & so the Scorecard API partial-text search matches names like "Texas A&M"
-    const searchTerm = term.replace(/&/g, ' ').replace(/\s+/g, ' ').trim();
-    const url = `${SCORECARD_BASE}?api_key=${SCORECARD_API_KEY}` +
-                `&school.name=${encodeURIComponent(searchTerm)}&fields=school.name&per_page=10`;
-    const res  = await fetch(url);
-    const data = await res.json();
-    const names = (data.results || [])
-      .map(r => r["school.name"])
-      .filter(Boolean);
-
+    const url = `${SCORECARD_BASE}?api_key=${SCORECARD_API_KEY}&school.name=${encodeURIComponent(term.replace(/&/g," ").trim())}&fields=school.name&per_page=10`;
+    const data = await (await fetch(url)).json();
+    const names = (data.results||[]).map(r=>r["school.name"]).filter(Boolean);
     spinner.style.display = "none";
-
     if (!names.length) { hideSuggestions(); return; }
-
-    suggestionsEl.innerHTML = names.map(n =>
-      `<li data-name="${escHtml(n)}">${escHtml(n)}</li>`
-    ).join("");
+    suggestionsEl.innerHTML = names.map(n=>`<li data-name="${escHtml(n)}">${escHtml(n)}</li>`).join("");
     suggestionsEl.style.display = "block";
-
-    suggestionsEl.querySelectorAll("li").forEach(li => {
-      li.addEventListener("click", () => selectCollege(li.dataset.name));
-    });
-  } catch {
-    spinner.style.display = "none";
-  }
+    suggestionsEl.querySelectorAll("li").forEach(li=>li.addEventListener("click",()=>selectCollege(li.dataset.name)));
+  } catch { spinner.style.display = "none"; }
 }
 
-function hideSuggestions() {
-  suggestionsEl.style.display = "none";
-  suggestionsEl.innerHTML = "";
-}
+function hideSuggestions() { suggestionsEl.style.display="none"; suggestionsEl.innerHTML=""; }
 
-// ═══════════════════════════════════════
-//  COLLEGE SCORECARD — ROI LOOKUP
-// ═══════════════════════════════════════
 async function selectCollege(name) {
-  collegeInput.value = name;
-  hideSuggestions();
-  spinner.style.display = "block";
-
+  collegeInput.value = name; hideSuggestions(); spinner.style.display = "block";
   try {
-    const fields = "school.name,latest.cost.net_price.overall,latest.earnings.6_yrs_after_entry.median";
-    // Normalize & so the Scorecard API can match names like "Texas A&M University"
-    const lookupName = name.replace(/&/g, ' ').replace(/\s+/g, ' ').trim();
-    const url    = `${SCORECARD_BASE}?api_key=${SCORECARD_API_KEY}` +
-                   `&school.name=${encodeURIComponent(lookupName)}&fields=${fields}`;
-    const res    = await fetch(url);
-    const data   = await res.json();
-    const result = (data.results || [])[0];
-
-    if (!result) { toast("No data found for this college.", "error"); return; }
-
-    const netPrice    = result["latest.cost.net_price.overall"] ?? null;
-    const earnings    = result["latest.earnings.6_yrs_after_entry.median"] ?? null;
-    const roi         = (netPrice != null && earnings != null) ? (earnings - netPrice) / 1000 : null;
-
+    const url = `${SCORECARD_BASE}?api_key=${SCORECARD_API_KEY}&school.name=${encodeURIComponent(name.replace(/&/g," ").trim())}&fields=school.name,latest.cost.net_price.overall,latest.earnings.6_yrs_after_entry.median`;
+    const data = await (await fetch(url)).json();
+    const r = (data.results||[])[0];
+    if (!r) { toast("No data found for this college.", "error"); return; }
+    const netPrice = r["latest.cost.net_price.overall"]??null;
+    const earnings = r["latest.earnings.6_yrs_after_entry.median"]??null;
+    const roi = (netPrice!=null&&earnings!=null) ? (earnings-netPrice)/1000 : null;
     selectedSchool = { name, netPrice, sixYrEarnings: earnings, roi };
-
-    // Auto-fill AI advisor college field
     document.getElementById("aiCollege").value = name;
-
-    // Render ROI panel
     const panel = document.getElementById("roiPanel");
     document.getElementById("roiCollegeName").textContent = name;
-    document.getElementById("roiNetPrice").textContent  = netPrice  != null ? fmtMoney(netPrice)  : "N/A";
-    document.getElementById("roiEarnings").textContent  = earnings  != null ? fmtMoney(earnings)  : "N/A";
-
+    document.getElementById("roiNetPrice").textContent = netPrice!=null ? fmtMoney(netPrice) : "N/A";
+    document.getElementById("roiEarnings").textContent = earnings!=null ? fmtMoney(earnings) : "N/A";
     const roiEl = document.getElementById("roiValue");
-    if (roi != null) {
-      roiEl.textContent = (roi >= 0 ? "+" : "") + roi.toFixed(1) + "K";
-      roiEl.className   = "val " + (roi >= 0 ? "green" : "warn");
-    } else {
-      roiEl.textContent = "N/A";
-      roiEl.className   = "val";
-    }
-
+    if (roi!=null){ roiEl.textContent=(roi>=0?"+":"")+roi.toFixed(1)+"K"; roiEl.className="val "+(roi>=0?"green":"warn"); }
+    else { roiEl.textContent="N/A"; roiEl.className="val"; }
     panel.style.display = "block";
-    toast(`✅ Loaded scorecard data for ${name}`, "success");
-  } catch (e) {
-    toast("Scorecard API error: " + e.message, "error");
-  } finally {
-    spinner.style.display = "none";
-  }
+    toast("✅ Loaded scorecard data for "+name, "success");
+  } catch(e) { toast("Scorecard API error: "+e.message,"error"); }
+  finally { spinner.style.display="none"; }
 }
 
 // ═══════════════════════════════════════
@@ -492,18 +1027,16 @@ async function selectCollege(name) {
 // ═══════════════════════════════════════
 function renderAccounts() {
   const c = document.getElementById("accountsContainer");
-  c.innerHTML = accounts.map(a => `
+  c.innerHTML = accounts.map(a=>`
     <div class="account-pill ${a.type}">
       <div class="acc-name">${a.name}</div>
       <div class="acc-bal">${fmtMoney(a.balance)}</div>
-      <div class="acc-sub">${a.id === "loan" ? "Outstanding balance" : "Available"}</div>
-    </div>
-  `).join("");
-
-  const opts = accounts.map(a => `<option value="${a.id}">${a.name} (${fmtMoney(a.balance)})</option>`).join("");
+      <div class="acc-sub">${a.id==="loan"?"Outstanding balance":"Available"}</div>
+    </div>`).join("");
+  const opts = accounts.map(a=>`<option value="${a.id}">${a.name} (${fmtMoney(a.balance)})</option>`).join("");
   document.getElementById("fromAccount").innerHTML = opts;
   document.getElementById("toAccount").innerHTML   = opts;
-  if (accounts.length > 1) document.getElementById("toAccount").selectedIndex = 1;
+  if (accounts.length>1) document.getElementById("toAccount").selectedIndex = 1;
 }
 
 // ═══════════════════════════════════════
@@ -513,35 +1046,24 @@ document.getElementById("transferBtn").addEventListener("click", () => {
   const fromId = document.getElementById("fromAccount").value;
   const toId   = document.getElementById("toAccount").value;
   const amount = parseFloat(document.getElementById("transferAmount").value);
-  const note   = document.getElementById("transferNote").value.trim();
-
-  if (fromId === toId)        return toast("From and To accounts must be different.", "error");
-  if (!amount || amount <= 0) return toast("Please enter a valid amount.", "error");
-
-  const from = accounts.find(a => a.id === fromId);
-  const to   = accounts.find(a => a.id === toId);
-
-  if (from.type !== "loan" && from.balance < amount)
-    return toast("Insufficient balance in " + from.name, "error");
-
-  from.balance -= amount;
-  to.balance   += amount;
-
+  if (fromId===toId)        return toast("From and To must be different.", "error");
+  if (!amount||amount<=0)   return toast("Enter a valid amount.", "error");
+  const from = accounts.find(a=>a.id===fromId);
+  const to   = accounts.find(a=>a.id===toId);
+  if (from.type!=="loan"&&from.balance<amount) return toast("Insufficient balance in "+from.name, "error");
+  from.balance -= amount; to.balance += amount;
   renderAccounts();
-  document.getElementById("transferAmount").value = "";
-  document.getElementById("transferNote").value   = "";
-  toast(`✅ ${fmtMoney(amount)} transferred successfully!`, "success");
+  document.getElementById("transferAmount").value="";
+  document.getElementById("transferNote").value="";
+  toast("✅ "+fmtMoney(amount)+" transferred!", "success");
 });
 
-// ═══════════════════════════════════════
-//  TABS
-// ═══════════════════════════════════════
 document.getElementById("tabsContainer").addEventListener("click", e => {
   const tab = e.target.closest(".tab");
   if (!tab) return;
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll("#tabsContainer .tab").forEach(t=>t.classList.remove("active"));
   tab.classList.add("active");
-  activeTab = tab.dataset.type;
+  activeTransferTab = tab.dataset.type;
 });
 
 // ═══════════════════════════════════════
@@ -549,55 +1071,47 @@ document.getElementById("tabsContainer").addEventListener("click", e => {
 // ═══════════════════════════════════════
 function calcLoan() {
   const P = parseFloat(document.getElementById("loanPrincipal").value);
-  const r = parseFloat(document.getElementById("loanRate").value) / 100 / 12;
-  const n = parseInt(document.getElementById("loanTerm").value) * 12;
-  if (!P || !r) return toast("Enter valid principal and rate.", "error");
-
-  const monthly   = P * r * Math.pow(1+r,n) / (Math.pow(1+r,n) - 1);
-  const totalPaid = monthly * n;
-  const interest  = totalPaid - P;
-
+  const r = parseFloat(document.getElementById("loanRate").value)/100/12;
+  const n = parseInt(document.getElementById("loanTerm").value)*12;
+  if (!P||!r) return toast("Enter valid principal and rate.", "error");
+  const monthly   = P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+  const totalPaid = monthly*n;
+  const interest  = totalPaid-P;
   const box = document.getElementById("loanSummary");
   box.style.display = "grid";
   box.innerHTML = `
     <div class="loan-stat"><div class="val">${fmtMoney(monthly)}</div><div class="lbl">Monthly Payment</div></div>
     <div class="loan-stat"><div class="val">${fmtMoney(totalPaid)}</div><div class="lbl">Total Paid</div></div>
-    <div class="loan-stat"><div class="val" style="color:var(--danger)">${fmtMoney(interest)}</div><div class="lbl">Total Interest</div></div>
-  `;
+    <div class="loan-stat"><div class="val" style="color:var(--danger)">${fmtMoney(interest)}</div><div class="lbl">Total Interest</div></div>`;
 }
 
 // ═══════════════════════════════════════
-//  AI ADVISOR (Groq)
+//  AI FINANCIAL ADVISOR
 // ═══════════════════════════════════════
 async function askAI() {
-  const college      = document.getElementById("aiCollege").value.trim() || selectedSchool.name;
-  const major        = document.getElementById("aiMajor").value.trim();
-  const federalLoan  = pf(document.getElementById("aiFederalLoan").value);
-  const plusLoan     = pf(document.getElementById("aiPlusLoan").value);
-  const grant        = pf(document.getElementById("aiGrant").value);
-  const scholarship  = pf(document.getElementById("aiScholarship").value);
-  const question     = document.getElementById("aiQuestion").value.trim();
-
+  const college    = document.getElementById("aiCollege").value.trim()||selectedSchool.name;
+  const major      = document.getElementById("aiMajor").value.trim();
+  const fedLoan    = pf(document.getElementById("aiFederalLoan").value);
+  const plusLoan   = pf(document.getElementById("aiPlusLoan").value);
+  const grant      = pf(document.getElementById("aiGrant").value);
+  const scholarship= pf(document.getElementById("aiScholarship").value);
+  const question   = document.getElementById("aiQuestion").value.trim();
   const btn = document.getElementById("aiBtn");
   btn.disabled = true;
   document.getElementById("aiThinking").classList.add("visible");
   document.getElementById("aiResponse").classList.remove("visible");
-
-  const prompt = buildPrompt({ college, major, federalLoan, plusLoan, grant, scholarship, question });
-
   try {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + GROQ_API_KEY },
-      body: JSON.stringify({ model: GROQ_MODEL, messages: [{ role: "user", content: prompt }], max_tokens: 700, temperature: 0.65 })
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+GROQ_API_KEY},
+      body:JSON.stringify({model:GROQ_MODEL,messages:[{role:"user",content:buildFinPrompt({college,major,fedLoan,plusLoan,grant,scholarship,question})}],max_tokens:700,temperature:0.65})
     });
-    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e?.error?.message || "Groq error " + res.status); }
-    const data  = await res.json();
-    const reply = data.choices?.[0]?.message?.content || "No response returned.";
+    if (!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(e?.error?.message||"Groq "+res.status); }
+    const reply = (await res.json()).choices?.[0]?.message?.content||"No response.";
     document.getElementById("aiResponse").textContent = reply;
     document.getElementById("aiResponse").classList.add("visible");
-  } catch (e) {
-    document.getElementById("aiResponse").textContent = "⚠️ Could not reach AI: " + e.message;
+  } catch(e) {
+    document.getElementById("aiResponse").textContent = "⚠️ Could not reach AI: "+e.message;
     document.getElementById("aiResponse").classList.add("visible");
   } finally {
     document.getElementById("aiThinking").classList.remove("visible");
@@ -605,58 +1119,50 @@ async function askAI() {
   }
 }
 
-function buildPrompt({ college, major, federalLoan, plusLoan, grant, scholarship, question }) {
-  const totalLoans  = (federalLoan || 0) + (plusLoan || 0);
-  const totalFreeAid = (grant || 0) + (scholarship || 0);
+function buildFinPrompt({college,major,fedLoan,plusLoan,grant,scholarship,question}) {
+  const totalLoans = (fedLoan||0)+(plusLoan||0);
+  const totalFree  = (grant||0)+(scholarship||0);
   const { netPrice, sixYrEarnings, roi } = selectedSchool;
+  return `You are a compassionate financial literacy advisor helping undergraduate students make responsible decisions about student loans.
 
-  return `You are a compassionate, practical financial literacy advisor helping undergraduate students and education counselors make responsible decisions about student loans and college finances.
+${college?`College: ${college}`:"College: not specified"}${major?`\nMajor: ${major}`:""}
+${netPrice!=null?`Net price (College Scorecard): $${netPrice.toLocaleString()}`:""}
+${sixYrEarnings!=null?`Median earnings 6yr: $${sixYrEarnings.toLocaleString()}`:""}
+${roi!=null?`ROI index: ${roi.toFixed(1)}K`:""}
 
-${college ? `College/University: ${college}` : "College: not specified"}
-${major   ? `Planned major: ${major}` : ""}
-${netPrice      != null ? `College net price (annual, from College Scorecard): $${netPrice.toLocaleString()}` : ""}
-${sixYrEarnings != null ? `Median earnings 6 yrs after graduation (College Scorecard): $${sixYrEarnings.toLocaleString()}` : ""}
-${roi           != null ? `Estimated ROI index: ${roi.toFixed(1)}K` : ""}
+Aid package (annual):
+- Federal loan: $${(fedLoan||0).toLocaleString()}
+- Parent PLUS: $${(plusLoan||0).toLocaleString()}
+- Total loans: $${totalLoans.toLocaleString()}
+- Grants: $${(grant||0).toLocaleString()}
+- Scholarships: $${(scholarship||0).toLocaleString()}
+- Total free aid: $${totalFree.toLocaleString()}
+${question?`\nStudent's question: "${question}"`:""}
 
-Financial Aid Package (per year):
-- Federal Student Loan: $${(federalLoan||0).toLocaleString()}
-- Parent PLUS Loan: $${(plusLoan||0).toLocaleString()}
-- Total loans this year: $${totalLoans.toLocaleString()}
-- Grants (free money): $${(grant||0).toLocaleString()}
-- Scholarships / Gift Aid: $${(scholarship||0).toLocaleString()}
-- Total free aid: $${totalFreeAid.toLocaleString()}
-${question ? `\nStudent's question:\n"${question}"` : ""}
-
-Please provide:
-1. A brief, honest assessment of whether this loan situation is manageable given the college's real earnings data
-2. 2–3 concrete, actionable steps this student should take
-3. One important risk or warning specific to this situation
-4. A brief encouraging note
-
-Keep it supportive, direct, and easy to understand for an 18–22 year old first-time borrower. Use plain language — no jargon.`;
+Provide: 1) Honest assessment of manageability given earnings data, 2) 2–3 concrete actionable steps, 3) One key risk, 4) Brief encouragement. Plain language for an 18–22 year old.`;
 }
 
 // ═══════════════════════════════════════
 //  HELPERS
 // ═══════════════════════════════════════
-function fmtMoney(n) {
-  const sign = n < 0 ? "−$" : "$";
-  return sign + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-function pf(v) { const f = parseFloat(v); return isNaN(f) ? null : f; }
+function fmtMoney(n) { return (n<0?"−$":"$")+Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function pf(v) { const f=parseFloat(v); return isNaN(f)?null:f; }
 function escHtml(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
 let toastTimer;
-function toast(msg, type = "") {
+function toast(msg, type="") {
   const el = document.getElementById("toast");
-  el.textContent = msg; el.className = "show " + type;
+  el.textContent=msg; el.className="show "+type;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.className = "", 3200);
+  toastTimer = setTimeout(()=>el.className="", 3400);
 }
 
-// ── Boot ──
+// ═══════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════
 renderAccounts();
 calcLoan();
+renderProfiles();
 </script>
 </body>
 </html>
