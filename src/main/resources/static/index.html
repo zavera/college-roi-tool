@@ -150,39 +150,55 @@
         select#majorSelect:focus { outline: none; border-color: var(--primary); background: white; }
 
         #majorEarningsCard {
-            margin-top: 12px;
-            padding: 14px 16px;
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            border-radius: 8px;
+            margin-top: 14px;
+            padding: 0;
+            background: transparent;
+            border: none;
+            border-radius: 0;
             display: none;
         }
-        #majorEarningsCard .earnings-row {
+        .maj-earnings-card {
+            margin-top: 14px;
+            padding: 0;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+        }
+        #majorEarningsCard .earnings-row,
+        .maj-earnings-card .earnings-row {
             display: flex;
-            gap: 16px;
+            gap: 12px;
             flex-wrap: wrap;
         }
-        #majorEarningsCard .stat {
+        #majorEarningsCard .stat,
+        .maj-earnings-card .stat {
             flex: 1;
             min-width: 140px;
             background: white;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
             text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,.05);
         }
-        #majorEarningsCard .stat .val {
-            font-size: 18px;
+        #majorEarningsCard .stat .val,
+        .maj-earnings-card .stat .val {
+            font-size: 22px;
             font-weight: 800;
+            letter-spacing: -.5px;
         }
-        #majorEarningsCard .stat .val.blue  { color: var(--primary); }
-        #majorEarningsCard .stat .val.green { color: var(--accent); }
-        #majorEarningsCard .stat .lbl {
-            font-size: 11px;
+        #majorEarningsCard .stat .val.blue,
+        .maj-earnings-card .stat .val.blue  { color: #1a1a1a; }
+        #majorEarningsCard .stat .val.green,
+        .maj-earnings-card .stat .val.green { color: #d97706; }
+        #majorEarningsCard .stat .lbl,
+        .maj-earnings-card .stat .lbl {
+            font-size: 10px;
             color: var(--muted);
-            margin-top: 3px;
-            font-weight: 600;
+            margin-top: 5px;
+            font-weight: 700;
             text-transform: uppercase;
+            letter-spacing: .6px;
         }
         #majorSpinner {
             display: none;
@@ -310,11 +326,13 @@
                 font-size: 15px;
                 padding: 13px;
             }
-            #majorEarningsCard .earnings-row {
+            #majorEarningsCard .earnings-row,
+            .maj-earnings-card .earnings-row {
                 flex-direction: column;
                 gap: 10px;
             }
-            #majorEarningsCard .stat {
+            #majorEarningsCard .stat,
+            .maj-earnings-card .stat {
                 min-width: unset;
             }
             #aiAdviceBox {
@@ -517,25 +535,32 @@
     <!-- ── Major / Program Earnings ── -->
     <div class="card" id="majorSection">
         <h2>Earnings by Major</h2>
-        <div class="field-group" style="margin-bottom:0">
-            <label>Select a Major</label>
-            <select id="majorSelect">
-                <option value="">— Loading programs… —</option>
-            </select>
-            <div id="majorSpinner">Loading program data…</div>
-        </div>
-        <div id="majorEarningsCard">
-            <div class="earnings-row">
-                <div class="stat">
-                    <div class="val blue" id="collegeAvgEarnings">—</div>
-                    <div class="lbl">College-wide Median (6 yrs)</div>
-                </div>
-                <div class="stat">
-                    <div class="val green" id="majorEarnings">—</div>
-                    <div class="lbl">This Major's Median (6 yrs)</div>
+
+        <!-- Single-college mode (default) -->
+        <div id="majorSingleMode">
+            <div class="field-group" style="margin-bottom:0">
+                <label>Select a Major</label>
+                <select id="majorSelect">
+                    <option value="">— Loading programs… —</option>
+                </select>
+                <div id="majorSpinner">Loading program data…</div>
+            </div>
+            <div id="majorEarningsCard">
+                <div class="earnings-row">
+                    <div class="stat">
+                        <div class="val blue" id="collegeAvgEarnings">—</div>
+                        <div class="lbl">College-wide Median (6 yrs)</div>
+                    </div>
+                    <div class="stat">
+                        <div class="val green" id="majorEarnings">—</div>
+                        <div class="lbl">This Major's Median (6 yrs)</div>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- Compare mode: one accordion per college (shown when compareList.length > 0) -->
+        <div id="majorCompareMode" style="display:none"></div>
     </div>
 
     <!-- ── FAFSA Package ── -->
@@ -559,18 +584,29 @@
             <label>Total Family Contribution ($) <span style="font-weight:400;color:var(--muted)">— Family's expected contribution (savings, income, Parent PLUS)</span></label>
             <input type="number" id="parentPlusLoan" placeholder="0.00" min="0" step="0.01">
         </div>
-        <div class="field-group">
-            <label>Institutional Grant ($) <span style="font-weight:400;color:var(--accent)">— From your college, no repayment</span></label>
-            <input type="number" id="institutionalGrant" placeholder="0.00" min="0" step="0.01">
+        <div id="inst-fields-single">
+            <div class="field-group">
+                <label>Institutional Grant ($) <span style="font-weight:400;color:var(--accent)">— From your college, no repayment</span></label>
+                <input type="number" id="institutionalGrant" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="field-group">
+                <label>Scholarship / Gift Aid ($)</label>
+                <input type="number" id="scholarshipAmount" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="field-group" style="margin-bottom:0">
+                <label>Federal Work-Study ($) <span style="font-weight:400;color:var(--muted)">— Earned through part-time campus jobs</span></label>
+                <input type="number" id="workStudy" placeholder="0.00" min="0" step="0.01">
+            </div>
         </div>
-        <div class="field-group">
-            <label>Scholarship / Gift Aid ($)</label>
-            <input type="number" id="scholarshipAmount" placeholder="0.00" min="0" step="0.01">
-        </div>
-        <div class="field-group" style="margin-bottom:0">
-            <label>Federal Work-Study ($) <span style="font-weight:400;color:var(--muted)">— Earned through part-time campus jobs</span></label>
-            <input type="number" id="workStudy" placeholder="0.00" min="0" step="0.01">
-        </div>
+    </div>
+
+    <!-- ── Institution-Specific Aid (Compare Mode Only) ── -->
+    <div class="card" id="institutionalAidSection" style="display:none;">
+        <h2>Institution-Specific Aid</h2>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">
+            These amounts differ by college. Enter each school's offer from their financial aid letter.
+        </p>
+        <div id="institutionalAidContent"></div>
     </div>
 
     <!-- ── Financial Gap Analysis ── -->
@@ -814,28 +850,95 @@
         const netPrice  = coa - pellG - instG - schol;
         const unmetNeed = Math.max(0, netPrice - subL - unsubL - ws - fam);
 
-        compareList.push({
-            college:     { ...selectedCollege },
-            fafsa:       { pellGrant: pellG, institutionalGrant: instG, scholarshipAmount: schol,
-                           subsidizedLoan: subL, unsubsidizedLoan: unsubL, workStudy: ws, familyContribution: fam },
-            residency:   $("#residencySelect").val(),
-            living:      $("#livingSelect").val(),
-            health:      $("#healthInsuranceCheck").is(":checked") ? 0 : 2500,
-            computedCOA: coa,
-            netPrice:    Math.max(0, netPrice),
-            unmetNeed:   unmetNeed
-        });
+        const newEntry = {
+            college:               { ...selectedCollege },
+            fafsa:                 { pellGrant: pellG, institutionalGrant: instG, scholarshipAmount: schol,
+                                     subsidizedLoan: subL, unsubsidizedLoan: unsubL, workStudy: ws, familyContribution: fam },
+            residency:             $("#residencySelect").val(),
+            living:                $("#livingSelect").val(),
+            health:                $("#healthInsuranceCheck").is(":checked") ? 0 : 2500,
+            computedCOA:           coa,
+            netPrice:              Math.max(0, netPrice),
+            unmetNeed:             unmetNeed,
+            // Per-college institutional aid (editable independently per school)
+            instGrant:             instG,
+            scholarship:           schol,
+            workStudy:             ws,
+            // per-college major earnings fields
+            programsData:          [],
+            programsLoading:       true,
+            selectedMajorTitle:    null,
+            selectedMajorEarnings: null
+        };
+        compareList.push(newEntry);
 
         renderComparePills();
+        renderInstitutionalAidSection();
         recalculateGap();
         updateCompareBtn();
+        renderMajorSection();
+        loadProgramsForEntry(newEntry);
     }
 
     function removeFromCompare(idx) {
         compareList.splice(idx, 1);
         renderComparePills();
+        renderInstitutionalAidSection();
         recalculateGap();
         updateCompareBtn();
+        renderMajorSection();
+    }
+
+    // ── INSTITUTION-SPECIFIC AID SECTION (compare mode) ──────────────────────
+    function renderInstitutionalAidSection() {
+        const inCompare = compareList.length > 0;
+
+        // Show main FAFSA institutional fields only in single mode
+        $('#inst-fields-single').toggle(!inCompare);
+
+        if (!inCompare) {
+            $('#institutionalAidSection').hide();
+            return;
+        }
+
+        $('#institutionalAidSection').show();
+
+        let html = '';
+        compareList.forEach((entry, i) => {
+            const color = COMPARE_COLORS[i];
+            html += `
+                <div style="border-left:3px solid ${color};padding:14px 16px 6px;margin-bottom:14px;background:#fafbfc;border-radius:0 8px 8px 0;">
+                    <div style="font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+                        <span style="width:10px;height:10px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0;"></span>
+                        ${entry.college.name}
+                    </div>
+                    <div class="field-group">
+                        <label>Institutional Grant ($) <span style="font-weight:400;color:var(--accent)">— College grant, no repayment</span></label>
+                        <input type="number" class="inst-aid-input" data-idx="${i}" data-field="instGrant"
+                               value="${entry.instGrant || ''}" placeholder="0.00" min="0" step="0.01">
+                    </div>
+                    <div class="field-group">
+                        <label>Scholarship / Gift Aid ($)</label>
+                        <input type="number" class="inst-aid-input" data-idx="${i}" data-field="scholarship"
+                               value="${entry.scholarship || ''}" placeholder="0.00" min="0" step="0.01">
+                    </div>
+                    <div class="field-group" style="margin-bottom:8px;">
+                        <label>Federal Work-Study ($) <span style="font-weight:400;color:var(--muted)">— Earned through campus jobs</span></label>
+                        <input type="number" class="inst-aid-input" data-idx="${i}" data-field="workStudy"
+                               value="${entry.workStudy || ''}" placeholder="0.00" min="0" step="0.01">
+                    </div>
+                </div>`;
+        });
+
+        $('#institutionalAidContent').html(html);
+
+        // Wire up live recalculation on every keystroke
+        $('.inst-aid-input').on('input', function() {
+            const idx   = parseInt($(this).data('idx'));
+            const field = $(this).data('field');
+            compareList[idx][field] = pf($(this).val()) || 0;
+            recalculateGap();
+        });
     }
 
     function renderComparePills() {
@@ -881,14 +984,12 @@
             return body ? body.style.display !== 'none' : (idx === 0);
         });
 
-        // ── Read FAFSA values LIVE from the form fields ──
-        const pellG  = pf($("#pellGrant").val())          || 0;
-        const instG  = pf($("#institutionalGrant").val()) || 0;
-        const schol  = pf($("#scholarshipAmount").val())  || 0;
-        const subL   = pf($("#subsidizedLoan").val())     || 0;
-        const unsubL = pf($("#unsubsidizedLoan").val())   || 0;
-        const ws     = pf($("#workStudy").val())          || 0;
-        const fam    = pf($("#parentPlusLoan").val())     || 0;
+        // ── Global federal FAFSA values (same for all colleges) ──
+        const pellG  = pf($("#pellGrant").val())         || 0;
+        const subL   = pf($("#subsidizedLoan").val())    || 0;
+        const unsubL = pf($("#unsubsidizedLoan").val())  || 0;
+        const fam    = pf($("#parentPlusLoan").val())    || 0;
+        // instG, schol, ws are read per-college from entry below
 
         const d   = n => '$' + Math.round(Math.max(0, n)).toLocaleString('en-US');
         const sub = (n, col) => n > 0
@@ -907,7 +1008,12 @@
             // ── Compute COA from this college's data + entry residency/living ──
             const computedCOA = computeCOAForEntry(entry);
 
-            // ── Compute gap using LIVE FAFSA form values ──
+            // ── Per-college institutional aid from entry (editable in inst-aid section) ──
+            const instG = entry.instGrant   || 0;
+            const schol = entry.scholarship || 0;
+            const ws    = entry.workStudy   || 0;
+
+            // ── Compute gap: global federal values + per-college institutional values ──
             const totalGiftAid = pellG + instG + schol;
             const netPrice     = Math.max(0, computedCOA - totalGiftAid);
             const unmetNeed    = Math.max(0, netPrice - subL - unsubL - ws - fam);
@@ -916,6 +1022,8 @@
             entry.computedCOA = computedCOA;
             entry.netPrice    = netPrice;
             entry.unmetNeed   = unmetNeed;
+            entry.fafsa = { pellGrant: pellG, institutionalGrant: instG, scholarshipAmount: schol,
+                            subsidizedLoan: subL, unsubsidizedLoan: unsubL, workStudy: ws, familyContribution: fam };
 
             const unmetClass = unmetNeed > 0 ? 'gap-unmet' : 'gap-met';
             const unmetIcon  = unmetNeed > 0 ? '⚠️' : '✅';
@@ -1168,6 +1276,157 @@
         selectedCollege.selectedMajor = selectedText;
         selectedCollege.majorEarnings = parseFloat(val);
     });
+
+    // ── EARNINGS BY MAJOR — COMPARE MODE ─────────────────────────────────────
+
+    // Decide whether to show single or compare mode for the major section
+    function renderMajorSection() {
+        if (compareList.length === 0) {
+            // Revert to single-college mode
+            $("#majorSingleMode").show();
+            $("#majorCompareMode").hide().html('');
+        } else {
+            // Compare mode: hide single dropdown, show per-college accordions
+            $("#majorSingleMode").hide();
+            $("#majorCompareMode").show();
+            $("#majorSection").show();
+            renderMajorCompareAccordions();
+        }
+    }
+
+    function renderMajorCompareAccordions() {
+        const container = document.getElementById('majorCompareMode');
+        if (!container) return;
+
+        // Preserve open/closed state across re-renders
+        const openState = compareList.map((_, idx) => {
+            const body = document.getElementById('maj-body-' + idx);
+            return body ? body.style.display !== 'none' : (idx === 0);
+        });
+
+        let html = `<p style="font-size:12px;color:var(--muted);margin-bottom:14px;">
+            Select a major for each college to compare field-specific earnings.
+        </p>`;
+
+        compareList.forEach((entry, idx) => {
+            const color  = COMPARE_COLORS[idx];
+            const isOpen = openState[idx];
+
+            let bodyContent;
+            if (entry.programsLoading) {
+                bodyContent = `<p style="font-size:13px;color:var(--muted);font-style:italic;padding:10px 0;">Loading program data…</p>`;
+            } else if (!entry.programsData || entry.programsData.length === 0) {
+                bodyContent = `<p style="font-size:13px;color:var(--muted);font-style:italic;padding:10px 0;">No program-level earnings data available for this college.</p>`;
+            } else {
+                const options = entry.programsData.map(p =>
+                    `<option value="${p.earnings}" ${entry.selectedMajorEarnings == p.earnings && entry.selectedMajorTitle === p.title ? 'selected' : ''}>
+                        ${p.title} — $${Number(p.earnings).toLocaleString()}/yr
+                    </option>`
+                ).join('');
+
+                const earningsVisible = !!entry.selectedMajorTitle;
+                bodyContent = `
+                    <div class="field-group" style="margin-bottom:${earningsVisible ? '12px' : '0'}">
+                        <label>Select a Major</label>
+                        <select class="maj-select" data-idx="${idx}"
+                                style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
+                            <option value="">— Select a major —</option>
+                            ${options}
+                        </select>
+                    </div>
+                    <div class="maj-earnings-card" id="maj-earn-${idx}" style="display:${earningsVisible ? 'block' : 'none'}">
+                        <div class="earnings-row">
+                            <div class="stat">
+                                <div class="val blue">$${Number(entry.college.sixYrEarnings || 0).toLocaleString()}</div>
+                                <div class="lbl">College-wide Median (6 yrs)</div>
+                            </div>
+                            <div class="stat">
+                                <div class="val green" id="maj-earn-val-${idx}">
+                                    ${entry.selectedMajorEarnings ? '$' + Number(entry.selectedMajorEarnings).toLocaleString() : '—'}
+                                </div>
+                                <div class="lbl">${entry.selectedMajorTitle || 'This Major'} Median (6 yrs)</div>
+                            </div>
+                        </div>
+                    </div>`;
+            }
+
+            html += `
+                <div class="ca-item" style="border-left:3px solid ${color};margin-bottom:8px;">
+                    <div class="ca-header" onclick="toggleMajorAccordion(${idx})">
+                        <span class="ca-title">
+                            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color};margin-right:8px;flex-shrink:0;"></span>
+                            ${entry.college.name}
+                        </span>
+                        ${entry.selectedMajorTitle
+                            ? `<span class="ca-meta" style="color:${color};font-weight:600;">${entry.selectedMajorTitle}</span>`
+                            : `<span class="ca-meta">No major selected</span>`}
+                        <span class="ca-chevron" id="maj-chevron-${idx}">${isOpen ? '▲' : '▼'}</span>
+                    </div>
+                    <div class="ca-body" id="maj-body-${idx}" style="display:${isOpen ? 'block' : 'none'};">
+                        ${bodyContent}
+                    </div>
+                </div>`;
+        });
+
+        container.innerHTML = html;
+
+        // Bind change handlers for each per-college dropdown
+        document.querySelectorAll('.maj-select').forEach(sel => {
+            sel.addEventListener('change', function() {
+                const idx  = parseInt(this.dataset.idx);
+                const val  = parseFloat(this.value);
+                const text = this.options[this.selectedIndex].text.split(' — ')[0];
+                const entry = compareList[idx];
+                if (!entry) return;
+
+                if (!this.value) {
+                    entry.selectedMajorTitle    = null;
+                    entry.selectedMajorEarnings = null;
+                    document.getElementById('maj-earn-' + idx).style.display = 'none';
+                    // update header meta
+                    const meta = document.querySelector(`#maj-body-${idx}`).closest('.ca-item').querySelector('.ca-meta');
+                    if (meta) meta.textContent = 'No major selected';
+                } else {
+                    entry.selectedMajorTitle    = text;
+                    entry.selectedMajorEarnings = val;
+                    const earnCard = document.getElementById('maj-earn-' + idx);
+                    document.getElementById('maj-earn-val-' + idx).textContent = '$' + Number(val).toLocaleString();
+                    const lblEl = earnCard.querySelector('.lbl:last-child');
+                    if (lblEl) lblEl.textContent = text + ' Median (6 yrs)';
+                    earnCard.style.display = 'block';
+                    // update header meta
+                    const meta = document.querySelector(`#maj-body-${idx}`).closest('.ca-item').querySelector('.ca-meta');
+                    if (meta) { meta.textContent = text; meta.style.color = COMPARE_COLORS[idx]; meta.style.fontWeight = '600'; }
+                }
+            });
+        });
+    }
+
+    function toggleMajorAccordion(idx) {
+        const body = document.getElementById('maj-body-' + idx);
+        const chev = document.getElementById('maj-chevron-' + idx);
+        if (!body) return;
+        const isOpen = body.style.display !== 'none';
+        body.style.display = isOpen ? 'none' : 'block';
+        if (chev) chev.textContent = isOpen ? '▼' : '▲';
+    }
+
+    // Load programs data for a compare entry from the API
+    function loadProgramsForEntry(entry) {
+        entry.programsLoading = true;
+        entry.programsData    = [];
+        renderMajorCompareAccordions();
+
+        $.get("/api/colleges/" + encodeURIComponent(entry.college.name) + "/programs", function(data) {
+            entry.programsLoading = false;
+            entry.programsData    = data || [];
+            renderMajorCompareAccordions();
+        }).fail(function() {
+            entry.programsLoading = false;
+            entry.programsData    = [];
+            renderMajorCompareAccordions();
+        });
+    }
 
     $("#searchButton").on("click", function() {
         const college = $("#collegeSearch").val().trim();
