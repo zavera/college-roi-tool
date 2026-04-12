@@ -174,8 +174,11 @@ public class GroqService {
 "---\n" +
 "Heading: \"Possible Employment Opportunities\"\n" +
 "\n" +
-"Write 3-4 bullet points specific to the student's major about realistic part-time or campus employment paths.\n" +
-"Mention how earning while in school reduces borrowing and builds professional experience.\n" +
+"Write 3-4 bullet points for the student's specific major. CRITICAL: Each bullet MUST name a real,\n" +
+"concrete job title or role tied to that exact field of study — do NOT write generic phrases like\n" +
+"'internships related to your major', 'part-time campus jobs', or 'freelance work'.\n" +
+"Example: if major = Computer Science, write 'Software developer intern at a local startup or university\n" +
+"IT department'. Mention how earning while in school reduces total borrowing.\n" +
 "Each distinct employment idea = its own <li>.\n" +
 "<ul style=\"margin:4px 0 16px;padding-left:20px;font-size:13px;line-height:1.8;color:#1a1a1a;\">\n" +
 "  <li style=\"margin-bottom:5px;\">[bullet 1]</li>\n" +
@@ -324,13 +327,20 @@ public class GroqService {
 "<p style=\"font-size:13px;color:#1a1a1a;margin:0 0 16px;\">Financial industry sources generally cite annual student loan repayment under 10%% of income as a manageable threshold. This figure is provided for reference only.</p>\n" +
 "<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
 "\n" +
-"EMPLOYMENT OPPORTUNITIES (keep brief — 2 to 3 bullets max)\n" +
+"EMPLOYMENT OPPORTUNITIES — MUST BE MAJOR-SPECIFIC (2 to 3 bullets max)\n" +
 "<h3 style=\"color:#1e5c1e;font-size:15px;font-weight:700;margin:20px 0 8px;\">Possible Employment Opportunities</h3>\n" +
-"Write 2-3 brief bullet points relevant to the major(s) in this comparison. Focus on realistic part-time or campus paths that reduce borrowing.\n" +
+"CRITICAL: Do NOT write generic bullets like 'part-time campus jobs', 'internships related to your major',\n" +
+"or 'freelance work'. Each bullet MUST name a specific real job title, role, or concrete opportunity tied\n" +
+"directly to the 'Selected Major' values listed in the per-college data above. Examples of what to do:\n" +
+"  - If major = Computer Science: 'Software developer intern at a local startup or university IT department'\n" +
+"  - If major = Nursing: 'Certified Nursing Assistant (CNA) role at a nearby hospital or care facility'\n" +
+"  - If major = Business: 'Bookkeeping or accounts-payable assistant role at a local small business'\n" +
+"If multiple different majors appear across the colleges, address each with its own concrete example.\n" +
+"Briefly note how earning while studying reduces total borrowing.\n" +
 "<ul style=\"margin:4px 0 16px;padding-left:20px;font-size:13px;line-height:1.8;color:#1a1a1a;\">\n" +
-"  <li style=\"margin-bottom:5px;\">[brief bullet 1]</li>\n" +
-"  <li style=\"margin-bottom:5px;\">[brief bullet 2]</li>\n" +
-"  <li style=\"margin-bottom:5px;\">[brief bullet 3 — optional]</li>\n" +
+"  <li style=\"margin-bottom:5px;\">[specific major-tied bullet 1]</li>\n" +
+"  <li style=\"margin-bottom:5px;\">[specific major-tied bullet 2]</li>\n" +
+"  <li style=\"margin-bottom:5px;\">[specific major-tied bullet 3 — only if a 3rd distinct major is present]</li>\n" +
 "</ul>\n" +
 "<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
 "\n" +
@@ -562,8 +572,12 @@ public class GroqService {
             boolean s1Ok = earningsForPct > 0 && (s1a * 100.0 / earningsForPct) <= 10.0;
             boolean s2Ok = earningsForPct > 0 && (s2a * 100.0 / earningsForPct) <= 10.0;
 
+            String majorTitle = c.get("selectedMajorTitle") != null
+                    ? String.valueOf(c.get("selectedMajorTitle")) : null;
+
             detail.append(String.format(Locale.US,
                 "\n--- College %d: %s ---\n" +
+                "Selected Major:            %s\n" +
                 "Net Price/yr:              $%,.0f\n" +
                 "Federal Loans/yr:          $%,.0f  (Sub $%,.0f + Unsub $%,.0f)\n" +
                 "Unmet Need/yr:             $%,.0f\n" +
@@ -585,6 +599,7 @@ public class GroqService {
                 "  Pct of Earnings: ~%s  [THRESHOLD: %s <= 10%% => color %s, indicator %s]\n" +
                 "  S2 Footnote values: $%,.0f/yr x 4 = $%,.0f + $%,d federal\n",
                 i + 1, name,
+                majorTitle != null ? majorTitle : "Not selected",
                 netP,
                 fedL, subL, unsubL,
                 unmet,
