@@ -327,20 +327,18 @@ public class GroqService {
 "<p style=\"font-size:13px;color:#1a1a1a;margin:0 0 16px;\">Financial industry sources generally cite annual student loan repayment under 10%% of income as a manageable threshold. This figure is provided for reference only.</p>\n" +
 "<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
 "\n" +
-"EMPLOYMENT OPPORTUNITIES — MUST BE MAJOR-SPECIFIC (2 to 3 bullets max)\n" +
+"EMPLOYMENT OPPORTUNITIES — MAJOR-SPECIFIC ONLY\n" +
 "<h3 style=\"color:#1e5c1e;font-size:15px;font-weight:700;margin:20px 0 8px;\">Possible Employment Opportunities</h3>\n" +
-"CRITICAL: Do NOT write generic bullets like 'part-time campus jobs', 'internships related to your major',\n" +
-"or 'freelance work'. Each bullet MUST name a specific real job title, role, or concrete opportunity tied\n" +
-"directly to the 'Selected Major' values listed in the per-college data above. Examples of what to do:\n" +
-"  - If major = Computer Science: 'Software developer intern at a local startup or university IT department'\n" +
-"  - If major = Nursing: 'Certified Nursing Assistant (CNA) role at a nearby hospital or care facility'\n" +
-"  - If major = Business: 'Bookkeeping or accounts-payable assistant role at a local small business'\n" +
-"If multiple different majors appear across the colleges, address each with its own concrete example.\n" +
-"Briefly note how earning while studying reduces total borrowing.\n" +
+"Look at 'MAJORS SELECTED IN THIS COMPARISON' at the very top of the data above.\n" +
+"Write exactly ONE bullet per major listed there. Each bullet MUST:\n" +
+"  1. Open with the major name in bold: e.g. <strong>Computer Science:</strong>\n" +
+"  2. Name at least one specific, real job title or role tied to that field\n" +
+"     (e.g. 'software developer intern', 'CNA at a local hospital', 'junior bookkeeper')\n" +
+"  3. NOT use generic phrases like 'internships related to your major', 'campus jobs', 'freelance work'\n" +
+"If no majors were selected, write 2 general but realistic campus employment bullets instead.\n" +
+"End the last bullet with a brief note that earning while studying reduces total borrowing.\n" +
 "<ul style=\"margin:4px 0 16px;padding-left:20px;font-size:13px;line-height:1.8;color:#1a1a1a;\">\n" +
-"  <li style=\"margin-bottom:5px;\">[specific major-tied bullet 1]</li>\n" +
-"  <li style=\"margin-bottom:5px;\">[specific major-tied bullet 2]</li>\n" +
-"  <li style=\"margin-bottom:5px;\">[specific major-tied bullet 3 — only if a 3rd distinct major is present]</li>\n" +
+"  [one <li> per major from the MAJORS SELECTED list]\n" +
 "</ul>\n" +
 "<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
 "\n" +
@@ -524,9 +522,28 @@ public class GroqService {
         double r      = 0.065 / 12.0;
         double factor = r * Math.pow(1 + r, 120) / (Math.pow(1 + r, 120) - 1);
 
-        // ── Overview table rows (tab-separated for LLM clarity) ──────────────
+        // ── Collect all selected majors upfront ───────────────────────────────
+        List<String> selectedMajors = new ArrayList<>();
+        for (Map<String, Object> c : colleges) {
+            Object mt = c.get("selectedMajorTitle");
+            if (mt != null && !String.valueOf(mt).isBlank() && !String.valueOf(mt).equalsIgnoreCase("null")) {
+                String title = String.valueOf(mt).trim();
+                if (!selectedMajors.contains(title)) selectedMajors.add(title);
+            }
+        }
+
+        // ── Overview table rows ───────────────────────────────────────────────
         StringBuilder overview = new StringBuilder();
-        overview.append("=== OVERVIEW DATA (for Comparison at a Glance table) ===\n");
+        // Majors summary — prominent, at the very top so the LLM cannot miss it
+        overview.append("=== MAJORS SELECTED IN THIS COMPARISON ===\n");
+        if (selectedMajors.isEmpty()) {
+            overview.append("(No majors selected — write general employment advice)\n");
+        } else {
+            for (int m = 0; m < selectedMajors.size(); m++) {
+                overview.append(String.format("  Major %d: %s\n", m + 1, selectedMajors.get(m)));
+            }
+        }
+        overview.append("\n=== OVERVIEW DATA (for Comparison at a Glance table) ===\n");
         overview.append(String.format("%-38s | %10s | %10s | %10s | %10s\n",
                 "College", "COA/yr", "Net Price", "Unmet Need", "Free Aid"));
 
@@ -636,9 +653,9 @@ public class GroqService {
             profile.append("Extracurriculars: ").append(req.getExtracurriculars()).append(". ");
         if (req.getAcademicAchievements() != null && !req.getAcademicAchievements().isBlank())
             profile.append("Achievements: ").append(req.getAcademicAchievements()).append(". ");
-        // Include major info for employment suggestions
-        if (req.getMajor() != null && !req.getMajor().isBlank())
-            profile.append("Major focus: ").append(req.getMajor()).append(". ");
+        // Majors from compare list (for employment section context)
+        if (!selectedMajors.isEmpty())
+            profile.append("Majors in comparison: ").append(String.join(", ", selectedMajors)).append(". ");
         String profileStr = profile.length() > 0 ? profile.toString().trim() : "Not provided";
 
         String dataBlock = overview.toString() + detail.toString();
