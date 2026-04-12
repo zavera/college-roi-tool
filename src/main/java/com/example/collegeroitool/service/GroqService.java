@@ -219,6 +219,103 @@ public class GroqService {
 "7. Employment opportunities MUST use <ul><li> format — never plain sentences.\n";
 
     // =========================================================================
+    //  COMPARE PROMPT TEMPLATE  (comparison mode — up to 5 colleges)
+    //  %s = formatted college data block (built dynamically)
+    //  %s = student profile string
+    // =========================================================================
+    private static final String COMPARE_PROMPT_TEMPLATE =
+"You are producing an AI College Comparison Summary for a student.\n" +
+"Output ONLY valid HTML — no markdown, no plain text, no code fences.\n" +
+"Use inline CSS only. Do not use <html>, <head>, <body>, or <style> tags.\n" +
+"\n" +
+"COMPARISON DATA (pre-calculated — do not recalculate):\n" +
+"%s\n" +
+"Student profile: %s\n" +
+"\n" +
+"===============================================\n" +
+"OUTPUT — produce exactly this HTML document structure:\n" +
+"===============================================\n" +
+"\n" +
+"Wrap everything in:\n" +
+"<div style=\"font-family:'Segoe UI',Arial,sans-serif;max-width:680px;color:#1a1a1a;line-height:1.6;font-size:14px;\">\n" +
+"\n" +
+"---\n" +
+"SECTION 1: COMPARISON OVERVIEW TABLE\n" +
+"---\n" +
+"<h3 style=\"color:#1e5c1e;font-size:15px;font-weight:700;margin:20px 0 8px;\">College Comparison Overview</h3>\n" +
+"<p style=\"font-size:13px;margin:0 0 12px;\">Here is a side-by-side breakdown of cost and coverage for each college.</p>\n" +
+"\n" +
+"Render a table with colleges as rows and COA / Net Price / Unmet Need / Free Aid as columns.\n" +
+"Header row background: #1e5c1e, color: white.\n" +
+"Highlight the lowest Unmet Need cell in green (#f0fdf4 background, #276749 font-weight 700).\n" +
+"Highlight the highest Unmet Need cell in light red (#fff5f5 background, #c53030 font-weight 700).\n" +
+"<table style=\"width:100%%;border-collapse:collapse;margin-bottom:16px;font-size:13px;\">\n" +
+"  <thead><tr style=\"background:#1e5c1e;color:white;\">\n" +
+"    <th style=\"padding:9px 12px;text-align:left;border:1px solid #1e5c1e;\">College</th>\n" +
+"    <th style=\"padding:9px 12px;text-align:right;border:1px solid #1e5c1e;\">Total COA/yr</th>\n" +
+"    <th style=\"padding:9px 12px;text-align:right;border:1px solid #1e5c1e;\">Net Price</th>\n" +
+"    <th style=\"padding:9px 12px;text-align:right;border:1px solid #1e5c1e;\">Unmet Need</th>\n" +
+"    <th style=\"padding:9px 12px;text-align:right;border:1px solid #1e5c1e;\">Free Aid</th>\n" +
+"  </tr></thead>\n" +
+"  <tbody>\n" +
+"    [one <tr> per college — alternate row bg #f9f9f9 / white]\n" +
+"  </tbody>\n" +
+"</table>\n" +
+"<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
+"\n" +
+"---\n" +
+"SECTION 2: AFFORDABILITY RANKING\n" +
+"---\n" +
+"<h3 style=\"color:#1e5c1e;font-size:15px;font-weight:700;margin:20px 0 8px;\">Affordability Ranking</h3>\n" +
+"Rank colleges from most to least affordable based on Unmet Need (lowest = most affordable).\n" +
+"Write 2-3 sentences explaining the ranking and what it means for the student.\n" +
+"<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
+"\n" +
+"---\n" +
+"SECTION 3: EARNINGS CONTEXT (if available)\n" +
+"---\n" +
+"<h3 style=\"color:#1e5c1e;font-size:15px;font-weight:700;margin:20px 0 8px;\">For Context: Earnings Data</h3>\n" +
+"If any college has 6-year earnings data, render a table showing college name and median 6-yr earnings.\n" +
+"If no earnings data is available, write: \"Earnings data was not available for the selected colleges.\"\n" +
+"<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
+"\n" +
+"---\n" +
+"SECTION 4: KEY CONSIDERATIONS\n" +
+"---\n" +
+"<h3 style=\"color:#1e5c1e;font-size:15px;font-weight:700;margin:20px 0 8px;\">Key Considerations</h3>\n" +
+"Write 3-4 bullet points comparing the colleges on factors like: affordability gap, loan burden, earnings potential, and total 4-year cost.\n" +
+"<ul style=\"margin:4px 0 16px;padding-left:20px;font-size:13px;line-height:1.8;color:#1a1a1a;\">\n" +
+"  <li style=\"margin-bottom:6px;\">[consideration 1]</li>\n" +
+"  <li style=\"margin-bottom:6px;\">[consideration 2]</li>\n" +
+"  <li style=\"margin-bottom:6px;\">[consideration 3]</li>\n" +
+"  <li style=\"margin-bottom:6px;\">[consideration 4]</li>\n" +
+"</ul>\n" +
+"<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
+"\n" +
+"---\n" +
+"SECTION 5: ADDITIONAL RESOURCES\n" +
+"---\n" +
+"<h3 style=\"color:#1e5c1e;font-size:15px;font-weight:700;margin:20px 0 8px;\">Additional Resources to Explore</h3>\n" +
+"<p style=\"font-size:13px;margin:0 0 6px;\">For scholarship opportunities that may apply to your profile, visit:</p>\n" +
+"<p style=\"margin:0 0 16px;\"><a href=\"https://the.ismaili/us/en/resources/scholarships\" target=\"_blank\" style=\"color:#1e5c1e;text-decoration:underline;\">https://the.ismaili/us/en/resources/scholarships</a></p>\n" +
+"<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
+"\n" +
+"---\n" +
+"SECTION 6: DISCLAIMER\n" +
+"---\n" +
+"<p style=\"font-size:13px;color:#1a1a1a;margin:0 0 16px;\">This information is provided to help you understand your financial aid packages. For personalized guidance, speak with each school's financial aid office or an independent financial advisor.</p>\n" +
+"<p style=\"font-size:11px;color:#888;font-style:italic;border-top:1px solid #ddd;padding-top:12px;margin-top:16px;\">This document is for informational purposes only.</p>\n" +
+"\n" +
+"===============================================\n" +
+"STRICT RULES:\n" +
+"===============================================\n" +
+"1. Output ONLY the HTML wrapper div. No text outside HTML tags, no markdown, no code fences.\n" +
+"2. Use ONLY the pre-calculated numbers provided. Do not recalculate or invent values.\n" +
+"3. Do NOT include any organization name, branding, or program name.\n" +
+"4. Section headings use <h3 style=\"color:#1e5c1e;font-size:15px;font-weight:700;margin:20px 0 8px;\">.\n" +
+"5. The scholarship URL must be a real <a href> hyperlink.\n";
+
+    // =========================================================================
 
     @Value("${groq.api.key}")
     private String apiKey;
@@ -235,7 +332,9 @@ public class GroqService {
     //  Public entry point
     // -------------------------------------------------------------------------
     public String getFinancialAdvice(LlmAdviceRequest req) {
-        String prompt = buildPrompt(req);
+        String prompt = Boolean.TRUE.equals(req.getCompareMode()) && req.getCompareColleges() != null
+                ? buildComparePrompt(req)
+                : buildPrompt(req);
 
         Map<String, Object> message = new HashMap<>();
         message.put("role", "user");
@@ -353,6 +452,70 @@ public class GroqService {
                 unmetNeed * 4,
                 (long) s1p
         );
+    }
+
+    // -------------------------------------------------------------------------
+    //  Compare prompt builder
+    // -------------------------------------------------------------------------
+    private String buildComparePrompt(LlmAdviceRequest req) {
+
+        java.util.List<java.util.Map<String, Object>> colleges = req.getCompareColleges();
+
+        StringBuilder dataBlock = new StringBuilder();
+        for (int i = 0; i < colleges.size(); i++) {
+            java.util.Map<String, Object> c = colleges.get(i);
+            double coa      = toDouble(c.get("coa"));
+            double netPrice = toDouble(c.get("netPrice"));
+            double unmet    = toDouble(c.get("unmetNeed"));
+            double pell     = toDouble(c.get("pellGrant"));
+            double instG    = toDouble(c.get("institutionalGrant"));
+            double schol    = toDouble(c.get("scholarshipAmount"));
+            double subL     = toDouble(c.get("subsidizedLoan"));
+            double unsubL   = toDouble(c.get("unsubsidizedLoan"));
+            double ws       = toDouble(c.get("workStudy"));
+            double fam      = toDouble(c.get("familyContribution"));
+            double earn     = toDouble(c.get("sixYrEarnings"));
+            double freeAid  = pell + instG + schol;
+
+            dataBlock.append(String.format(Locale.US,
+                "College %d: %s\n" +
+                "  Total COA/yr:       $%,.0f\n" +
+                "  Net Price:          $%,.0f\n" +
+                "  Unmet Need:         $%,.0f\n" +
+                "  Free Aid Total:     $%,.0f  (Pell $%,.0f + Inst Grant $%,.0f + Scholarship $%,.0f)\n" +
+                "  Federal Loans:      $%,.0f  (Sub $%,.0f + Unsub $%,.0f)\n" +
+                "  Work-Study:         $%,.0f\n" +
+                "  Family Contribution:$%,.0f\n" +
+                "  6-yr Median Earnings:%s\n\n",
+                i + 1, c.getOrDefault("collegeName", "College " + (i + 1)),
+                coa, netPrice, unmet,
+                freeAid, pell, instG, schol,
+                subL + unsubL, subL, unsubL,
+                ws, fam,
+                earn > 0 ? String.format(Locale.US, " $%,.0f", earn) : " N/A"
+            ));
+        }
+
+        // Student profile
+        StringBuilder profile = new StringBuilder();
+        if (Boolean.TRUE.equals(req.getFirstGeneration())) profile.append("First-generation college student. ");
+        if (req.getGpa() != null)                          profile.append("GPA: ").append(req.getGpa()).append(". ");
+        if (req.getGender() != null && !req.getGender().isBlank()) profile.append("Gender: ").append(req.getGender()).append(". ");
+        if (req.getRace()   != null && !req.getRace().isBlank())   profile.append("Race/Ethnicity: ").append(req.getRace()).append(". ");
+        if (req.getExtracurriculars() != null && !req.getExtracurriculars().isBlank())
+            profile.append("Extracurriculars: ").append(req.getExtracurriculars()).append(". ");
+        if (req.getAcademicAchievements() != null && !req.getAcademicAchievements().isBlank())
+            profile.append("Achievements: ").append(req.getAcademicAchievements()).append(". ");
+        String profileStr = profile.length() > 0 ? profile.toString().trim() : "Not provided";
+
+        return String.format(Locale.US, COMPARE_PROMPT_TEMPLATE, dataBlock.toString(), profileStr);
+    }
+
+    // -- Helper: null-safe double from Object ---------------------------------
+    private static double toDouble(Object v) {
+        if (v == null) return 0.0;
+        if (v instanceof Number) return ((Number) v).doubleValue();
+        try { return Double.parseDouble(v.toString()); } catch (Exception e) { return 0.0; }
     }
 
     // -- Helper: null-safe double ---------------------------------------------

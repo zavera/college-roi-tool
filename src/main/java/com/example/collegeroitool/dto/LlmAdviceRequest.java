@@ -2,6 +2,10 @@ package com.example.collegeroitool.dto;
 
 public class LlmAdviceRequest {
 
+    // ── Compare mode ──────────────────────────────────────────────────────────
+    private Boolean compareMode;
+    private java.util.List<java.util.Map<String, Object>> compareColleges;
+
     private String collegeName;
     private Double federalLoan;
     private Double parentPlusLoan;
@@ -111,4 +115,10 @@ public class LlmAdviceRequest {
 
     public Double getCollegeWideEarnings() { return collegeWideEarnings; }
     public void setCollegeWideEarnings(Double collegeWideEarnings) { this.collegeWideEarnings = collegeWideEarnings; }
+
+    public Boolean getCompareMode() { return compareMode; }
+    public void setCompareMode(Boolean compareMode) { this.compareMode = compareMode; }
+
+    public java.util.List<java.util.Map<String, Object>> getCompareColleges() { return compareColleges; }
+    public void setCompareColleges(java.util.List<java.util.Map<String, Object>> compareColleges) { this.compareColleges = compareColleges; }
 }
