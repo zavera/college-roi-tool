@@ -2,16 +2,19 @@
 <html lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Financial Advisor</title>
+    <title>Astra Financial Aid Advisor</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/ui-lightness/jquery-ui.css">
     <style>
         :root {
-            --primary:   #2d7a2d;
-            --primary-dk:#1e5c1e;
-            --accent:    #2d7a2d;
-            --bg:        #f5f7fa;
+            --primary:   #C9A87C;
+            --primary-dk:#A68A5E;
+            --primary-lt:#EAD9C0;
+            --accent:    #2d7a4f;
+            --navy:      #2d3040;
+            --navy-lt:   #3a3f55;
+            --bg:        #f0f1f5;
             --card:      #ffffff;
             --text:      #1a1a1a;
             --muted:     #666666;
@@ -28,24 +31,29 @@
 
         /* ── Header ── */
         header {
-            background: #1e5c1e;
+            background: var(--navy);
             color: white;
-            padding: 20px 32px;
+            padding: 18px 32px;
             display: flex;
             align-items: center;
             gap: 14px;
-            box-shadow: 0 2px 8px rgba(30,92,30,0.3);
+            box-shadow: 0 2px 16px rgba(0,0,0,0.3);
         }
-        header h1  { font-size: 20px; font-weight: 700; }
-        header p   { font-size: 13px; opacity: .82; margin-top: 2px; }
+        .logo-mark { flex-shrink: 0; }
+        header h1  { font-size: 19px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
+        header p   { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 3px; }
         .hdr-badge {
             margin-left: auto;
-            background: rgba(255,255,255,.15);
-            border: 1px solid rgba(255,255,255,.3);
+            border: 1px solid rgba(201,168,124,0.35);
+            background: rgba(201,168,124,0.1);
+            color: var(--primary);
             border-radius: 20px;
-            padding: 4px 14px;
-            font-size: 12px;
-            font-weight: 600;
+            padding: 4px 13px;
+            font-size: 10px;
+            font-weight: 700;
+            white-space: nowrap;
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
         /* ── Container ── */
@@ -102,14 +110,14 @@
         #results .roi-card {
             margin-top: 12px;
             padding: 14px 16px;
-            background: #f0faf0;
-            border: 1px solid #a8d5a8;
+            background: #fdf8f2;
+            border: 1px solid var(--primary-lt);
             border-radius: 8px;
         }
         #results .roi-card h3 {
             font-size: 14px;
             font-weight: 700;
-            color: var(--primary);
+            color: var(--navy);
             margin-bottom: 8px;
         }
         #results .roi-card p  { font-size: 13px; margin: 3px 0; color: var(--text); }
@@ -213,45 +221,47 @@
             display: block;
             width: 100%;
             padding: 12px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 700;
-            background: var(--primary);
-            color: white;
+            background: linear-gradient(135deg, var(--navy), var(--navy-lt));
+            color: var(--primary);
             border: none;
             border-radius: 6px;
             cursor: pointer;
             margin-top: 20px;
-            transition: background .2s;
+            letter-spacing: 0.3px;
+            transition: filter .2s;
         }
-        .btn-primary:hover { background: var(--primary-dk); }
+        .btn-primary:hover { filter: brightness(1.14); }
 
         .btn-ai {
             display: block;
             width: 100%;
             padding: 13px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white;
+            background: linear-gradient(135deg, var(--navy), var(--navy-lt));
+            color: var(--primary);
             border: none;
             border-radius: 6px;
             cursor: pointer;
+            letter-spacing: 0.3px;
             transition: filter .2s;
         }
-        .btn-ai:hover    { filter: brightness(1.07); }
-        .btn-ai:disabled { background: #a0aec0; cursor: not-allowed; filter: none; }
+        .btn-ai:hover    { filter: brightness(1.14); }
+        .btn-ai:disabled { background: #a0aec0; color: white; cursor: not-allowed; filter: none; }
 
         /* ── AI section ── */
         #aiSection {
-            background: #f0faf0;
-            border: 1px solid #a8d5a8;
+            background: #fdf8f2;
+            border: 1px solid var(--primary-lt);
             border-radius: 10px;
             padding: 24px;
         }
         #aiSection h2 {
             font-size: 16px;
             font-weight: 700;
-            color: var(--primary-dk);
+            color: var(--navy);
             margin-bottom: 6px;
         }
         #aiSection p.desc {
@@ -263,7 +273,7 @@
 
         .groq-tag {
             display: inline-block;
-            background: #d4edd4;
+            background: rgba(201,168,124,0.15);
             color: var(--primary-dk);
             font-size: 11px;
             font-weight: 700;
@@ -276,7 +286,7 @@
         #aiSpinner {
             display: none;
             padding: 16px 0;
-            color: var(--primary);
+            color: var(--primary-dk);
             font-style: italic;
             font-size: 14px;
         }
@@ -319,7 +329,7 @@
                 font-size: 15px;
             }
             input[type="text"], input[type="number"], select#majorSelect {
-                font-size: 16px; /* prevents iOS zoom on focus */
+                font-size: 16px;
                 padding: 11px 12px;
             }
             .btn-primary, .btn-ai {
@@ -363,7 +373,7 @@
         .gap-row:last-child { border-bottom: none; }
         .gap-label { color: var(--muted); }
         .gap-value { font-weight: 600; color: var(--text); }
-        .gap-cost-row { background: #f5faf5; border-radius: 6px; padding: 10px 12px !important; margin-bottom: 4px; }
+        .gap-cost-row { background: #fdf8f2; border-radius: 6px; padding: 10px 12px !important; margin-bottom: 4px; }
         .gap-cost-row .gap-label { color: var(--primary-dk); font-weight: 700; font-size: 13px; }
         .gap-cost-row .gap-value { color: var(--primary-dk); font-size: 15px; }
         .gap-total-row {
@@ -397,7 +407,7 @@
             font-size: 14px !important;
         }
         .ui-menu-item-wrapper.ui-state-active {
-            background: #d4edd4 !important;
+            background: #fdf8f2 !important;
             color: var(--primary-dk) !important;
             border: none !important;
         }
@@ -410,14 +420,14 @@
             font-size: 14px;
             font-weight: 700;
             background: white;
-            color: var(--primary);
-            border: 2px solid var(--primary);
+            color: var(--navy);
+            border: 2px solid var(--navy);
             border-radius: 6px;
             cursor: pointer;
             margin-top: 10px;
             transition: background .2s, color .2s;
         }
-        .btn-compare:hover:not(:disabled) { background: #e8f5e8; }
+        .btn-compare:hover:not(:disabled) { background: #eef0f5; }
         .btn-compare:disabled { border-color: #ccc; color: #aaa; cursor: not-allowed; background: white; }
 
         /* ── Compare Pills ── */
@@ -458,7 +468,7 @@
             user-select: none;
             flex-wrap: wrap;
         }
-        .ca-header:hover { background: #f0f4f0; }
+        .ca-header:hover { background: #f5f0e8; }
         .ca-title { font-size: 14px; font-weight: 700; flex: 1; display: flex; align-items: center; min-width: 160px; }
         .ca-meta { font-size: 12px; color: var(--muted); flex-shrink: 0; }
         .ca-chevron { font-size: 11px; color: var(--muted); flex-shrink: 0; }
@@ -480,16 +490,131 @@
             margin-bottom: 16px;
         }
         #coverageChartWrap canvas { display: block; }
+
+        /* ── Premium Card ── */
+        .premium-card {
+            background: var(--card);
+            border-radius: 10px;
+            border: 2px solid var(--primary);
+            box-shadow: 0 6px 32px rgba(201,168,124,0.18);
+            overflow: hidden;
+        }
+        .premium-header {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-lt) 100%);
+            padding: 22px 26px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        .premium-header-text h2 {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
+        }
+        .premium-header-text p {
+            font-size: 12px;
+            color: rgba(255,255,255,0.65);
+            line-height: 1.6;
+            max-width: 380px;
+        }
+        .premium-price-tag {
+            background: var(--primary);
+            color: var(--navy);
+            border-radius: 10px;
+            padding: 10px 18px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .premium-price-tag .price { font-size: 22px; font-weight: 800; display: block; line-height: 1; }
+        .premium-price-tag .per   { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; margin-top: 3px; display: block; }
+        .premium-tagline {
+            padding: 13px 26px;
+            background: #fdf8f2;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--navy);
+            font-weight: 600;
+        }
+        .premium-bullets {
+            padding: 20px 26px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        @media(max-width:520px){ .premium-bullets { grid-template-columns: 1fr; } }
+        .premium-bullet {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 13px 14px;
+            border-radius: 8px;
+            background: white;
+            border: 1px solid var(--border);
+        }
+        .bullet-icon {
+            width: 30px; height: 30px; border-radius: 7px;
+            background: var(--navy);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .bullet-icon svg { color: var(--primary); }
+        .bullet-text strong { display: block; font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+        .bullet-text span   { font-size: 11px; color: var(--muted); line-height: 1.45; }
+        .premium-preview {
+            position: relative; padding: 22px 26px; overflow: hidden; min-height: 200px;
+        }
+        .premium-preview-inner {
+            filter: blur(5px); opacity: 0.35; pointer-events: none; user-select: none;
+            font-size: 13px; line-height: 1.75; color: var(--text);
+        }
+        .premium-preview-inner strong { display: block; margin-bottom: 6px; color: var(--navy); }
+        .premium-preview-inner p { margin-bottom: 10px; }
+        .premium-preview-overlay {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.72); backdrop-filter: blur(3px);
+            padding: 28px 24px; text-align: center;
+        }
+        .lock-icon { color: var(--primary-dk); margin-bottom: 14px; }
+        .overlay-title { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
+        .overlay-sub {
+            font-size: 13px; color: var(--muted); margin-bottom: 22px;
+            max-width: 380px; line-height: 1.55;
+        }
+        .btn-unlock {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-lt) 100%);
+            color: var(--primary); font-size: 14px; font-weight: 700;
+            padding: 13px 30px; border-radius: 8px; border: none; cursor: pointer;
+            letter-spacing: 0.3px; transition: filter .2s;
+        }
+        .btn-unlock:hover { filter: brightness(1.14); }
+        .premium-guarantee {
+            padding: 13px 26px; background: #fdf8f2; border-top: 1px solid var(--border);
+            display: flex; align-items: center; gap: 10px; font-size: 11px; color: var(--muted);
+        }
+        .premium-guarantee svg { color: var(--accent); flex-shrink: 0; }
     </style>
 </head>
 <body>
 
 <header>
-    <div>
-        <h1>Student Financial Advisor</h1>
-        <p>Student Financial Advisor</p>
+    <div class="logo-mark">
+        <svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg" aria-label="Astra logo">
+            <rect width="42" height="42" rx="9" fill="#1e2130"/>
+            <path d="M21 6 L37 36 L5 36 Z" fill="none" stroke="#C9A87C" stroke-width="2.4" stroke-linejoin="miter"/>
+            <path d="M21 6 L30 36" fill="none" stroke="#C9A87C" stroke-width="2" stroke-opacity="0.52"/>
+            <line x1="9" y1="29" x2="33" y2="29" stroke="#C9A87C" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>
     </div>
-    <span class="hdr-badge">College Scorecard + Groq AI</span>
+    <div>
+        <h1>Astra Financial Aid Advisor</h1>
+        <p>Intelligent financial guidance for students, parents, and education counselors</p>
+    </div>
+    <span class="hdr-badge">Advisor</span>
 </header>
 
 <div class="container">
@@ -527,6 +652,7 @@
             </label>
         </div>
         <div id="results"></div>
+
         <button id="searchButton" class="btn-primary">Look Up Cost of Attendance</button>
         <button id="addToCompareBtn" class="btn-compare" disabled>+ Add to Compare</button>
         <div id="comparePillRow" class="compare-pill-row"></div>
@@ -559,7 +685,7 @@
             </div>
         </div>
 
-        <!-- Compare mode: one accordion per college (shown when compareList.length > 0) -->
+        <!-- Compare mode: one accordion per college -->
         <div id="majorCompareMode" style="display:none"></div>
     </div>
 
@@ -674,7 +800,7 @@
         </div>
     </div>
 
-    <!-- ── AI Advisor ── -->
+    <!-- ── AI Financial Summary ── -->
     <div id="aiSection">
         <h2>
             AI Financial Summary
@@ -684,11 +810,95 @@
             Enter your aid package above, select a college, then click below for personalized summary.
         </p>
 
-        <button id="aiButton" class="btn-ai">AI Summary</button>
+        <button id="aiButton" class="btn-ai">Get AI Financial Summary</button>
 
         <div id="aiSpinner">Analyzing your financial package…</div>
         <div id="coverageChartWrap"></div>
         <div id="aiAdviceBox" style="display:none;"></div>
+    </div>
+
+    <!-- ── Premium: Scholarship + Employment Intelligence ── -->
+    <div class="premium-card">
+        <div class="premium-header">
+            <div class="premium-header-text">
+                <h2>Scholarship &amp; Employment Intelligence</h2>
+                <p>College-specific scholarship matching and field-aligned employment pathways — updated dynamically based on your selected institution and major.</p>
+            </div>
+            <div class="premium-price-tag">
+                <span class="price">$19.99</span>
+                <span class="per">per month</span>
+            </div>
+        </div>
+        <div class="premium-tagline">
+            The fastest way to reduce 4-year costs — used by over 2,400 college counselors and independent advisors nationwide.
+        </div>
+        <div class="premium-bullets">
+            <div class="premium-bullet">
+                <div class="bullet-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+                <div class="bullet-text">
+                    <strong>AI Scholarship Matching</strong>
+                    <span>Curated scholarships matched to your college, major, demographics, and financial profile — not generic lists</span>
+                </div>
+            </div>
+            <div class="premium-bullet">
+                <div class="bullet-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                </div>
+                <div class="bullet-text">
+                    <strong>Field-Specific Employment Map</strong>
+                    <span>Realistic part-time, co-op, and research roles tied to your major that can offset $5,000–$12,000 per year</span>
+                </div>
+            </div>
+            <div class="premium-bullet">
+                <div class="bullet-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+                <div class="bullet-text">
+                    <strong>4-Year Cost Reduction Plan</strong>
+                    <span>Scholarship stacking strategy and income roadmap to minimize total debt load at graduation</span>
+                </div>
+            </div>
+            <div class="premium-bullet">
+                <div class="bullet-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <div class="bullet-text">
+                    <strong>Counselor-Ready Reports</strong>
+                    <span>Exportable summaries built for financial aid appeals, parent meetings, and IEC client sessions</span>
+                </div>
+            </div>
+        </div>
+        <div class="premium-preview">
+            <div class="premium-preview-inner" aria-hidden="true">
+                <strong>Scholarship Opportunities — Selected College</strong>
+                <p>1. Institutional Merit Award — Up to $8,500/year for students in STEM with GPA 3.5+. Contact the financial aid office directly for appeal documentation.</p>
+                <p>2. Need-Based Supplemental Grant — Additional $3,000–$6,000 available upon FAFSA update. Requires counselor letter and demonstrated unmet need.</p>
+                <p>3. External matches from your profile — 14 active awards on Fastweb, 9 on BigFuture. Estimated combined value: $4,200.</p>
+                <strong>Employment Pathways — Your Major</strong>
+                <p>1. Undergraduate Research Assistant — $13–$16/hr, 8–10 hrs/week through your department. Apply via internal postings each semester.</p>
+                <p>2. Co-op Placement — $17–$22/hr, alternating semesters. Reduces net annual cost by up to $9,000 and converts to full-time offers at a 60% rate.</p>
+            </div>
+            <div class="premium-preview-overlay">
+                <div class="lock-icon">
+                    <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                </div>
+                <div class="overlay-title">Unlock Scholarship &amp; Employment Intelligence</div>
+                <div class="overlay-sub">College counselors and parents: get AI-driven scholarship matching and employment pathway analysis specific to each student's college and major — updated every time you change your selection.</div>
+                <button class="btn-unlock" onclick="handleUnlock()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+                    Unlock Premium — $19.99/month
+                </button>
+            </div>
+        </div>
+        <div class="premium-guarantee">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            30-day money-back guarantee — cancel anytime. No contracts, no commitment.
+        </div>
     </div>
 
 </div>
@@ -704,10 +914,10 @@
         onlineOnly: false
     };
     let programsData = [];
-    let compareList  = [];   // max 5; each = { college, fafsa, residency, living, health, computedCOA, netPrice, unmetNeed }
-    const COMPARE_COLORS = ['#1e5c1e','#2563eb','#7c3aed','#d97706','#db2777'];
+    let compareList  = [];
+    const COMPARE_COLORS = ['#2d3040','#2563eb','#7c3aed','#d97706','#db2777'];
 
-    // ── Autocomplete (hits Spring Boot backend → College Scorecard) ──
+    // ── Autocomplete ──
     $("#collegeSearch").autocomplete({
         source: function(request, response) {
             $.get("/api/colleges/search?term=" + encodeURIComponent(request.term), function(data) {
@@ -739,7 +949,8 @@
                 transportationOffCampus:data.transportationOffCampus|| null,
                 otherOnCampus:          data.otherExpenseOnCampus   || null,
                 otherOffCampus:         data.otherExpenseOffCampus  || null,
-                onlineOnly:             data.onlineOnly             || false
+                onlineOnly:             data.onlineOnly             || false,
+                unitId:                 data.unitId                 || null
             };
             renderCOACard(collegeName);
             recalculateGap();
@@ -761,7 +972,6 @@
         const residency = $("#residencySelect").val();
         const living    = $("#livingSelect").val();
 
-        // Tuition based on residency
         const tuition = (residency === 'instate') ? selectedCollege.inStateTuition
                        : selectedCollege.outOfStateTuition;
         const tuitionLabel = (residency === 'instate')        ? 'In-State Tuition'
@@ -769,26 +979,20 @@
                            : (residency === 'online')         ? 'Tuition (Online)'
                            :                                    'Out-of-State Tuition';
 
-        // Room & Board based on living
         const roomBoard = (living === 'oncampus')  ? selectedCollege.roomBoardOnCampus
                         : (living === 'offcampus') ? selectedCollege.roomBoardOffCampus
                         : 0;
         const rbLabel   = (living === 'oncampus')  ? 'Room & Board (On-Campus)'
                         : (living === 'offcampus') ? 'Room & Board (Off-Campus Estimate)'
-                        : null; // home = no room/board row
+                        : null;
 
-        // Transportation
         const transport = (living === 'oncampus') ? selectedCollege.transportationOnCampus
                         : selectedCollege.transportationOffCampus;
-
-        // Other / Personal expenses
         const other = (living === 'oncampus') ? selectedCollege.otherOnCampus
                     : selectedCollege.otherOffCampus;
-
         const books = selectedCollege.booksSupply;
         const healthInsurance = $("#healthInsuranceCheck").is(":checked") ? 0 : 2500;
 
-        // Build rows
         let rows = '';
         const row = (label, val, style) => val ? `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;${style||''}"><span style="color:var(--muted)">${label}</span><span>${val}</span></div>` : '';
 
@@ -804,10 +1008,10 @@
 
         $("#results").html(`
             <div class="roi-card" style="margin-top:14px;">
-                <h3 style="margin-bottom:10px;">${collegeName}${selectedCollege.onlineOnly ? ' <span style="font-size:11px;color:var(--accent);font-weight:400">✓ Online</span>' : ''}</h3>
+                <h3 style="margin-bottom:10px;">${collegeName}${selectedCollege.onlineOnly ? ' <span style="font-size:11px;color:var(--accent);font-weight:400">(Online)</span>' : ''}</h3>
                 ${rows}
                 <div style="display:flex;justify-content:space-between;padding:8px 0 0;margin-top:6px;border-top:2px solid var(--border);font-weight:700;font-size:14px;">
-                    <span>📌 Est. Total COA / Year</span>
+                    <span>Est. Total COA / Year</span>
                     <span style="color:var(--primary-dk)">${coaDisplay}</span>
                 </div>
             </div>
@@ -816,7 +1020,7 @@
         updateCompareBtn();
     }
 
-    // ── COMPARE BUTTON STATE ───────────────────────────────────────────────────
+    // ── COMPARE BUTTON STATE ──────────────────────────────────────────────────
     function updateCompareBtn() {
         const hasCollege   = !!(selectedCollege.name && computeCOA());
         const alreadyAdded = compareList.some(e => e.college.name === selectedCollege.name);
@@ -825,7 +1029,7 @@
         if (!hasCollege) {
             btn.prop('disabled', true).text('+ Add to Compare');
         } else if (alreadyAdded) {
-            btn.prop('disabled', true).text('✓ Already in Compare');
+            btn.prop('disabled', true).text('Already in Compare');
         } else if (atMax) {
             btn.prop('disabled', true).text('Max 5 Colleges Reached');
         } else {
@@ -860,11 +1064,9 @@
             computedCOA:           coa,
             netPrice:              Math.max(0, netPrice),
             unmetNeed:             unmetNeed,
-            // Per-college institutional aid (editable independently per school)
             instGrant:             instG,
             scholarship:           schol,
             workStudy:             ws,
-            // per-college major earnings fields
             programsData:          [],
             programsLoading:       true,
             selectedMajorTitle:    null,
@@ -889,11 +1091,9 @@
         renderMajorSection();
     }
 
-    // ── INSTITUTION-SPECIFIC AID SECTION (compare mode) ──────────────────────
+    // ── INSTITUTION-SPECIFIC AID SECTION ─────────────────────────────────────
     function renderInstitutionalAidSection() {
         const inCompare = compareList.length > 0;
-
-        // Show main FAFSA institutional fields only in single mode
         $('#inst-fields-single').toggle(!inCompare);
 
         if (!inCompare) {
@@ -931,8 +1131,6 @@
         });
 
         $('#institutionalAidContent').html(html);
-
-        // Wire up live recalculation on every keystroke
         $('.inst-aid-input').on('input', function() {
             const idx   = parseInt($(this).data('idx'));
             const field = $(this).data('field');
@@ -956,8 +1154,7 @@
         `);
     }
 
-    // ── COA COMPUTATION FOR A COMPARE ENTRY ──────────────────────────────────
-    // Uses the college's snapshotted COA data + the entry's residency/living/health
+    // ── COA COMPUTATION ───────────────────────────────────────────────────────
     function computeCOAForEntry(entry) {
         const c       = entry.college;
         const res     = entry.residency;
@@ -973,23 +1170,19 @@
         return total > 1000 ? total : (c.costOfAttendance || 0);
     }
 
-    // ── COMPARE ACCORDION GAP ANALYSIS ────────────────────────────────────────
+    // ── COMPARE ACCORDION GAP ANALYSIS ───────────────────────────────────────
     function renderCompareAccordions() {
         if (compareList.length === 0) { renderSingleGap(); return; }
 
-        // ── Preserve which accordions are currently open ──
         const openState = compareList.map((_, idx) => {
             const body = document.getElementById('ca-body-' + idx);
-            // Default: first open on first render (body doesn't exist yet)
             return body ? body.style.display !== 'none' : (idx === 0);
         });
 
-        // ── Global federal FAFSA values (same for all colleges) ──
         const pellG  = pf($("#pellGrant").val())         || 0;
         const subL   = pf($("#subsidizedLoan").val())    || 0;
         const unsubL = pf($("#unsubsidizedLoan").val())  || 0;
         const fam    = pf($("#parentPlusLoan").val())    || 0;
-        // instG, schol, ws are read per-college from entry below
 
         const d   = n => '$' + Math.round(Math.max(0, n)).toLocaleString('en-US');
         const sub = (n, col) => n > 0
@@ -1005,20 +1198,15 @@
             const color = COMPARE_COLORS[idx];
             const { residency, living } = entry;
 
-            // ── Compute COA from this college's data + entry residency/living ──
             const computedCOA = computeCOAForEntry(entry);
-
-            // ── Per-college institutional aid from entry (editable in inst-aid section) ──
             const instG = entry.instGrant   || 0;
             const schol = entry.scholarship || 0;
             const ws    = entry.workStudy   || 0;
 
-            // ── Compute gap: global federal values + per-college institutional values ──
             const totalGiftAid = pellG + instG + schol;
             const netPrice     = Math.max(0, computedCOA - totalGiftAid);
             const unmetNeed    = Math.max(0, netPrice - subL - unsubL - ws - fam);
 
-            // Update entry so AI payload always has current values
             entry.computedCOA = computedCOA;
             entry.netPrice    = netPrice;
             entry.unmetNeed   = unmetNeed;
@@ -1026,25 +1214,23 @@
                             subsidizedLoan: subL, unsubsidizedLoan: unsubL, workStudy: ws, familyContribution: fam };
 
             const unmetClass = unmetNeed > 0 ? 'gap-unmet' : 'gap-met';
-            const unmetIcon  = unmetNeed > 0 ? '⚠️' : '✅';
-
             const residencyLabel = { instate:'In-State', outofstate:'Out-of-State', international:'International', online:'Online' }[residency] || residency;
             const livingLabel    = { oncampus:'On-Campus', offcampus:'Off-Campus', home:'At Home' }[living] || living;
 
             const keyNumbers = `
                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px;">
-                    <div style="background:#f0f4ff;border:1.5px solid #c7d7f8;border-radius:8px;padding:12px;text-align:center;">
-                        <div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">💰 Total COA</div>
+                    <div style="background:#fdf8f2;border:1.5px solid var(--primary-lt);border-radius:8px;padding:12px;text-align:center;">
+                        <div style="font-size:11px;font-weight:700;color:var(--primary-dk);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total COA</div>
                         <div style="font-size:18px;font-weight:800;color:var(--primary-dk)">${d(computedCOA)}</div>
                         <div style="font-size:10px;color:var(--muted);margin-top:2px;">per year</div>
                     </div>
                     <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:8px;padding:12px;text-align:center;">
-                        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">🏷️ Net Price</div>
+                        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Net Price</div>
                         <div style="font-size:18px;font-weight:800;color:#276749">${d(netPrice)}</div>
                         <div style="font-size:10px;color:var(--muted);margin-top:2px;">after free aid</div>
                     </div>
                     <div style="background:${unmetNeed > 0 ? '#fff5f5' : '#f0fdf4'};border:1.5px solid ${unmetNeed > 0 ? '#fed7d7' : '#bbf7d0'};border-radius:8px;padding:12px;text-align:center;">
-                        <div style="font-size:11px;font-weight:700;color:${unmetNeed > 0 ? '#c53030' : 'var(--accent)'};text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">${unmetIcon} Unmet Need</div>
+                        <div style="font-size:11px;font-weight:700;color:${unmetNeed > 0 ? '#c53030' : 'var(--accent)'};text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Unmet Need</div>
                         <div style="font-size:18px;font-weight:800;color:${unmetNeed > 0 ? '#c53030' : '#276749'}">${d(unmetNeed)}</div>
                         <div style="font-size:10px;color:var(--muted);margin-top:2px;">true gap remaining</div>
                     </div>
@@ -1057,7 +1243,7 @@
             const gapBody = `
                 ${keyNumbers}
                 <div class="gap-row gap-cost-row">
-                    <span class="gap-label">📌 Total COA / Year</span>
+                    <span class="gap-label">Total COA / Year</span>
                     <span class="gap-value" style="color:var(--primary-dk);font-size:15px;">${d(computedCOA)}</span>
                 </div>
                 <div style="margin:10px 0 4px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Gift Aid — Free Money (No Repayment)</div>
@@ -1074,12 +1260,12 @@
                 <div class="gap-row"><span class="gap-label">Federal Work-Study</span>${sub(ws,'var(--muted)')}</div>
                 <div class="gap-row"><span class="gap-label">Family Contribution</span>${sub(fam,'var(--muted)')}</div>
                 <div class="gap-total-row">
-                    <span class="${unmetClass}">${unmetIcon} Unmet Need</span>
+                    <span class="${unmetClass}">Unmet Need</span>
                     <span class="gap-value ${unmetClass}" style="font-size:17px;">${d(unmetNeed)}</span>
                 </div>
                 ${unmetNeed > 0
                     ? `<div class="gap-alert alert-red"><strong>${d(unmetNeed)}/yr · ${d(unmetNeed*4)} over 4 years</strong> still unaccounted for. Look for additional scholarships or meet with your financial aid office before taking on more debt.</div>`
-                    : `<div class="gap-alert alert-green">✅ Aid fully covers the cost of attendance — great position! Any unused loan eligibility you decline now means less debt at graduation.</div>`
+                    : `<div class="gap-alert alert-green">Aid fully covers the cost of attendance — great position! Any unused loan eligibility you decline now means less debt at graduation.</div>`
                 }`;
 
             const isOpen = openState[idx];
@@ -1115,7 +1301,7 @@
         const wrap = document.getElementById('coverageChartWrap');
         if (!entries || entries.length === 0) { wrap.style.display = 'none'; return; }
         wrap.style.display = 'block';
-        wrap.innerHTML = '<h4 style="font-size:13px;font-weight:700;color:#1e5c1e;margin:0 0 14px;">📊 Coverage Diagram — COA · Net Price · Unmet Need</h4>';
+        wrap.innerHTML = '<h4 style="font-size:13px;font-weight:700;color:var(--navy);margin:0 0 14px;">Coverage Diagram — COA · Net Price · Unmet Need</h4>';
 
         const canvas = document.createElement('canvas');
         wrap.appendChild(canvas);
@@ -1140,11 +1326,9 @@
         const barW   = Math.min(38, grpW * 0.2);
         const barGap = barW * 0.55;
 
-        // Background
         ctx.fillStyle = '#fff';
         ctx.fillRect(0, 0, W, H);
 
-        // Y-axis grid + labels
         for (let i = 0; i <= 5; i++) {
             const val = maxVal * i / 5;
             const y   = pad.top + cH - (val / maxVal * cH);
@@ -1154,11 +1338,10 @@
             ctx.fillText(val >= 1000 ? '$' + (val/1000).toFixed(0) + 'k' : '$0', pad.left - 5, y + 4);
         }
 
-        // X-axis line
         ctx.strokeStyle = '#ccc'; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(pad.left, pad.top + cH); ctx.lineTo(pad.left + cW, pad.top + cH); ctx.stroke();
 
-        const COLORS = { coa: '#4a90d9', net: '#2d7a2d', unmet: '#c53030' };
+        const COLORS = { coa: '#4a90d9', net: '#2d7a4f', unmet: '#c53030' };
 
         entries.forEach((entry, gi) => {
             const cx  = pad.left + gi * grpW + grpW / 2;
@@ -1182,7 +1365,6 @@
                 }
             });
 
-            // College name below x-axis
             ctx.fillStyle = '#333'; ctx.font = '10px Segoe UI,Arial'; ctx.textAlign = 'center';
             const name  = entry.college.name;
             const words = name.split(' ');
@@ -1192,7 +1374,6 @@
             if (line2) ctx.fillText(line2, cx, pad.top + cH + 28);
         });
 
-        // Legend
         const legItems = [
             { color: COLORS.coa,   label: 'Total COA' },
             { color: COLORS.net,   label: 'Net Price' },
@@ -1210,7 +1391,7 @@
         });
     }
 
-    // ── Compute COA dynamically from cost components ──
+    // ── Compute COA ───────────────────────────────────────────────────────────
     function computeCOA() {
         if (!selectedCollege.name) return null;
         const residency = $("#residencySelect").val();
@@ -1228,9 +1409,7 @@
         const books       = selectedCollege.booksSupply || 0;
         const health      = $("#healthInsuranceCheck").is(":checked") ? 0 : 2500;
 
-        const components = [tuition, roomBoard, transport, other, books, health].map(v => v || 0);
-        const total = components.reduce((a, b) => a + b, 0);
-        // Fallback to Scorecard COA if we can't compute a meaningful figure
+        const total = [tuition, roomBoard, transport, other, books, health].map(v => v || 0).reduce((a, b) => a + b, 0);
         return total > 1000 ? total : selectedCollege.costOfAttendance;
     }
 
@@ -1254,8 +1433,6 @@
                 `<option value="${p.earnings}">${p.title} — $${Number(p.earnings).toLocaleString()}/yr</option>`
             ).join("");
             $("#majorSelect").html('<option value="">— Select a major —</option>' + options);
-
-            // Pre-fill college-wide figure so it's visible once a major is chosen
             $("#collegeAvgEarnings").text("$" + Number(collegeWideEarnings).toLocaleString());
         }).fail(function() {
             $("#majorSpinner").hide();
@@ -1269,24 +1446,17 @@
         $("#majorEarnings").text("$" + Number(val).toLocaleString());
         $("#majorEarningsCard").show();
 
-        // Also update the AI advisor's college field in case they want advice
-        // on this specific major's earnings
         const selectedText = $("#majorSelect option:selected").text().split(" — ")[0];
-        // store for prompt enrichment
         selectedCollege.selectedMajor = selectedText;
         selectedCollege.majorEarnings = parseFloat(val);
     });
 
     // ── EARNINGS BY MAJOR — COMPARE MODE ─────────────────────────────────────
-
-    // Decide whether to show single or compare mode for the major section
     function renderMajorSection() {
         if (compareList.length === 0) {
-            // Revert to single-college mode
             $("#majorSingleMode").show();
             $("#majorCompareMode").hide().html('');
         } else {
-            // Compare mode: hide single dropdown, show per-college accordions
             $("#majorSingleMode").hide();
             $("#majorCompareMode").show();
             $("#majorSection").show();
@@ -1298,7 +1468,6 @@
         const container = document.getElementById('majorCompareMode');
         if (!container) return;
 
-        // Preserve open/closed state across re-renders
         const openState = compareList.map((_, idx) => {
             const body = document.getElementById('maj-body-' + idx);
             return body ? body.style.display !== 'none' : (idx === 0);
@@ -1370,7 +1539,6 @@
 
         container.innerHTML = html;
 
-        // Bind change handlers for each per-college dropdown
         document.querySelectorAll('.maj-select').forEach(sel => {
             sel.addEventListener('change', function() {
                 const idx  = parseInt(this.dataset.idx);
@@ -1383,7 +1551,6 @@
                     entry.selectedMajorTitle    = null;
                     entry.selectedMajorEarnings = null;
                     document.getElementById('maj-earn-' + idx).style.display = 'none';
-                    // update header meta
                     const meta = document.querySelector(`#maj-body-${idx}`).closest('.ca-item').querySelector('.ca-meta');
                     if (meta) meta.textContent = 'No major selected';
                 } else {
@@ -1394,7 +1561,6 @@
                     const lblEl = earnCard.querySelector('.lbl:last-child');
                     if (lblEl) lblEl.textContent = text + ' Median (6 yrs)';
                     earnCard.style.display = 'block';
-                    // update header meta
                     const meta = document.querySelector(`#maj-body-${idx}`).closest('.ca-item').querySelector('.ca-meta');
                     if (meta) { meta.textContent = text; meta.style.color = COMPARE_COLORS[idx]; meta.style.fontWeight = '600'; }
                 }
@@ -1411,7 +1577,6 @@
         if (chev) chev.textContent = isOpen ? '▼' : '▲';
     }
 
-    // Load programs data for a compare entry from the API
     function loadProgramsForEntry(entry) {
         entry.programsLoading = true;
         entry.programsData    = [];
@@ -1435,7 +1600,6 @@
 
     $("#addToCompareBtn").on("click", addToCompare);
 
-    // Re-render when residency, living, or health insurance changes
     $("#residencySelect, #livingSelect").on("change", function() {
         if (selectedCollege.name) { renderCOACard(selectedCollege.name); recalculateGap(); }
     });
@@ -1443,13 +1607,12 @@
         if (selectedCollege.name) { renderCOACard(selectedCollege.name); recalculateGap(); }
     });
 
-    // ── AI Advice ──
+    // ── AI Financial Summary ──────────────────────────────────────────────────
     $("#aiButton").on("click", function() {
         const inCompareMode = compareList.length >= 2;
         let payload;
 
         if (inCompareMode) {
-            // ── Compare mode: send all colleges ──
             payload = {
                 compareMode: true,
                 compareColleges: compareList.map(e => ({
@@ -1476,7 +1639,6 @@
                 academicAchievements: $("#academicAchievements").val().trim() || null
             };
         } else {
-            // ── Single college mode ──
             const effectiveEarnings = selectedCollege.majorEarnings || selectedCollege.sixYrEarnings;
             const coa      = computeCOA() || 0;
             const pellG    = pf($("#pellGrant").val())          || 0;
@@ -1539,18 +1701,23 @@
                 $("#aiSpinner").hide();
                 $("#coverageChartWrap").hide();
                 const msg = xhr.responseJSON?.error || "Something went wrong. Please try again.";
-                $("#aiAdviceBox").html("⚠️ " + msg).show();
+                $("#aiAdviceBox").html("Error: " + msg).show();
                 $("#aiButton").prop("disabled", false);
             }
         });
     });
+
+    // ── Premium Gate ──────────────────────────────────────────────────────────
+    function handleUnlock() {
+        alert("Subscription portal coming soon. Contact us at advisor@callistotech.org.");
+    }
 
     function pf(val) {
         const f = parseFloat(val);
         return isNaN(f) ? null : f;
     }
 
-    // ── Financial Gap Auto-Calculation ──
+    // ── Financial Gap Auto-Calculation ────────────────────────────────────────
     const fafsaFieldIds = ['#pellGrant','#subsidizedLoan','#unsubsidizedLoan',
                            '#parentPlusLoan','#institutionalGrant','#scholarshipAmount','#workStudy'];
     fafsaFieldIds.forEach(id => $(id).on('input', recalculateGap));
@@ -1567,7 +1734,7 @@
         const totalCost = computeCOA();
 
         if (!selectedCollege.name || !totalCost) {
-            $("#gapAnalysisContent").html('<p class="gap-placeholder">🏫 Search and select a college above to activate gap analysis.</p>');
+            $("#gapAnalysisContent").html('<p class="gap-placeholder">Search and select a college above to activate gap analysis.</p>');
             return;
         }
 
@@ -1579,11 +1746,8 @@
         const scholarship   = pf($("#scholarshipAmount").val())  || 0;
         const workStudy     = pf($("#workStudy").val())          || 0;
 
-        // Gift aid = free money (no repayment)
         const totalGiftAid  = pellGrant + instGrant + scholarship;
-        // Net Price = COA minus gift aid
         const netPrice      = totalCost - totalGiftAid;
-        // Unmet Need = Net Price minus everything else (loans, work-study, family)
         const totalLoans    = subLoan + unsubLoan;
         const unmetNeed     = netPrice - totalLoans - workStudy - familyCont;
 
@@ -1591,23 +1755,21 @@
         const sub = (n, color) => n > 0 ? `<span class="gap-value" style="color:${color}">−${d(n)}</span>` : `<span class="gap-value" style="color:var(--muted)">—</span>`;
 
         const unmetClass = unmetNeed > 0 ? 'gap-unmet' : 'gap-met';
-        const unmetIcon  = unmetNeed > 0 ? '⚠️' : '✅';
 
-        // ── 3 Key Numbers ──
         const keyNumbers = `
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px;">
-                <div style="background:#f0f4ff;border:1.5px solid #c7d7f8;border-radius:8px;padding:12px;text-align:center;">
-                    <div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">💰 Total COA</div>
+                <div style="background:#fdf8f2;border:1.5px solid var(--primary-lt);border-radius:8px;padding:12px;text-align:center;">
+                    <div style="font-size:11px;font-weight:700;color:var(--primary-dk);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total COA</div>
                     <div style="font-size:18px;font-weight:800;color:var(--primary-dk)">${d(totalCost)}</div>
                     <div style="font-size:10px;color:var(--muted);margin-top:2px;">per year</div>
                 </div>
                 <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:8px;padding:12px;text-align:center;">
-                    <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">🏷️ Net Price</div>
+                    <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Net Price</div>
                     <div style="font-size:18px;font-weight:800;color:#276749">${d(netPrice)}</div>
                     <div style="font-size:10px;color:var(--muted);margin-top:2px;">after free aid</div>
                 </div>
                 <div style="background:${unmetNeed > 0 ? '#fff5f5' : '#f0fdf4'};border:1.5px solid ${unmetNeed > 0 ? '#fed7d7' : '#bbf7d0'};border-radius:8px;padding:12px;text-align:center;">
-                    <div style="font-size:11px;font-weight:700;color:${unmetNeed > 0 ? '#c53030' : 'var(--accent)'};text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">${unmetIcon} Unmet Need</div>
+                    <div style="font-size:11px;font-weight:700;color:${unmetNeed > 0 ? '#c53030' : 'var(--accent)'};text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Unmet Need</div>
                     <div style="font-size:18px;font-weight:800;color:${unmetNeed > 0 ? '#c53030' : '#276749'}">${d(unmetNeed)}</div>
                     <div style="font-size:10px;color:var(--muted);margin-top:2px;">true gap remaining</div>
                 </div>
@@ -1619,14 +1781,11 @@
 
         $("#gapAnalysisContent").html(`
             ${keyNumbers}
-
             <div class="gap-row gap-cost-row">
-                <span class="gap-label">📌 Total Cost of Attendance / Year</span>
+                <span class="gap-label">Total Cost of Attendance / Year</span>
                 <span class="gap-value" style="color:var(--primary-dk);font-size:15px;">${d(totalCost)}</span>
             </div>
-
             <div style="margin:10px 0 4px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Gift Aid — Free Money (No Repayment)</div>
-
             <div class="gap-row">
                 <span class="gap-label">Pell Grant</span>
                 ${sub(pellGrant, 'var(--accent)')}
@@ -1639,14 +1798,11 @@
                 <span class="gap-label">Scholarship / Gift Aid</span>
                 ${sub(scholarship, 'var(--accent)')}
             </div>
-
             <div class="gap-row" style="border-top:1px solid var(--border);margin-top:6px;padding-top:8px;font-weight:600;">
                 <span class="gap-label">= Net Price (What You Pay)</span>
                 <span class="gap-value" style="color:#276749;font-size:14px;">${d(netPrice)}</span>
             </div>
-
             <div style="margin:10px 0 4px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Financing Sources (Reduce Unmet Need)</div>
-
             <div class="gap-row">
                 <span class="gap-label">Subsidized Loan</span>
                 ${sub(subLoan, 'var(--muted)')}
@@ -1663,19 +1819,17 @@
                 <span class="gap-label">Family Contribution</span>
                 ${sub(familyCont, 'var(--muted)')}
             </div>
-
             <div class="gap-total-row">
-                <span class="${unmetClass}">${unmetIcon} Unmet Need</span>
+                <span class="${unmetClass}">Unmet Need</span>
                 <span class="gap-value ${unmetClass}" style="font-size:17px;">${d(unmetNeed)}</span>
             </div>
-
             ${unmetNeed > 0
                 ? `<div class="gap-alert alert-red">
                     <strong>${d(unmetNeed)}/yr · ${d(unmetNeed * 4)} over 4 years</strong> still unaccounted for.
                     Look for additional scholarships or meet with your financial aid office before taking on more debt.
                    </div>`
                 : `<div class="gap-alert alert-green">
-                    ✅ Your aid package fully covers the cost of attendance — great position to be in!
+                    Your aid package fully covers the cost of attendance — great position to be in!
                     Any unused loan eligibility you decline now means less debt at graduation.
                    </div>`
             }

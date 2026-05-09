@@ -23,11 +23,6 @@ public class CollegeServiceImpl implements CollegeService {
 
     private static final String API_BASE = "https://api.data.gov/ed/collegescorecard/v1/schools";
 
-    /** Normalize & → space so the Scorecard API matches names like "Texas A&M University". */
-    private static String normalizeForSearch(String s) {
-        return s.replace("&", " ").replaceAll("\\s+", " ").trim();
-    }
-
     @Override
     public List<String> searchColleges(String term) {
         try {
@@ -36,7 +31,7 @@ public class CollegeServiceImpl implements CollegeService {
             }
 
             String url = API_BASE + "?api_key=" + apiKey +
-                    "&school.name=" + URLEncoder.encode(normalizeForSearch(term), StandardCharsets.UTF_8) +
+                    "&school.name=" + URLEncoder.encode(term.trim(), StandardCharsets.UTF_8) +
                     "&fields=school.name&per_page=10";
 
             Map response = restTemplate.getForObject(url, Map.class);
@@ -62,23 +57,8 @@ public class CollegeServiceImpl implements CollegeService {
     public Map<String, Object> getCollegeROI(String name) {
         try {
             String url = API_BASE + "?api_key=" + apiKey +
-                    "&school.name=" + URLEncoder.encode(normalizeForSearch(name), StandardCharsets.UTF_8) +
-                    "&fields=school.name," +
-                    "latest.cost.attendance.academic_year," +
-                    "latest.cost.tuition.in_state," +
-                    "latest.cost.tuition.out_of_state," +
-                    "latest.cost.net_price.overall," +
-                    "latest.cost.net_price.public," +
-                    "latest.cost.net_price.private," +
-                    "latest.cost.booksupply," +
-                    "latest.cost.roomboard.oncampus," +
-                    "latest.cost.roomboard.offcampus," +
-                    "latest.cost.otherexpense.oncampus," +
-                    "latest.cost.otherexpense.offcampus," +
-                    "latest.cost.transportation.oncampus," +
-                    "latest.cost.transportation.offcampus," +
-                    "latest.earnings.6_yrs_after_entry.median," +
-                    "school.online_only";
+                    "&school.name=" + URLEncoder.encode(name, StandardCharsets.UTF_8) +
+                    "&fields=school.name,latest.cost.net_price.overall,latest.earnings.6_yrs_after_entry.median";
 
             Map response = restTemplate.getForObject(url, Map.class);
             List<Map> results = (List<Map>) response.get("results");
@@ -91,54 +71,20 @@ public class CollegeServiceImpl implements CollegeService {
             String collegeName = (String) result.getOrDefault("school.name", name);
 
             // Scorecard returns flattened dot-notation keys, not nested objects
-            Double costOfAttendance = result.get("latest.cost.attendance.academic_year") != null
-                    ? ((Number) result.get("latest.cost.attendance.academic_year")).doubleValue() : null;
-
-            Double inStateTuition = result.get("latest.cost.tuition.in_state") != null
-                    ? ((Number) result.get("latest.cost.tuition.in_state")).doubleValue() : null;
-
-            Double outOfStateTuition = result.get("latest.cost.tuition.out_of_state") != null
-                    ? ((Number) result.get("latest.cost.tuition.out_of_state")).doubleValue() : null;
-
             Double netPriceValue = result.get("latest.cost.net_price.overall") != null
                     ? ((Number) result.get("latest.cost.net_price.overall")).doubleValue() : 0.0;
 
             Double earningsValue = result.get("latest.earnings.6_yrs_after_entry.median") != null
                     ? ((Number) result.get("latest.earnings.6_yrs_after_entry.median")).doubleValue() : 0.0;
 
-            Double booksSupply = result.get("latest.cost.booksupply") != null
-                    ? ((Number) result.get("latest.cost.booksupply")).doubleValue() : null;
-            Double roomBoardOn = result.get("latest.cost.roomboard.oncampus") != null
-                    ? ((Number) result.get("latest.cost.roomboard.oncampus")).doubleValue() : null;
-            Double roomBoardOff = result.get("latest.cost.roomboard.offcampus") != null
-                    ? ((Number) result.get("latest.cost.roomboard.offcampus")).doubleValue() : null;
-            Double otherOn = result.get("latest.cost.otherexpense.oncampus") != null
-                    ? ((Number) result.get("latest.cost.otherexpense.oncampus")).doubleValue() : null;
-            Double otherOff = result.get("latest.cost.otherexpense.offcampus") != null
-                    ? ((Number) result.get("latest.cost.otherexpense.offcampus")).doubleValue() : null;
-            Double transportOn = result.get("latest.cost.transportation.oncampus") != null
-                    ? ((Number) result.get("latest.cost.transportation.oncampus")).doubleValue() : null;
-            Double transportOff = result.get("latest.cost.transportation.offcampus") != null
-                    ? ((Number) result.get("latest.cost.transportation.offcampus")).doubleValue() : null;
-            Integer onlineOnly = result.get("school.online_only") != null
-                    ? ((Number) result.get("school.online_only")).intValue() : 0;
+            double roi = (earningsValue - netPriceValue) / 1000.0;
 
-            Map<String, Object> roiData = new java.util.HashMap<>();
-            roiData.put("name", collegeName);
-            roiData.put("costOfAttendance", costOfAttendance);
-            roiData.put("inStateTuition", inStateTuition);
-            roiData.put("outOfStateTuition", outOfStateTuition);
-            roiData.put("netPrice", netPriceValue);
-            roiData.put("booksSupply", booksSupply);
-            roiData.put("roomBoardOnCampus", roomBoardOn);
-            roiData.put("roomBoardOffCampus", roomBoardOff);
-            roiData.put("otherExpenseOnCampus", otherOn);
-            roiData.put("otherExpenseOffCampus", otherOff);
-            roiData.put("transportationOnCampus", transportOn);
-            roiData.put("transportationOffCampus", transportOff);
-            roiData.put("onlineOnly", onlineOnly == 1);
-            roiData.put("sixYrEarnings", earningsValue);
-            return roiData;
+            return Map.of(
+                    "name", collegeName,
+                    "netPrice", netPriceValue,
+                    "sixYrEarnings", earningsValue,
+                    "roi", roi
+            );
 
         } catch (Exception e) {
             return Map.of("error", "API request failed: " + e.getMessage());
@@ -149,7 +95,7 @@ public class CollegeServiceImpl implements CollegeService {
     public List<Map<String, Object>> getCollegePrograms(String name) {
         try {
             String url = API_BASE + "?api_key=" + apiKey +
-                    "&school.name=" + URLEncoder.encode(normalizeForSearch(name), StandardCharsets.UTF_8) +
+                    "&school.name=" + URLEncoder.encode(name, StandardCharsets.UTF_8) +
                     "&fields=school.name,latest.programs.cip_4_digit";
 
             Map response = restTemplate.getForObject(url, Map.class);
@@ -165,17 +111,12 @@ public class CollegeServiceImpl implements CollegeService {
 
             return programs.stream()
                     .filter(p -> p.get("title") != null)
-                    .filter(p -> {
-                        // Undergrad branch: only show Bachelor's and Associate's degrees
-                        Map<?, ?> cred = (Map<?, ?>) p.get("credential");
-                        if (cred == null) return false;
-                        String credTitle = String.valueOf(cred.get("title")).toLowerCase();
-                        return credTitle.contains("bachelor") || credTitle.contains("associate");
-                    })
                     .map(p -> {
+                        // Actual structure: earnings → { "4_yr": { "overall_median_earnings": 65000 }, "5_yr": {...} }
                         Double earnings = extractEarnings(p);
                         if (earnings == null) return null;
 
+                        // Include credential level so duplicates are distinguishable
                         String title = (String) p.get("title");
                         Map<?, ?> credential = (Map<?, ?>) p.get("credential");
                         if (credential != null && credential.get("title") != null) {
@@ -216,7 +157,7 @@ public class CollegeServiceImpl implements CollegeService {
     public Map<String, Object> getProgramsRaw(String name) {
         try {
             String url = API_BASE + "?api_key=" + apiKey +
-                    "&school.name=" + URLEncoder.encode(normalizeForSearch(name), StandardCharsets.UTF_8) +
+                    "&school.name=" + URLEncoder.encode(name, StandardCharsets.UTF_8) +
                     "&fields=school.name,latest.programs.cip_4_digit";
             Map response = restTemplate.getForObject(url, Map.class);
             List<Map> results = (List<Map>) response.get("results");
