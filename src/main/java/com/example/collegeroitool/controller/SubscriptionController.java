@@ -1,6 +1,6 @@
 package com.example.collegeroitool.controller;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.example.collegeroitool.service.SubscriptionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,11 +12,14 @@ import java.util.Map;
 @RequestMapping("/api/subscription")
 public class SubscriptionController {
 
-    @Value("${premium.dev.bypass:false}")
-    private boolean devBypass;
+    private final SubscriptionService subscriptionService;
+
+    public SubscriptionController(SubscriptionService subscriptionService) {
+        this.subscriptionService = subscriptionService;
+    }
 
     @GetMapping("/status")
     public ResponseEntity<Map<String, Boolean>> status() {
-        return ResponseEntity.ok(Map.of("active", devBypass));
+        return ResponseEntity.ok(Map.of("active", subscriptionService.isActive()));
     }
 }

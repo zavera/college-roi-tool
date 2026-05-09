@@ -871,16 +871,8 @@
             </div>
         </div>
         <div class="premium-preview">
-            <div class="premium-preview-inner" aria-hidden="true">
-                <strong>Scholarship Opportunities — Selected College</strong>
-                <p>1. Institutional Merit Award — Up to $8,500/year for students in STEM with GPA 3.5+. Contact the financial aid office directly for appeal documentation.</p>
-                <p>2. Need-Based Supplemental Grant — Additional $3,000–$6,000 available upon FAFSA update. Requires counselor letter and demonstrated unmet need.</p>
-                <p>3. External matches from your profile — 14 active awards on Fastweb, 9 on BigFuture. Estimated combined value: $4,200.</p>
-                <strong>Employment Pathways — Your Major</strong>
-                <p>1. Undergraduate Research Assistant — $13–$16/hr, 8–10 hrs/week through your department. Apply via internal postings each semester.</p>
-                <p>2. Co-op Placement — $17–$22/hr, alternating semesters. Reduces net annual cost by up to $9,000 and converts to full-time offers at a 60% rate.</p>
-            </div>
-            <div class="premium-preview-overlay">
+            <div id="premiumContent" class="premium-preview-inner" style="display:none"></div>
+            <div class="premium-preview-overlay" id="premiumOverlay">
                 <div class="lock-icon">
                     <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
@@ -955,6 +947,7 @@
             renderCOACard(collegeName);
             recalculateGap();
             loadPrograms(collegeName, data.sixYrEarnings || 0);
+            if (premiumActive) fetchPremiumInsights(collegeName);
         }).fail(function() {
             selectedCollege = { name: collegeName, netPrice: null, sixYrEarnings: null };
             $("#results").html(`
@@ -1708,17 +1701,73 @@
     });
 
     // ── Premium Gate ──────────────────────────────────────────────────────────
+    let premiumActive = false;
+
     function unlockPremium() {
-        $(".premium-preview-overlay").hide();
-        $(".premium-preview-inner").css("filter", "none");
-        $(".btn-unlock").closest(".premium-preview-overlay").remove();
+        premiumActive = true;
+        $("#premiumOverlay").hide();
+        if (selectedCollege && selectedCollege.name) {
+            fetchPremiumInsights(selectedCollege.name);
+        } else {
+            $("#premiumContent")
+                .html('<p style="color:var(--muted);font-size:13px;padding:16px 0;">Select a college above to generate personalized scholarship and employment insights.</p>')
+                .show();
+        }
+    }
+
+    function fetchPremiumInsights(collegeName) {
+        $("#premiumContent").html('<p style="color:var(--muted);font-size:13px;padding:16px 0;">Generating insights for ' + collegeName + '...</p>').show();
+        $.ajax({
+            url: "/api/premium/insights",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                collegeName: collegeName,
+                major: $("#majorSelect").val() || null,
+                netPrice: selectedCollege ? selectedCollege.netPrice : null,
+                sixYrEarnings: selectedCollege ? selectedCollege.sixYrEarnings : null
+            }),
+            success: function(data) {
+                renderPremiumInsights(data);
+            },
+            error: function(xhr) {
+                if (xhr.status === 403) {
+                    premiumActive = false;
+                    $("#premiumOverlay").show();
+                    $("#premiumContent").hide();
+                } else {
+                    $("#premiumContent").html('<p style="color:var(--danger);font-size:13px;padding:16px 0;">Could not load insights. Please try again.</p>');
+                }
+            }
+        });
+    }
+
+    function renderPremiumInsights(data) {
+        const scholarships = (data.scholarships || []).map(s => `
+            <div style="margin-bottom:12px;padding:10px 12px;background:var(--bg);border-radius:8px;border-left:3px solid var(--primary)">
+                <div style="font-weight:700;font-size:13px;color:var(--navy)">${s.title} <span style="color:var(--accent);font-weight:800">${s.amount}</span></div>
+                <div style="font-size:12px;color:var(--muted);margin-top:3px">${s.details}</div>
+            </div>`).join('');
+
+        const employment = (data.employment || []).map(e => `
+            <div style="margin-bottom:12px;padding:10px 12px;background:var(--bg);border-radius:8px;border-left:3px solid var(--navy-lt)">
+                <div style="font-weight:700;font-size:13px;color:var(--navy)">${e.title} <span style="color:var(--primary-dk);font-weight:800">${e.pay}</span></div>
+                <div style="font-size:12px;color:var(--muted);margin-top:3px">${e.details}</div>
+            </div>`).join('');
+
+        $("#premiumContent").html(`
+            <strong style="display:block;margin-bottom:10px;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--navy)">Scholarship Opportunities</strong>
+            ${scholarships}
+            <strong style="display:block;margin:16px 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--navy)">Employment Pathways</strong>
+            ${employment}
+        `).show();
     }
 
     function handleUnlock() {
         alert("Subscription portal coming soon. Contact us at advisor@callistotech.org.");
     }
 
-    // Check dev bypass or active subscription on load
+    // Check subscription status on load
     $.getJSON("/api/subscription/status", function(data) {
         if (data.active) unlockPremium();
     });

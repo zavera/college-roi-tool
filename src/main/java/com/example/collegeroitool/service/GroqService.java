@@ -1,6 +1,7 @@
 package com.example.collegeroitool.service;
 
 import com.example.collegeroitool.dto.LlmAdviceRequest;
+import com.example.collegeroitool.dto.PremiumInsightsRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -49,6 +50,58 @@ public class GroqService {
         Map<String, Object> firstChoice = choices.get(0);
         Map<String, Object> messageResp = (Map<String, Object>) firstChoice.get("message");
         return (String) messageResp.get("content");
+    }
+
+    public String getPremiumInsights(PremiumInsightsRequest req) {
+        String prompt = String.format("""
+            You are a college financial aid expert. A student is attending %s%s.
+            %s
+            %s
+
+            Return ONLY valid JSON — no markdown, no explanation — in exactly this format:
+            {
+              "scholarships": [
+                {"title": "...", "amount": "...", "details": "..."},
+                {"title": "...", "amount": "...", "details": "..."},
+                {"title": "...", "amount": "...", "details": "..."}
+              ],
+              "employment": [
+                {"title": "...", "pay": "...", "details": "..."},
+                {"title": "...", "pay": "...", "details": "..."},
+                {"title": "...", "pay": "...", "details": "..."}
+              ]
+            }
+
+            For scholarships: list 3 realistic awards relevant to this college, major, and financial profile.
+            For employment: list 3 realistic on-campus or field-aligned part-time roles that reduce net cost.
+            Keep each details field to 1-2 sentences. Be specific to the institution and major.
+            """,
+            req.getCollegeName() != null ? req.getCollegeName() : "this college",
+            req.getMajor() != null ? ", pursuing " + req.getMajor() : "",
+            req.getNetPrice() != null ? String.format("Net price: $%.0f/yr.", req.getNetPrice()) : "",
+            req.getSixYrEarnings() != null ? String.format("Median earnings 6 years after graduation: $%.0f/yr.", req.getSixYrEarnings()) : ""
+        );
+
+        Map<String, Object> message = new HashMap<>();
+        message.put("role", "user");
+        message.put("content", prompt);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("model", model);
+        body.put("messages", List.of(message));
+        body.put("max_tokens", 800);
+        body.put("temperature", 0.4);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(apiKey);
+
+        ResponseEntity<Map> response = restTemplate.postForEntity(
+            apiUrl, new HttpEntity<>(body, headers), Map.class);
+
+        List<Map<String, Object>> choices = (List<Map<String, Object>>) response.getBody().get("choices");
+        Map<String, Object> msg = (Map<String, Object>) choices.get(0).get("message");
+        return (String) msg.get("content");
     }
 
     private String buildPrompt(LlmAdviceRequest req) {
