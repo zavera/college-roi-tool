@@ -599,6 +599,43 @@
             display: flex; align-items: center; gap: 10px; font-size: 11px; color: var(--muted);
         }
         .premium-guarantee svg { color: var(--accent); flex-shrink: 0; }
+
+        /* ── Print / Export Report ── */
+        .btn-export {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: transparent; border: 1.5px solid var(--primary);
+            color: var(--primary-dk); font-size: 12px; font-weight: 700;
+            padding: 7px 16px; border-radius: 6px; cursor: pointer;
+            letter-spacing: 0.3px; transition: background .15s;
+            margin-top: 14px;
+        }
+        .btn-export:hover { background: var(--primary-lt); }
+
+        /* ── 4-Year Plan Table ── */
+        .plan-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+        .plan-table th { background: var(--navy); color: var(--primary); padding: 8px 10px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+        .plan-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+        .plan-table tr:last-child td { border-bottom: none; }
+        .plan-table .tip-cell { color: var(--muted); font-size: 11px; line-height: 1.5; }
+        .plan-table .over-limit { color: #b94040; font-weight: 700; }
+
+        @media print {
+            header .hdr-badge, #searchCard, .card:not(#gapAnalysisCard),
+            #gapAnalysisCard .accordion-toggle,
+            .premium-header, .premium-tagline, .premium-bullets,
+            .premium-guarantee, .premium-preview-overlay,
+            #aiButton, #aiSpinner, .btn-primary, .btn-compare,
+            .btn-ai, .btn-export, .compare-pill-row,
+            #majorSection, #demographicsCard { display: none !important; }
+            body { background: white; font-size: 13px; }
+            header { background: var(--navy) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .container { max-width: 100%; margin: 8px; padding: 0; gap: 12px; }
+            #aiSection, .premium-card, #results, #gapAnalysisCard { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+            #aiAdviceBox { display: block !important; }
+            #premiumContent { display: block !important; }
+            .premium-card { border: 1px solid #ccc; border-radius: 8px; }
+            .plan-table th { background: var(--navy) !important; color: var(--primary) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
     </style>
 </head>
 <body>
@@ -812,6 +849,12 @@
         <div id="aiSpinner">Analyzing your financial package…</div>
         <div id="coverageChartWrap"></div>
         <div id="aiAdviceBox" style="display:none;"></div>
+        <div id="exportRow" style="display:none;text-align:right;">
+            <button class="btn-export" onclick="exportReport()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Print / Save as PDF
+            </button>
+        </div>
     </div>
 
     <!-- ── Premium: Scholarship + Employment Intelligence ── -->
@@ -1685,6 +1728,7 @@
                     renderCoverageChart(compareList);
                 }
                 $("#aiAdviceBox").html(formatAdvice(resp.advice || "No advice returned.")).show();
+                $("#exportRow").show();
                 $("#aiButton").prop("disabled", false);
             },
             error: function(xhr) {
@@ -1779,20 +1823,78 @@
             <div style="margin-bottom:12px;padding:10px 12px;background:var(--bg);border-radius:8px;border-left:3px solid var(--primary)">
                 <div style="font-weight:700;font-size:13px;color:var(--navy)">${s.title} <span style="color:var(--accent);font-weight:800">${s.amount}</span></div>
                 <div style="font-size:12px;color:var(--muted);margin-top:3px">${s.details}</div>
+                ${s.url ? `<a href="${s.url}" target="_blank" rel="noopener" style="font-size:11px;color:var(--primary-dk);font-weight:700;text-decoration:none;border-bottom:1px solid var(--primary-lt);margin-top:5px;display:inline-block;">Apply / Learn More &rarr;</a>` : ''}
             </div>`).join('');
 
         const employment = (data.employment || []).map(e => `
             <div style="margin-bottom:12px;padding:10px 12px;background:var(--bg);border-radius:8px;border-left:3px solid var(--navy-lt)">
                 <div style="font-weight:700;font-size:13px;color:var(--navy)">${e.title} <span style="color:var(--primary-dk);font-weight:800">${e.pay}</span></div>
                 <div style="font-size:12px;color:var(--muted);margin-top:3px">${e.details}</div>
+                ${e.url ? `<a href="${e.url}" target="_blank" rel="noopener" style="font-size:11px;color:var(--primary-dk);font-weight:700;text-decoration:none;border-bottom:1px solid var(--primary-lt);margin-top:5px;display:inline-block;">Explore &rarr;</a>` : ''}
             </div>`).join('');
+
+        const plan = buildFourYearPlan(data.yearlyTips || []);
 
         $("#premiumContent").html(`
             <strong style="display:block;margin-bottom:10px;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--navy)">Scholarship Opportunities</strong>
             ${scholarships}
             <strong style="display:block;margin:16px 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--navy)">Employment Pathways</strong>
             ${employment}
+            <strong style="display:block;margin:20px 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--navy)">4-Year Cost Reduction Plan</strong>
+            ${plan}
         `).show();
+    }
+
+    function buildFourYearPlan(yearlyTips) {
+        const netPrice      = selectedCollege.netPrice || 0;
+        const sixYrEarnings = selectedCollege.sixYrEarnings || 0;
+        const subLoan       = pf($("#subsidizedLoan").val()) || 0;
+        const unsubLoan     = pf($("#unsubsidizedLoan").val()) || 0;
+        const parentPlus    = pf($("#parentPlusLoan").val()) || 0;
+        const freeAid       = (pf($("#pellGrant").val()) || 0)
+                            + (pf($("#institutionalGrant").val()) || 0)
+                            + (pf($("#scholarshipAmount").val()) || 0)
+                            + (pf($("#workStudy").val()) || 0);
+        const yr1Loans      = subLoan + unsubLoan + parentPlus;
+        const fedLimits     = [5500, 6500, 7500, 7500]; // dependent student caps
+        const safeTotal     = sixYrEarnings > 0 ? sixYrEarnings : null;
+        const d = n => '$' + Math.round(n).toLocaleString();
+
+        let cumDebt = 0;
+        const rows = [1,2,3,4].map(y => {
+            const fedCap   = fedLimits[y-1];
+            const loans    = y === 1 ? yr1Loans : Math.min(yr1Loans, fedCap + parentPlus);
+            cumDebt       += loans;
+            const monthly  = cumDebt > 0 ? (cumDebt * (0.0654/12)) / (1 - Math.pow(1 + 0.0654/12, -120)) : 0;
+            const overLimit = safeTotal && cumDebt > safeTotal;
+            const tip      = yearlyTips[y-1] || '';
+            return `<tr>
+                <td style="font-weight:700;color:var(--navy)">Year ${y}</td>
+                <td>${netPrice > 0 ? d(netPrice) : '—'}</td>
+                <td>${d(loans)}</td>
+                <td class="${overLimit ? 'over-limit' : ''}">${d(cumDebt)}${overLimit ? ' !' : ''}</td>
+                <td>${d(monthly)}/mo</td>
+                <td class="tip-cell">${tip}</td>
+            </tr>`;
+        }).join('');
+
+        const warning = safeTotal
+            ? `<p style="font-size:11px;color:var(--muted);margin-top:8px;">Rule of thumb: total debt at graduation should not exceed one year's starting salary (${d(sixYrEarnings)}). Rows marked <span style="color:#b94040;font-weight:700">!</span> exceed this threshold.</p>`
+            : '';
+
+        return `<div style="overflow-x:auto;">
+            <table class="plan-table">
+                <thead><tr>
+                    <th>Year</th><th>Net Cost</th><th>Est. Loans</th>
+                    <th>Cumulative Debt</th><th>Est. Monthly Pmt</th><th>Reduction Strategy</th>
+                </tr></thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>${warning}`;
+    }
+
+    function exportReport() {
+        window.print();
     }
 
     function handleUnlock() {

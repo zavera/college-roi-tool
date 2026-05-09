@@ -83,14 +83,20 @@ public class GroqService {
         return String.format("""
             {
               "scholarships": [
-                {"title": "[DEV] Merit Excellence Award", "amount": "Up to $8,000/yr", "details": "Available to students at %s with GPA 3.5+. In production this will reflect real institutional scholarships for %s."},
-                {"title": "[DEV] Need-Based Supplemental Grant", "amount": "$3,000–$6,000", "details": "Requires updated FAFSA and counselor letter demonstrating unmet need. Appeals can be submitted each semester."},
-                {"title": "[DEV] External Profile Match", "amount": "$2,500 est.", "details": "Fastweb and BigFuture matches based on your demographic and academic profile. Production will surface live results."}
+                {"title": "[DEV] Merit Excellence Award", "amount": "Up to $8,000/yr", "details": "Available to students at %s with GPA 3.5+. In production this will reflect real institutional scholarships for %s.", "url": "https://www.fastweb.com/"},
+                {"title": "[DEV] Need-Based Supplemental Grant", "amount": "$3,000–$6,000", "details": "Requires updated FAFSA and counselor letter demonstrating unmet need. Appeals can be submitted each semester.", "url": "https://bigfuture.collegeboard.org/scholarship-search"},
+                {"title": "[DEV] External Profile Match", "amount": "$2,500 est.", "details": "Fastweb and BigFuture matches based on your demographic and academic profile. Production will surface live results.", "url": "https://www.scholarships.com/"}
               ],
               "employment": [
-                {"title": "[DEV] Undergraduate Research Assistant", "pay": "$13–$16/hr", "details": "8–10 hrs/week through the %s department. Apply via internal postings each semester."},
-                {"title": "[DEV] Co-op Placement", "pay": "$17–$22/hr", "details": "Alternating semester placement in %s-related firms. Reduces net annual cost by up to $9,000 and converts to full-time at 60%% rate."},
-                {"title": "[DEV] Campus Work-Study Role", "pay": "$12–$14/hr", "details": "Federal work-study positions available through the financial aid office. Earnings do not count against next year's aid eligibility."}
+                {"title": "[DEV] Undergraduate Research Assistant", "pay": "$13–$16/hr", "details": "8–10 hrs/week through the %s department. Apply via internal postings each semester.", "url": "https://app.joinhandshake.com/"},
+                {"title": "[DEV] Co-op Placement", "pay": "$17–$22/hr", "details": "Alternating semester placement in %s-related firms. Reduces net annual cost by up to $9,000 and converts to full-time at 60%% rate.", "url": "https://app.joinhandshake.com/"},
+                {"title": "[DEV] Campus Work-Study Role", "pay": "$12–$14/hr", "details": "Federal work-study positions available through the financial aid office. Earnings do not count against next year's aid eligibility.", "url": "https://studentaid.gov/understand-aid/types/work-study"}
+              ],
+              "yearlyTips": [
+                "File FAFSA in October and submit a written aid appeal. First-year borrowers set the baseline — keep federal loans at or below $5,500.",
+                "Request a merit aid review if your GPA improved. Explore department research stipends to offset Year 2 cost increases.",
+                "Apply for upperclassman scholarships (most have fewer applicants). Consider co-op or internship income to reduce Parent PLUS dependency.",
+                "Maximize work-study and check if your employer offers tuition assistance. A strong senior year GPA opens post-grad loan forgiveness programs."
               ]
             }
             """, college, major, major, major);
@@ -108,19 +114,26 @@ public class GroqService {
             Return ONLY valid JSON — no markdown, no explanation — in exactly this format:
             {
               "scholarships": [
-                {"title": "...", "amount": "...", "details": "..."},
-                {"title": "...", "amount": "...", "details": "..."},
-                {"title": "...", "amount": "...", "details": "..."}
+                {"title": "...", "amount": "...", "details": "...", "url": "https://..."},
+                {"title": "...", "amount": "...", "details": "...", "url": "https://..."},
+                {"title": "...", "amount": "...", "details": "...", "url": "https://..."}
               ],
               "employment": [
-                {"title": "...", "pay": "...", "details": "..."},
-                {"title": "...", "pay": "...", "details": "..."},
-                {"title": "...", "pay": "...", "details": "..."}
+                {"title": "...", "pay": "...", "details": "...", "url": "https://..."},
+                {"title": "...", "pay": "...", "details": "...", "url": "https://..."},
+                {"title": "...", "pay": "...", "details": "...", "url": "https://..."}
+              ],
+              "yearlyTips": [
+                "Year 1 cost reduction strategy (1 sentence)",
+                "Year 2 cost reduction strategy (1 sentence)",
+                "Year 3 cost reduction strategy (1 sentence)",
+                "Year 4 cost reduction strategy (1 sentence)"
               ]
             }
 
-            For scholarships: list 3 realistic awards relevant to this college, major, and financial profile.
-            For employment: list 3 realistic on-campus or field-aligned part-time roles that reduce net cost.
+            For scholarships: list 3 realistic awards relevant to this college, major, and financial profile. Include a real URL to apply or learn more (scholarship database, college financial aid page, or fastweb.com/bigfuture).
+            For employment: list 3 realistic on-campus or field-aligned part-time roles. Include a real URL (Handshake, college career page, or relevant job board).
+            For yearlyTips: one actionable cost-reduction strategy per academic year, specific to this student's situation.
             Keep each details field to 1-2 sentences. Be specific to the institution and major.
             """,
             req.getCollegeName() != null ? req.getCollegeName() : "this college",
