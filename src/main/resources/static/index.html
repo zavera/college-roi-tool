@@ -1792,33 +1792,103 @@
     }
 
     function fetchPremiumInsights(collegeName) {
-        $("#premiumContent").html('<p style="color:var(--muted);font-size:13px;padding:16px 0;">Generating insights for ' + collegeName + '...</p>').show();
-        $.ajax({
-            url: "/api/premium/insights",
-            method: "POST",
-            contentType: "application/json",
-            data: JSON.stringify({
-                collegeName: collegeName,
-                major: $("#majorSelect").val() || null,
-                netPrice: selectedCollege ? selectedCollege.netPrice : null,
-                sixYrEarnings: selectedCollege ? selectedCollege.sixYrEarnings : null
-            }),
-            success: function(data) {
-                renderPremiumInsights(data);
-            },
-            error: function(xhr) {
-                if (xhr.status === 403) {
-                    premiumActive = false;
-                    $("#premiumOverlay").show();
-                    $("#premiumContent").hide();
-                } else {
-                    $("#premiumContent").html('<p style="color:var(--danger);font-size:13px;padding:16px 0;">Could not load insights. Please try again.</p>');
+        const entries = compareList.length > 0 ? compareList : null;
+
+        if (entries) {
+            // ── Compare mode: one section per college ──
+            const sections = new Array(entries.length).fill('');
+            let completed  = 0;
+            $("#premiumContent")
+                .html(`<p style="color:var(--muted);font-size:13px;padding:12px 0;">Generating insights for ${entries.length} colleges…</p>`)
+                .show();
+
+            entries.forEach(function(entry, i) {
+                const loanData = {
+                    subLoan:    entry.fafsa.subsidizedLoan    || 0,
+                    unsubLoan:  entry.fafsa.unsubsidizedLoan  || 0,
+                    parentPlus: entry.fafsa.familyContribution|| 0,
+                    freeAid:   (entry.fafsa.pellGrant         || 0)
+                             + (entry.fafsa.institutionalGrant|| 0)
+                             + (entry.fafsa.scholarshipAmount || 0)
+                };
+                $.ajax({
+                    url: "/api/premium/insights", method: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        collegeName:   entry.college.name,
+                        major:         entry.selectedMajorTitle || null,
+                        netPrice:      entry.netPrice || null,
+                        sixYrEarnings: entry.selectedMajorEarnings || entry.college.sixYrEarnings || null
+                    }),
+                    success: function(data) {
+                        sections[i] = renderPremiumSection(
+                            data, entry.college.name, entry.selectedMajorTitle,
+                            loanData, entry.netPrice,
+                            entry.selectedMajorEarnings || entry.college.sixYrEarnings
+                        );
+                    },
+                    error: function(xhr) {
+                        if (xhr.status === 403) { premiumActive = false; $("#premiumOverlay").show(); $("#premiumContent").hide(); }
+                        sections[i] = `<p style="color:var(--muted);font-size:12px;padding:8px 0;">${entry.college.name}: insights unavailable.</p>`;
+                    },
+                    complete: function() {
+                        completed++;
+                        if (completed === entries.length) {
+                            $("#premiumContent").html(sections.join('')).show();
+                        }
+                    }
+                });
+            });
+        } else {
+            // ── Single college mode ──
+            const loanData = {
+                subLoan:    pf($("#subsidizedLoan").val())    || 0,
+                unsubLoan:  pf($("#unsubsidizedLoan").val())  || 0,
+                parentPlus: pf($("#parentPlusLoan").val())    || 0,
+                freeAid:   (pf($("#pellGrant").val())         || 0)
+                         + (pf($("#institutionalGrant").val())|| 0)
+                         + (pf($("#scholarshipAmount").val()) || 0)
+                         + (pf($("#workStudy").val())         || 0)
+            };
+            $("#premiumContent")
+                .html(`<p style="color:var(--muted);font-size:13px;padding:12px 0;">Generating insights for ${collegeName}…</p>`)
+                .show();
+            $.ajax({
+                url: "/api/premium/insights", method: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    collegeName:   collegeName,
+                    major:         $("#majorSelect").val() || null,
+                    netPrice:      selectedCollege ? selectedCollege.netPrice      : null,
+                    sixYrEarnings: selectedCollege ? selectedCollege.sixYrEarnings : null
+                }),
+                success: function(data) {
+                    const html = renderPremiumSection(
+                        data, collegeName, $("#majorSelect").val() || null,
+                        loanData,
+                        selectedCollege ? selectedCollege.netPrice      : null,
+                        selectedCollege ? selectedCollege.sixYrEarnings : null
+                    );
+                    $("#premiumContent").html(html).show();
+                },
+                error: function(xhr) {
+                    if (xhr.status === 403) {
+                        premiumActive = false;
+                        $("#premiumOverlay").show();
+                        $("#premiumContent").hide();
+                    } else {
+                        $("#premiumContent").html('<p style="color:var(--muted);font-size:13px;padding:16px 0;">Could not load insights. Please try again.</p>');
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
-    function renderPremiumInsights(data) {
+    function renderPremiumSection(data, collegeName, major, loanData, netPrice, sixYrEarnings) {
+        const sectionLabel = `<div style="background:var(--navy);color:var(--primary);padding:9px 14px;border-radius:7px;font-size:13px;font-weight:800;margin-bottom:14px;letter-spacing:.3px;">
+            ${collegeName}${major ? ' &mdash; ' + major : ''}
+        </div>`;
+
         const scholarships = (data.scholarships || []).map(s => `
             <div style="margin-bottom:12px;padding:10px 12px;background:var(--bg);border-radius:8px;border-left:3px solid var(--primary)">
                 <div style="font-weight:700;font-size:13px;color:var(--navy)">${s.title} <span style="color:var(--accent);font-weight:800">${s.amount}</span></div>
@@ -1829,73 +1899,62 @@
         const employment = (data.employment || []).map(e => `
             <div style="margin-bottom:12px;padding:10px 12px;background:var(--bg);border-radius:8px;border-left:3px solid var(--navy-lt)">
                 <div style="font-weight:700;font-size:13px;color:var(--navy)">${e.title} <span style="color:var(--primary-dk);font-weight:800">${e.pay}</span></div>
+                ${e.type ? `<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--primary-dk);margin-top:2px;">${e.type}</div>` : ''}
                 <div style="font-size:12px;color:var(--muted);margin-top:3px">${e.details}</div>
                 ${e.url ? `<a href="${e.url}" target="_blank" rel="noopener" style="font-size:11px;color:var(--primary-dk);font-weight:700;text-decoration:none;border-bottom:1px solid var(--primary-lt);margin-top:5px;display:inline-block;">Explore &rarr;</a>` : ''}
             </div>`).join('');
 
-        const plan = buildFourYearPlan(data.yearlyTips || []);
+        const plan = buildFourYearPlan(data.yearlyTips || [], loanData, netPrice, sixYrEarnings);
+        const lbl = s => `<strong style="display:block;margin-bottom:10px;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--navy-lt)">${s}</strong>`;
 
-        $("#premiumContent").html(`
-            <strong style="display:block;margin-bottom:10px;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--navy)">Scholarship Opportunities</strong>
-            ${scholarships}
-            <strong style="display:block;margin:16px 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--navy)">Employment Pathways</strong>
-            ${employment}
-            <strong style="display:block;margin:20px 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--navy)">4-Year Cost Reduction Plan</strong>
-            ${plan}
-        `).show();
+        return `${sectionLabel}
+            ${lbl('Scholarship Opportunities')}${scholarships}
+            ${lbl('Campus Employment &amp; Research')}${employment}
+            ${lbl('4-Year Cost Reduction Plan')}${plan}
+            <div style="border-top:2px solid var(--border);margin:24px 0 20px;"></div>`;
     }
 
-    function buildFourYearPlan(yearlyTips) {
-        const netPrice      = selectedCollege.netPrice || 0;
-        const sixYrEarnings = selectedCollege.sixYrEarnings || 0;
-        const subLoan       = pf($("#subsidizedLoan").val()) || 0;
-        const unsubLoan     = pf($("#unsubsidizedLoan").val()) || 0;
-        const parentPlus    = pf($("#parentPlusLoan").val()) || 0;
-        const freeAid       = (pf($("#pellGrant").val()) || 0)
-                            + (pf($("#institutionalGrant").val()) || 0)
-                            + (pf($("#scholarshipAmount").val()) || 0)
-                            + (pf($("#workStudy").val()) || 0);
+    function buildFourYearPlan(yearlyTips, loanData, netPriceOverride, earningsOverride) {
+        const netPrice      = netPriceOverride  != null ? netPriceOverride  : (selectedCollege.netPrice      || 0);
+        const sixYrEarnings = earningsOverride  != null ? earningsOverride  : (selectedCollege.sixYrEarnings || 0);
+        const subLoan       = loanData ? (loanData.subLoan    || 0) : (pf($("#subsidizedLoan").val())    || 0);
+        const unsubLoan     = loanData ? (loanData.unsubLoan  || 0) : (pf($("#unsubsidizedLoan").val())  || 0);
+        const parentPlus    = loanData ? (loanData.parentPlus || 0) : (pf($("#parentPlusLoan").val())    || 0);
         const yr1Loans      = subLoan + unsubLoan + parentPlus;
-        const fedLimits     = [5500, 6500, 7500, 7500]; // dependent student caps
+        const fedLimits     = [5500, 6500, 7500, 7500];
+        const useDefaults   = yr1Loans === 0;
         const safeTotal     = sixYrEarnings > 0 ? sixYrEarnings : null;
         const d = n => '$' + Math.round(n).toLocaleString();
 
         let cumDebt = 0;
-        const rows = [1,2,3,4].map(y => {
-            const fedCap   = fedLimits[y-1];
-            const loans    = y === 1 ? yr1Loans : Math.min(yr1Loans, fedCap + parentPlus);
-            cumDebt       += loans;
-            const monthly  = cumDebt > 0 ? (cumDebt * (0.0654/12)) / (1 - Math.pow(1 + 0.0654/12, -120)) : 0;
-            const overLimit = safeTotal && cumDebt > safeTotal;
-            const tip      = yearlyTips[y-1] || '';
+        const rows = [1,2,3,4].map(function(y) {
+            const fedCap    = fedLimits[y-1];
+            const yearLoans = useDefaults ? fedCap : Math.min(yr1Loans, fedCap + parentPlus);
+            cumDebt        += yearLoans;
+            const monthly   = cumDebt > 0 ? (cumDebt * (0.0654/12)) / (1 - Math.pow(1 + 0.0654/12, -120)) : 0;
+            const over      = safeTotal && cumDebt > safeTotal;
+            const tip       = yearlyTips[y-1] || '—';
             return `<tr>
                 <td style="font-weight:700;color:var(--navy)">Year ${y}</td>
                 <td>${netPrice > 0 ? d(netPrice) : '—'}</td>
-                <td>${d(loans)}</td>
-                <td class="${overLimit ? 'over-limit' : ''}">${d(cumDebt)}${overLimit ? ' !' : ''}</td>
+                <td>${d(yearLoans)}${useDefaults ? '*' : ''}</td>
+                <td class="${over ? 'over-limit' : ''}">${d(cumDebt)}${over ? ' !' : ''}</td>
                 <td>${d(monthly)}/mo</td>
                 <td class="tip-cell">${tip}</td>
             </tr>`;
-        }).join('');
+        });
 
-        const warning = safeTotal
-            ? `<p style="font-size:11px;color:var(--muted);margin-top:8px;">Rule of thumb: total debt at graduation should not exceed one year's starting salary (${d(sixYrEarnings)}). Rows marked <span style="color:#b94040;font-weight:700">!</span> exceed this threshold.</p>`
-            : '';
+        const note    = useDefaults ? `<p style="font-size:11px;color:var(--muted);margin-top:6px;">* Projected using federal dependent student loan limits. Enter your actual aid package above for a personalised projection.</p>` : '';
+        const warning = safeTotal   ? `<p style="font-size:11px;color:var(--muted);margin-top:4px;">Total debt at graduation should not exceed one year's starting salary (${d(sixYrEarnings)}). Rows marked <span style="color:#b94040;font-weight:700">!</span> exceed this threshold.</p>` : '';
 
         return `<div style="overflow-x:auto;">
             <table class="plan-table">
-                <thead><tr>
-                    <th>Year</th><th>Net Cost</th><th>Est. Loans</th>
-                    <th>Cumulative Debt</th><th>Est. Monthly Pmt</th><th>Reduction Strategy</th>
-                </tr></thead>
-                <tbody>${rows}</tbody>
-            </table>
-        </div>${warning}`;
+                <thead><tr><th>Year</th><th>Net Cost</th><th>Est. Loans</th><th>Cumulative Debt</th><th>Est. Monthly Pmt</th><th>Reduction Strategy</th></tr></thead>
+                <tbody>${rows.join('')}</tbody>
+            </table></div>${note}${warning}`;
     }
 
-    function exportReport() {
-        window.print();
-    }
+    function exportReport() { window.print(); }
 
     function handleUnlock() {
         alert("Subscription portal coming soon. Contact us at advisor@callistotech.org.");

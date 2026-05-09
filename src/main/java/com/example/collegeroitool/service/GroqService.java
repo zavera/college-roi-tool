@@ -88,9 +88,9 @@ public class GroqService {
                 {"title": "[DEV] External Profile Match", "amount": "$2,500 est.", "details": "Fastweb and BigFuture matches based on your demographic and academic profile. Production will surface live results.", "url": "https://www.scholarships.com/"}
               ],
               "employment": [
-                {"title": "[DEV] Undergraduate Research Assistant", "pay": "$13–$16/hr", "details": "8–10 hrs/week through the %s department. Apply via internal postings each semester.", "url": "https://app.joinhandshake.com/"},
-                {"title": "[DEV] Co-op Placement", "pay": "$17–$22/hr", "details": "Alternating semester placement in %s-related firms. Reduces net annual cost by up to $9,000 and converts to full-time at 60%% rate.", "url": "https://app.joinhandshake.com/"},
-                {"title": "[DEV] Campus Work-Study Role", "pay": "$12–$14/hr", "details": "Federal work-study positions available through the financial aid office. Earnings do not count against next year's aid eligibility.", "url": "https://studentaid.gov/understand-aid/types/work-study"}
+                {"title": "[DEV] Undergraduate Research Assistant — %s Dept.", "pay": "Volunteer for Credit / $13–$15/hr", "type": "Undergraduate Research", "details": "Faculty in the %s program are actively recruiting research assistants each semester. Contact the department office or check the faculty directory for open positions. Volunteer-for-credit positions count toward graduation requirements.", "url": "https://app.joinhandshake.com/"},
+                {"title": "[DEV] Department Teaching Assistant / Tutor", "pay": "$12–$14/hr", "type": "On-Campus Employment", "details": "On-campus tutoring and TA roles for %s students are posted each term through the department. Federal work-study eligible — earnings do not affect next year's aid calculation.", "url": "https://app.joinhandshake.com/"},
+                {"title": "[DEV] Co-op / Practicum Placement", "pay": "$17–$22/hr", "type": "Co-op / Internship", "details": "Alternating-semester co-op in %s-related firms near campus. Reduces net annual cost by up to $9,000 and converts to full-time offers at a 60%% rate. Apply through the career center in Year 2.", "url": "https://app.joinhandshake.com/"}
               ],
               "yearlyTips": [
                 "File FAFSA in October and submit a written aid appeal. First-year borrowers set the baseline — keep federal loans at or below $5,500.",
@@ -99,7 +99,7 @@ public class GroqService {
                 "Maximize work-study and check if your employer offers tuition assistance. A strong senior year GPA opens post-grad loan forgiveness programs."
               ]
             }
-            """, college, major, major, major);
+            """, college, major, major, major, major, major);
     }
 
     public String getPremiumInsights(PremiumInsightsRequest req) {
@@ -131,9 +131,14 @@ public class GroqService {
               ]
             }
 
-            For scholarships: list 3 realistic awards relevant to this college, major, and financial profile. Include a real URL to apply or learn more (scholarship database, college financial aid page, or fastweb.com/bigfuture).
-            For employment: list 3 realistic on-campus or field-aligned part-time roles. Include a real URL (Handshake, college career page, or relevant job board).
-            For yearlyTips: one actionable cost-reduction strategy per academic year, specific to this student's situation.
+            For scholarships: list 3 realistic awards relevant to this college, major, and financial profile. Include a real URL to apply or learn more (scholarship database, college financial aid page, fastweb.com, or bigfuture.collegeboard.org).
+            For employment: list exactly 3 CAMPUS-BASED, MAJOR-SPECIFIC opportunities in this order:
+              1. Undergraduate Research opportunity — specify if faculty in this major are actively hiring (research assistant, lab work). Include "Volunteer for Credit" as type if unpaid. Include a faculty contact name or department if realistic.
+              2. A major-specific on-campus paid role (department assistant, tutoring, lab tech, studio monitor, etc.).
+              3. A co-op, internship, or practicum tied to this major near this campus.
+            Add a "type" field: "Undergraduate Research", "On-Campus Employment", or "Co-op / Internship".
+            Include a real URL for each (Handshake, college career center, department page, or O*NET).
+            For yearlyTips: one actionable cost-reduction strategy per academic year.
             Keep each details field to 1-2 sentences. Be specific to the institution and major.
             """,
             req.getCollegeName() != null ? req.getCollegeName() : "this college",
