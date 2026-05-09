@@ -6,9 +6,9 @@
 <title>Student Finance Tool — Financial Literacy & Money Transfer Simulator</title>
 <style>
   :root {
-    --primary: #5c35d9;
-    --primary-dark: #4526b0;
-    --accent: #00c2a8;
+    --primary: #2d7a2d;
+    --primary-dark: #1e5c1e;
+    --accent: #2d7a2d;
     --danger: #e74c3c;
     --success: #27ae60;
     --warning: #f39c12;
@@ -25,10 +25,10 @@
 
   /* ── Header ── */
   header {
-    background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+    background: #1e5c1e;
     color: white; padding: 20px 32px;
     display: flex; align-items: center; gap: 16px;
-    box-shadow: 0 2px 12px rgba(92,53,217,0.3);
+    box-shadow: 0 2px 12px rgba(30,92,30,0.3);
   }
   header .logo { font-size: 28px; }
   header h1 { font-size: 20px; font-weight: 700; }
@@ -77,8 +77,8 @@
 
   /* ── ROI Panel ── */
   .roi-panel {
-    margin-top: 14px; padding: 16px; background: linear-gradient(135deg,#e8f4f8,#eef0ff);
-    border-radius: 10px; border: 1px solid #c4d8e8; display: none;
+    margin-top: 14px; padding: 16px; background: #f0faf0;
+    border-radius: 10px; border: 1px solid #a8d5a8; display: none;
   }
   .roi-panel h3 { font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
   .roi-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
@@ -95,8 +95,8 @@
     flex: 1; min-width: 160px; border-radius: 10px; padding: 14px 16px;
     color: white; border: 3px solid transparent; transition: transform .15s, border-color .15s;
   }
-  .account-pill.checking { background: linear-gradient(135deg,#5c35d9,#8b5cf6); }
-  .account-pill.savings  { background: linear-gradient(135deg,#00c2a8,#00897b); }
+  .account-pill.checking { background: linear-gradient(135deg,#2d7a2d,#4aa34a); }
+  .account-pill.savings  { background: linear-gradient(135deg,#1e5c1e,#2d7a2d); }
   .account-pill.loan     { background: linear-gradient(135deg,#e74c3c,#c0392b); }
   .account-pill .acc-name { font-size: 12px; opacity: .85; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
   .account-pill .acc-bal  { font-size: 22px; font-weight: 800; }
@@ -119,7 +119,7 @@
   .btn-primary { background: var(--primary); color: white; width: 100%; justify-content: center; }
   .btn-primary:hover { background: var(--primary-dark); }
   .btn-primary:disabled { background: #bbb; cursor: not-allowed; }
-  .btn-ai { background: linear-gradient(135deg, #5c35d9, #00c2a8); color: white; width: 100%; justify-content: center; font-size: 15px; padding: 13px; }
+  .btn-ai { background: #2d7a2d; color: white; width: 100%; justify-content: center; font-size: 15px; padding: 13px; }
   .btn-ai:hover { filter: brightness(1.07); }
   .btn-ai:disabled { background: #bbb; cursor: not-allowed; filter: none; }
   .btn-sm { padding: 6px 14px; font-size: 12px; border-radius: 6px; background: var(--bg); color: var(--muted); border: 1px solid var(--border); cursor: pointer; }
@@ -138,8 +138,8 @@
   .loan-stat .lbl { font-size: 11px; color: var(--muted); margin-top: 3px; font-weight: 600; text-transform: uppercase; }
 
   /* ── AI Section ── */
-  .ai-box { background: linear-gradient(135deg, #faf5ff, #e8f8f5); border: 1.5px solid #c4b5fd; border-radius: var(--radius); padding: 20px; }
-  .ai-response { margin-top: 14px; background: white; border-radius: 8px; padding: 16px; font-size: 14px; line-height: 1.75; color: var(--text); border: 1px solid #e8d5ff; min-height: 60px; white-space: pre-wrap; display: none; }
+  .ai-box { background: #f0faf0; border: 1.5px solid #a8d5a8; border-radius: var(--radius); padding: 20px; }
+  .ai-response { margin-top: 14px; background: white; border-radius: 8px; padding: 16px; font-size: 14px; line-height: 1.75; color: var(--text); border: 1px solid #a8d5a8; min-height: 60px; white-space: pre-wrap; display: none; }
   .ai-response.visible { display: block; }
   .ai-thinking { display: none; align-items: center; gap: 10px; color: var(--primary); font-style: italic; font-size: 14px; padding: 12px 0; }
   .ai-thinking.visible { display: flex; }
@@ -154,18 +154,82 @@
   #toast.success { background: var(--success); }
   #toast.error   { background: var(--danger); }
 
-  .ai-avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--accent)); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .ai-avatar { width: 38px; height: 38px; border-radius: 50%; background: #2d7a2d; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: white; flex-shrink: 0; }
 
   .scorecard-note { font-size: 11px; color: var(--muted); margin-top: 6px; font-style: italic; }
+
+  /* ── College Comparison ── */
+  .comp-header-bar {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: 12px 16px; cursor: pointer;
+    transition: border-color .2s, background .2s; user-select: none;
+  }
+  .comp-header-bar:hover { border-color: var(--primary); background: #f5fbf5; }
+  .comp-header-bar.open  { border-color: var(--primary); background: #f0faf0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom: none; }
+
+  .comp-chevron { font-size: 13px; color: var(--muted); transition: transform .25s; flex-shrink: 0; }
+  .comp-header-bar.open .comp-chevron { transform: rotate(90deg); color: var(--primary); }
+
+  .comp-badge {
+    font-size: 13px; font-weight: 700; color: var(--text);
+    flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .comp-badge.placeholder { color: var(--muted); font-weight: 500; font-style: italic; }
+
+  .comp-mini-stats { display: flex; gap: 8px; flex-shrink: 0; }
+  .comp-mini-stat {
+    font-size: 11px; font-weight: 700; padding: 3px 9px;
+    border-radius: 12px; background: white; border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .comp-mini-stat.blue  { color: var(--primary); border-color: #a8d5a8; }
+  .comp-mini-stat.green { color: var(--success);  border-color: #a8d5a8; }
+  .comp-mini-stat.warn  { color: var(--warning);  border-color: #f3e0a0; }
+
+  .comp-remove-btn {
+    background: none; border: none; cursor: pointer; font-size: 16px;
+    color: #bbb; flex-shrink: 0; line-height: 1; padding: 2px 4px;
+    border-radius: 4px; transition: color .15s;
+  }
+  .comp-remove-btn:hover { color: var(--danger); }
+
+  .comp-body {
+    border: 1.5px solid var(--primary); border-top: none;
+    border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;
+    padding: 16px; background: white;
+    overflow: hidden;
+    max-height: 0; opacity: 0;
+    transition: max-height .35s ease, opacity .25s ease, padding .25s ease;
+  }
+  .comp-body.open { max-height: 420px; opacity: 1; padding: 16px; }
+
+  .comp-slot { margin-bottom: 10px; }
+  .comp-slot:last-child { margin-bottom: 0; }
+
+  #addCollegeBtn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 18px; font-size: 13px; font-weight: 700;
+    border: 1.5px dashed var(--primary); border-radius: 8px;
+    background: transparent; color: var(--primary); cursor: pointer;
+    transition: background .15s, color .15s; margin-top: 12px;
+  }
+  #addCollegeBtn:hover { background: #f0faf0; }
+  #addCollegeBtn:disabled { opacity: .45; cursor: not-allowed; }
+
+  .comp-empty-hint {
+    font-size: 13px; color: var(--muted); font-style: italic;
+    padding: 10px 0 4px;
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">🎓</div>
+  <div class="logo"></div>
   <div>
     <h1>Student Finance Tool</h1>
-    <p>Financial literacy simulator for undergraduates &amp; education counselors</p>
+    <p>AKEB – Aga Khan Education Board</p>
   </div>
   <span class="badge">🔒 Testing Mode — No data saved</span>
 </header>
@@ -206,6 +270,22 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       COLLEGE COMPARISON BUCKETS
+  ══════════════════════════════════════════ -->
+  <div class="card full" id="comparisonCard">
+    <div class="card-title">
+      <span>⚖️</span> College Comparison
+      <small style="font-size:11px;font-weight:400;color:var(--muted);margin-left:4px">— add up to 5 schools to compare side-by-side</small>
+    </div>
+
+    <div id="compBuckets">
+      <p class="comp-empty-hint">No colleges added yet. Click <strong>+ Add College</strong> below to start comparing.</p>
+    </div>
+
+    <button id="addCollegeBtn" onclick="addComparisonSlot()">＋ Add College</button>
   </div>
 
   <!-- ══════════════════════════════════════════
@@ -277,8 +357,8 @@
        AI FINANCIAL ADVISOR
   ══════════════════════════════════════════ -->
   <div class="card full ai-box">
-    <div class="card-title" style="color:#5c35d9">
-      <div class="ai-avatar">🤖</div>
+    <div class="card-title" style="color:var(--primary)">
+      <div class="ai-avatar">AI</div>
       AI Financial Advisor
       <small style="font-weight:400;color:var(--muted);font-size:12px;margin-left:4px">— Groq · llama3-8b-8192</small>
     </div>
@@ -318,10 +398,10 @@
       <textarea id="aiQuestion" placeholder="e.g. I'm a first-gen student. My family wants to take a PLUS loan on top of mine. Is this manageable with my projected major?"></textarea>
     </div>
 
-    <button class="btn btn-ai" id="aiBtn" onclick="askAI()">🤖 Get AI Financial Guidance</button>
+    <button class="btn btn-ai" id="aiBtn" onclick="askAI()">AI Summary</button>
 
     <div class="ai-thinking" id="aiThinking">
-      <div class="ai-avatar">🤖</div>
+      <div class="ai-avatar">AI</div>
       Analyzing your situation<span class="dots"><span>.</span><span>.</span><span>.</span></span>
     </div>
     <div class="ai-response" id="aiResponse"></div>
@@ -402,8 +482,10 @@ function highlightSuggestion(items) {
 
 async function fetchSuggestions(term) {
   try {
+    // Normalize & so the Scorecard API partial-text search matches names like "Texas A&M"
+    const searchTerm = term.replace(/&/g, ' ').replace(/\s+/g, ' ').trim();
     const url = `${SCORECARD_BASE}?api_key=${SCORECARD_API_KEY}` +
-                `&school.name=${encodeURIComponent(term)}&fields=school.name&per_page=10`;
+                `&school.name=${encodeURIComponent(searchTerm)}&fields=school.name&per_page=10`;
     const res  = await fetch(url);
     const data = await res.json();
     const names = (data.results || [])
@@ -442,8 +524,10 @@ async function selectCollege(name) {
 
   try {
     const fields = "school.name,latest.cost.net_price.overall,latest.earnings.6_yrs_after_entry.median";
+    // Normalize & so the Scorecard API can match names like "Texas A&M University"
+    const lookupName = name.replace(/&/g, ' ').replace(/\s+/g, ' ').trim();
     const url    = `${SCORECARD_BASE}?api_key=${SCORECARD_API_KEY}` +
-                   `&school.name=${encodeURIComponent(name)}&fields=${fields}`;
+                   `&school.name=${encodeURIComponent(lookupName)}&fields=${fields}`;
     const res    = await fetch(url);
     const data   = await res.json();
     const result = (data.results || [])[0];
@@ -648,6 +732,248 @@ function toast(msg, type = "") {
   el.textContent = msg; el.className = "show " + type;
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.className = "", 3200);
+}
+
+// ═══════════════════════════════════════
+//  COLLEGE COMPARISON BUCKETS
+// ═══════════════════════════════════════
+const MAX_COMP_SLOTS = 5;
+let compSlots = [];      // [{ id, name, netPrice, sixYrEarnings, roi }]
+let compCounter = 0;
+
+function addComparisonSlot() {
+  if (compSlots.length >= MAX_COMP_SLOTS) {
+    toast(`Maximum of ${MAX_COMP_SLOTS} comparison colleges reached.`, "error");
+    return;
+  }
+  compCounter++;
+  const id = `comp${compCounter}`;
+  compSlots.push({ id, name: null, netPrice: null, sixYrEarnings: null, roi: null });
+  renderCompBuckets();
+  // Auto-open the new slot
+  setTimeout(() => toggleCompSlot(id, true), 40);
+}
+
+function removeCompSlot(id) {
+  compSlots = compSlots.filter(s => s.id !== id);
+  renderCompBuckets();
+}
+
+function toggleCompSlot(id, forceOpen) {
+  const header = document.querySelector(`.comp-header-bar[data-id="${id}"]`);
+  const body   = document.querySelector(`.comp-body[data-id="${id}"]`);
+  if (!header || !body) return;
+  const isOpen = header.classList.contains("open");
+  const open   = forceOpen !== undefined ? forceOpen : !isOpen;
+  header.classList.toggle("open", open);
+  body.classList.toggle("open", open);
+}
+
+function renderCompBuckets() {
+  const container  = document.getElementById("compBuckets");
+  const addBtn     = document.getElementById("addCollegeBtn");
+
+  if (compSlots.length === 0) {
+    container.innerHTML = `<p class="comp-empty-hint">No colleges added yet. Click <strong>+ Add College</strong> below to start comparing.</p>`;
+    addBtn.disabled = false;
+    return;
+  }
+
+  container.innerHTML = compSlots.map((slot, idx) => {
+    const label       = slot.name || `College ${idx + 2} — click to search`;
+    const isPlaceholder = !slot.name;
+    const miniStats   = slot.name ? buildMiniStats(slot) : "";
+
+    return `
+      <div class="comp-slot" id="slot-wrap-${slot.id}">
+        <div class="comp-header-bar" data-id="${slot.id}"
+             onclick="toggleCompSlot('${slot.id}')">
+          <span class="comp-chevron">▶</span>
+          <span class="comp-badge ${isPlaceholder ? 'placeholder' : ''}">${escHtml(label)}</span>
+          ${miniStats}
+          <button class="comp-remove-btn" title="Remove" onclick="event.stopPropagation(); removeCompSlot('${slot.id}')">✕</button>
+        </div>
+        <div class="comp-body" data-id="${slot.id}">
+          ${buildCompBody(slot)}
+        </div>
+      </div>`;
+  }).join("");
+
+  // Re-bind input events for each slot
+  compSlots.forEach(slot => bindCompInput(slot.id));
+
+  addBtn.disabled = compSlots.length >= MAX_COMP_SLOTS;
+}
+
+function buildMiniStats(slot) {
+  const parts = [];
+  if (slot.netPrice     != null) parts.push(`<span class="comp-mini-stat blue">Net: ${fmtMoneyShort(slot.netPrice)}</span>`);
+  if (slot.sixYrEarnings!= null) parts.push(`<span class="comp-mini-stat green">Earn: ${fmtMoneyShort(slot.sixYrEarnings)}</span>`);
+  if (slot.roi          != null) {
+    const cls = slot.roi >= 0 ? "green" : "warn";
+    parts.push(`<span class="comp-mini-stat ${cls}">ROI: ${slot.roi >= 0 ? "+" : ""}${slot.roi.toFixed(1)}K</span>`);
+  }
+  return `<div class="comp-mini-stats">${parts.join("")}</div>`;
+}
+
+function buildCompBody(slot) {
+  return `
+    <div class="field" style="margin-bottom:10px">
+      <label>Search College / University</label>
+      <div class="search-wrap">
+        <input type="text" id="compInput-${slot.id}"
+               value="${escHtml(slot.name || '')}"
+               placeholder="Type at least 2 characters…" autocomplete="off">
+        <div class="search-spinner" id="compSpinner-${slot.id}"></div>
+        <ul class="suggestions" id="compSuggestions-${slot.id}"></ul>
+      </div>
+    </div>
+    <div id="compRoi-${slot.id}" style="${slot.name ? '' : 'display:none'}">
+      ${slot.name ? buildCompRoiGrid(slot) : ''}
+    </div>`;
+}
+
+function buildCompRoiGrid(slot) {
+  return `
+    <div class="roi-grid">
+      <div class="roi-stat">
+        <div class="val blue">${slot.netPrice  != null ? fmtMoney(slot.netPrice)       : "N/A"}</div>
+        <div class="lbl">Net Price / Year</div>
+      </div>
+      <div class="roi-stat">
+        <div class="val green">${slot.sixYrEarnings != null ? fmtMoney(slot.sixYrEarnings) : "N/A"}</div>
+        <div class="lbl">Median Earnings (6 yrs)</div>
+      </div>
+      <div class="roi-stat">
+        <div class="val ${slot.roi != null ? (slot.roi >= 0 ? 'green' : 'warn') : ''}">
+          ${slot.roi != null ? ((slot.roi >= 0 ? "+" : "") + slot.roi.toFixed(1) + "K") : "N/A"}
+        </div>
+        <div class="lbl">Est. ROI Index</div>
+      </div>
+    </div>`;
+}
+
+function bindCompInput(id) {
+  const input   = document.getElementById(`compInput-${id}`);
+  const spinner = document.getElementById(`compSpinner-${id}`);
+  const suggEl  = document.getElementById(`compSuggestions-${id}`);
+  if (!input) return;
+
+  let searchTO = null;
+  let activeIdx = -1;
+
+  input.addEventListener("input", () => {
+    const term = input.value.trim();
+    activeIdx = -1;
+    clearTimeout(searchTO);
+    hideCompSugg(suggEl);
+    if (term.length < 2) return;
+    spinner.style.display = "block";
+    searchTO = setTimeout(() => fetchCompSuggestions(term, id, spinner, suggEl), 320);
+  });
+
+  input.addEventListener("keydown", e => {
+    const items = suggEl.querySelectorAll("li");
+    if (!items.length) return;
+    if (e.key === "ArrowDown")  { activeIdx = Math.min(activeIdx + 1, items.length - 1); highlightSuggestion(items, activeIdx); e.preventDefault(); }
+    else if (e.key === "ArrowUp")   { activeIdx = Math.max(activeIdx - 1, 0); highlightSuggestion(items, activeIdx); e.preventDefault(); }
+    else if (e.key === "Enter" && activeIdx >= 0) { items[activeIdx].click(); e.preventDefault(); }
+    else if (e.key === "Escape") { hideCompSugg(suggEl); }
+  });
+
+  document.addEventListener("click", e => {
+    if (!e.target.closest(`#compInput-${id}`) && !e.target.closest(`#compSuggestions-${id}`))
+      hideCompSugg(suggEl);
+  }, { once: false });
+}
+
+function highlightSuggestion(items, idx) {
+  items.forEach((li, i) => li.classList.toggle("active", i === idx));
+}
+
+function hideCompSugg(el) {
+  if (el) { el.style.display = "none"; el.innerHTML = ""; }
+}
+
+async function fetchCompSuggestions(term, slotId, spinner, suggEl) {
+  try {
+    const searchTerm = term.replace(/&/g, ' ').replace(/\s+/g, ' ').trim();
+    const url = `${SCORECARD_BASE}?api_key=${SCORECARD_API_KEY}` +
+                `&school.name=${encodeURIComponent(searchTerm)}&fields=school.name&per_page=10`;
+    const res  = await fetch(url);
+    const data = await res.json();
+    const names = (data.results || []).map(r => r["school.name"]).filter(Boolean);
+
+    spinner.style.display = "none";
+    if (!names.length) { hideCompSugg(suggEl); return; }
+
+    suggEl.innerHTML = names.map(n => `<li data-name="${escHtml(n)}">${escHtml(n)}</li>`).join("");
+    suggEl.style.display = "block";
+
+    suggEl.querySelectorAll("li").forEach(li => {
+      li.addEventListener("click", () => selectCompCollege(slotId, li.dataset.name));
+    });
+  } catch {
+    spinner.style.display = "none";
+  }
+}
+
+async function selectCompCollege(slotId, name) {
+  const input   = document.getElementById(`compInput-${slotId}`);
+  const spinner = document.getElementById(`compSpinner-${slotId}`);
+  const suggEl  = document.getElementById(`compSuggestions-${slotId}`);
+
+  input.value = name;
+  hideCompSugg(suggEl);
+  spinner.style.display = "block";
+
+  try {
+    const fields = "school.name,latest.cost.net_price.overall,latest.earnings.6_yrs_after_entry.median";
+    const lookupName = name.replace(/&/g, ' ').replace(/\s+/g, ' ').trim();
+    const url  = `${SCORECARD_BASE}?api_key=${SCORECARD_API_KEY}` +
+                 `&school.name=${encodeURIComponent(lookupName)}&fields=${fields}`;
+    const res  = await fetch(url);
+    const data = await res.json();
+    const result = (data.results || [])[0];
+    if (!result) { toast("No scorecard data found for this college.", "error"); return; }
+
+    const netPrice    = result["latest.cost.net_price.overall"] ?? null;
+    const earnings    = result["latest.earnings.6_yrs_after_entry.median"] ?? null;
+    const roi         = (netPrice != null && earnings != null) ? (earnings - netPrice) / 1000 : null;
+
+    // Update the slot state
+    const slot = compSlots.find(s => s.id === slotId);
+    if (slot) Object.assign(slot, { name, netPrice, sixYrEarnings: earnings, roi });
+
+    // Update ROI sub-panel in place (no full re-render to keep accordion open)
+    const roiDiv = document.getElementById(`compRoi-${slotId}`);
+    if (roiDiv && slot) {
+      roiDiv.innerHTML = buildCompRoiGrid(slot);
+      roiDiv.style.display = "block";
+    }
+
+    // Update header badge + mini stats
+    const badge  = document.querySelector(`.comp-header-bar[data-id="${slotId}"] .comp-badge`);
+    const minDiv = document.querySelector(`.comp-header-bar[data-id="${slotId}"] .comp-mini-stats`);
+    if (badge) { badge.textContent = name; badge.classList.remove("placeholder"); }
+    if (minDiv && slot) minDiv.outerHTML = buildMiniStats(slot);
+    else if (slot) {
+      // mini stats not present yet — insert before remove btn
+      const removeBtn = document.querySelector(`.comp-header-bar[data-id="${slotId}"] .comp-remove-btn`);
+      if (removeBtn) removeBtn.insertAdjacentHTML("beforebegin", buildMiniStats(slot));
+    }
+
+    toast(`✅ Loaded scorecard data for ${name}`, "success");
+  } catch (e) {
+    toast("Scorecard API error: " + e.message, "error");
+  } finally {
+    spinner.style.display = "none";
+  }
+}
+
+function fmtMoneyShort(n) {
+  if (n >= 1000) return "$" + (n / 1000).toFixed(0) + "K";
+  return "$" + n.toLocaleString();
 }
 
 // ── Boot ──
