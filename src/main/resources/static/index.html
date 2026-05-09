@@ -1687,7 +1687,7 @@
                 if (inCompareMode) {
                     renderCoverageChart(compareList);
                 }
-                $("#aiAdviceBox").html(resp.advice || "No advice returned.").show();
+                $("#aiAdviceBox").html(formatAdvice(resp.advice || "No advice returned.")).show();
                 $("#aiButton").prop("disabled", false);
             },
             error: function(xhr) {
@@ -1699,6 +1699,40 @@
             }
         });
     });
+
+    // ── AI Summary Formatter ──────────────────────────────────────────────────
+    function formatAdvice(raw) {
+        let text = raw.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+        const meta = [
+            { label: 'Loan Assessment',    color: 'var(--accent)' },
+            { label: 'Key Risks',          color: '#b94040' },
+            { label: 'Compounding Impact', color: 'var(--navy)' },
+            { label: 'Action Step',        color: 'var(--primary-dk)' }
+        ];
+
+        const sections = text.split(/\n(?=\s*\d+[\.\)]\s)/);
+
+        if (sections.length >= 2) {
+            const rows = sections.map((s, i) => {
+                const body = s.replace(/^\s*\d+[\.\)]\s+/, '').trim();
+                const m = meta[i] || { label: 'Note', color: 'var(--navy)' };
+                return `<div style="display:flex;gap:14px;padding:13px 0;border-bottom:1px solid var(--border);">
+                    <div style="width:4px;min-width:4px;border-radius:2px;background:${m.color};margin-top:2px;"></div>
+                    <div>
+                        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:${m.color};margin-bottom:5px;">${m.label}</div>
+                        <div style="font-size:13px;line-height:1.65;color:var(--text);">${body}</div>
+                    </div>
+                </div>`;
+            });
+            return `<div style="margin:0;">${rows.join('')}</div>`;
+        }
+
+        // Fallback: paragraph format
+        return text.split(/\n\n+/)
+            .map(p => `<p style="margin:0 0 10px;font-size:13px;line-height:1.65;">${p.replace(/\n/g,'<br>')}</p>`)
+            .join('');
+    }
 
     // ── Premium Gate ──────────────────────────────────────────────────────────
     let premiumActive = false;
