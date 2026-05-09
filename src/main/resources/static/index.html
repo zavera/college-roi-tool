@@ -1708,9 +1708,20 @@
     });
 
     // ── Premium Gate ──────────────────────────────────────────────────────────
+    function unlockPremium() {
+        $(".premium-preview-overlay").hide();
+        $(".premium-preview-inner").css("filter", "none");
+        $(".btn-unlock").closest(".premium-preview-overlay").remove();
+    }
+
     function handleUnlock() {
         alert("Subscription portal coming soon. Contact us at advisor@callistotech.org.");
     }
+
+    // Check dev bypass or active subscription on load
+    $.getJSON("/api/subscription/status", function(data) {
+        if (data.active) unlockPremium();
+    });
 
     function pf(val) {
         const f = parseFloat(val);
