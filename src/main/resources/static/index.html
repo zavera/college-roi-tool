@@ -619,6 +619,133 @@
         .plan-table .tip-cell { color: var(--muted); font-size: 11px; line-height: 1.5; }
         .plan-table .over-limit { color: #b94040; font-weight: 700; }
 
+        /* ── EFAS Report Styles ── */
+        .efas-report { font-size: 13px; color: var(--text); line-height: 1.5; }
+        .efas-college-section { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 2px solid var(--border); }
+        .efas-college-section:last-of-type { border-bottom: none; }
+        .efas-college-header {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-lt) 100%);
+            color: var(--primary);
+            padding: 12px 16px;
+            border-radius: 7px;
+            font-size: 15px;
+            font-weight: 800;
+            margin-bottom: 18px;
+            letter-spacing: 0.2px;
+        }
+        .efas-section-title {
+            color: #2d7a4f;
+            font-weight: 700;
+            font-size: 13px;
+            border-bottom: 2px solid #2d7a4f;
+            padding-bottom: 4px;
+            margin: 18px 0 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .efas-profile-table, .efas-earnings-table, .efas-repayment-table,
+        .efas-resource-table, .efas-scholarship-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+            margin-bottom: 8px;
+        }
+        .efas-profile-table th, .efas-earnings-table th, .efas-repayment-table th,
+        .efas-resource-table th, .efas-scholarship-table th {
+            background: var(--navy);
+            color: var(--primary);
+            padding: 7px 10px;
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+        .efas-profile-table td, .efas-earnings-table td, .efas-repayment-table td,
+        .efas-resource-table td, .efas-scholarship-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+        .efas-profile-table tr:last-child td, .efas-earnings-table tr:last-child td,
+        .efas-repayment-table tr:last-child td, .efas-resource-table tr:last-child td,
+        .efas-scholarship-table tr:last-child td { border-bottom: none; }
+        .efas-profile-table td:first-child { font-weight: 600; color: var(--muted); width: 38%; }
+        .efas-repayment-table td:first-child { font-weight: 600; color: var(--navy); }
+        .efas-repayment-table th:first-child { width: 42%; }
+        .efas-resource-table td:first-child { font-weight: 700; color: var(--navy); width: 35%; }
+        .efas-scholarship-table td:last-child a { color: var(--primary-dk); font-weight: 700; text-decoration: none; border-bottom: 1px solid var(--primary-lt); font-size: 11px; }
+        .efas-metrics {
+            display: flex;
+            gap: 10px;
+            margin: 14px 0;
+            flex-wrap: wrap;
+        }
+        .efas-metric-box {
+            flex: 1;
+            min-width: 120px;
+            background: var(--navy);
+            border: 1px solid var(--navy-lt);
+            border-radius: 8px;
+            padding: 14px 12px;
+            text-align: center;
+        }
+        .efas-metric-num {
+            font-size: 22px;
+            font-weight: 800;
+            color: #C9A87C;
+            letter-spacing: -0.5px;
+            line-height: 1.1;
+            display: block;
+        }
+        .efas-metric-lbl {
+            font-size: 9px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.65);
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            margin-top: 5px;
+            display: block;
+        }
+        .efas-status-good { color: #276749; font-weight: 700; }
+        .efas-status-warn { color: #c05621; font-weight: 700; }
+        .efas-status-bad  { color: #c53030; font-weight: 700; }
+        .efas-resource-box {
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .efas-resource-box-header {
+            padding: 7px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: white;
+        }
+        .efas-resource-box-header.green  { background: #2d7a4f; }
+        .efas-resource-box-header.purple { background: #6b46c1; }
+        .efas-resource-box table { margin-bottom: 0; }
+        .efas-schol-section-header td {
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 6px 10px !important;
+        }
+        .efas-schol-section-header.national  td { background: #fef3c7; color: #c05621; }
+        .efas-schol-section-header.field     td { background: #f0fdf4; color: #276749; }
+        .efas-schol-section-header.community td { background: #f5f3ff; color: #6b46c1; }
+        .efas-footnote {
+            font-size: 11px;
+            color: var(--muted);
+            font-style: italic;
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid var(--border);
+        }
+
         @media print {
             header .hdr-badge, #searchCard, .card:not(#gapAnalysisCard),
             #gapAnalysisCard .accordion-toggle,
@@ -635,6 +762,22 @@
             #premiumContent { display: block !important; }
             .premium-card { border: 1px solid #ccc; border-radius: 8px; }
             .plan-table th { background: var(--navy) !important; color: var(--primary) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            /* EFAS print styles */
+            .efas-report { font-size: 12px; }
+            .efas-college-header { background: var(--navy) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .efas-profile-table th, .efas-earnings-table th, .efas-repayment-table th,
+            .efas-resource-table th, .efas-scholarship-table th {
+                background: var(--navy) !important; color: var(--primary) !important;
+                -webkit-print-color-adjust: exact; print-color-adjust: exact;
+            }
+            .efas-metric-box { background: var(--navy) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; border: 1px solid #555; }
+            .efas-resource-box-header.green  { background: #2d7a4f !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .efas-resource-box-header.purple { background: #6b46c1 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .efas-schol-section-header.national  td { background: #fef3c7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .efas-schol-section-header.field     td { background: #f0fdf4 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .efas-schol-section-header.community td { background: #f5f3ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .efas-college-section { break-inside: avoid; }
+            .efas-metrics { flex-wrap: nowrap; }
         }
     </style>
 </head>
@@ -1640,38 +1783,127 @@
         if (selectedCollege.name) { renderCOACard(selectedCollege.name); recalculateGap(); }
     });
 
+    // ── Residency / Living label maps ─────────────────────────────────────────
+    const RESIDENCY_LABELS = { instate: 'In-State', outofstate: 'Out-of-State', international: 'International', online: 'Online' };
+    const LIVING_LABELS    = { oncampus: 'On-Campus', offcampus: 'Off-Campus', home: 'At Home' };
+
+    // ── Financial math ────────────────────────────────────────────────────────
+    const LOAN_RATE = 0.065 / 12, LOAN_N = 120;
+    function pmtCalc(principal) {
+        return principal > 0 ? (principal * LOAN_RATE) / (1 - Math.pow(1 + LOAN_RATE, -LOAN_N)) : 0;
+    }
+
+    // ── Build profile data (single mode) ──────────────────────────────────────
+    function buildProfileData() {
+        const coa    = computeCOA() || 0;
+        const pellG  = pf($("#pellGrant").val())          || 0;
+        const instG  = pf($("#institutionalGrant").val()) || 0;
+        const schol  = pf($("#scholarshipAmount").val())  || 0;
+        const subL   = pf($("#subsidizedLoan").val())     || 0;
+        const unsubL = pf($("#unsubsidizedLoan").val())   || 0;
+        const ws     = pf($("#workStudy").val())          || 0;
+        const fam    = pf($("#parentPlusLoan").val())     || 0;
+        const netPriceCalc  = Math.max(0, coa - pellG - instG - schol);
+        const unmetNeedCalc = Math.max(0, netPriceCalc - subL - unsubL - ws - fam);
+        const residencyVal  = $("#residencySelect").val();
+        const livingVal     = $("#livingSelect").val();
+        return {
+            collegeName:        selectedCollege.name || $("#collegeSearch").val().trim() || 'N/A',
+            major:              selectedCollege.selectedMajor || null,
+            residency:          RESIDENCY_LABELS[residencyVal] || residencyVal,
+            living:             LIVING_LABELS[livingVal] || livingVal,
+            year:               'Freshman – Year 1 of 4',
+            federalLoan:        subL + unsubL,
+            parentPlus:         fam,
+            freeAid:            pellG + instG + schol + ws,
+            netPrice:           netPriceCalc,
+            unmetNeed:          unmetNeedCalc,
+            majorEarnings:      selectedCollege.majorEarnings || selectedCollege.sixYrEarnings || 0,
+            collegeWideEarnings:selectedCollege.sixYrEarnings || 0
+        };
+    }
+
+    // ── Build profile data from compare entry ─────────────────────────────────
+    function buildProfileDataForEntry(entry) {
+        return {
+            collegeName:        entry.college.name,
+            major:              entry.selectedMajorTitle || null,
+            residency:          RESIDENCY_LABELS[entry.residency] || entry.residency,
+            living:             LIVING_LABELS[entry.living] || entry.living,
+            year:               'Freshman – Year 1 of 4',
+            federalLoan:        (entry.fafsa.subsidizedLoan || 0) + (entry.fafsa.unsubsidizedLoan || 0),
+            parentPlus:         entry.fafsa.familyContribution || 0,
+            freeAid:            (entry.fafsa.pellGrant || 0) + (entry.fafsa.institutionalGrant || 0) + (entry.fafsa.scholarshipAmount || 0) + (entry.fafsa.workStudy || 0),
+            netPrice:           entry.netPrice || 0,
+            unmetNeed:          entry.unmetNeed || 0,
+            majorEarnings:      entry.selectedMajorEarnings || entry.college.sixYrEarnings || 0,
+            collegeWideEarnings:entry.college.sixYrEarnings || 0
+        };
+    }
+
+    // ── Build AJAX payload for one compare entry ──────────────────────────────
+    function buildEntryPayload(entry) {
+        return {
+            compareMode:        false,
+            collegeName:        entry.college.name,
+            major:              entry.selectedMajorTitle || null,
+            pellGrant:          entry.fafsa.pellGrant          || 0,
+            subsidizedLoan:     entry.fafsa.subsidizedLoan     || 0,
+            unsubsidizedLoan:   entry.fafsa.unsubsidizedLoan   || 0,
+            parentPlusLoan:     entry.fafsa.familyContribution || 0,
+            institutionalGrant: entry.fafsa.institutionalGrant || 0,
+            scholarshipAmount:  entry.fafsa.scholarshipAmount  || 0,
+            workStudy:          entry.fafsa.workStudy          || 0,
+            computedCOA:        entry.computedCOA              || 0,
+            computedNetPrice:   entry.netPrice                 || 0,
+            computedUnmetNeed:  entry.unmetNeed                || 0,
+            residency:          entry.residency,
+            livingSituation:    entry.living,
+            sixYrEarnings:      entry.selectedMajorEarnings || entry.college.sixYrEarnings || null,
+            collegeWideEarnings:entry.college.sixYrEarnings || null
+        };
+    }
+
     // ── AI Financial Summary ──────────────────────────────────────────────────
     $("#aiButton").on("click", function() {
         const inCompareMode = compareList.length >= 2;
-        let payload;
+        $("#aiButton").prop("disabled", true);
+        $("#aiAdviceBox").hide().html("");
+        $("#coverageChartWrap").hide();
+        $("#aiSpinner").show();
 
         if (inCompareMode) {
-            payload = {
-                compareMode: true,
-                compareColleges: compareList.map(e => ({
-                    collegeName:          e.college.name,
-                    coa:                  e.computedCOA,
-                    netPrice:             e.netPrice,
-                    unmetNeed:            e.unmetNeed,
-                    pellGrant:            e.fafsa.pellGrant,
-                    institutionalGrant:   e.fafsa.institutionalGrant,
-                    scholarshipAmount:    e.fafsa.scholarshipAmount,
-                    subsidizedLoan:       e.fafsa.subsidizedLoan,
-                    unsubsidizedLoan:     e.fafsa.unsubsidizedLoan,
-                    workStudy:            e.fafsa.workStudy,
-                    familyContribution:   e.fafsa.familyContribution,
-                    sixYrEarnings:        e.college.sixYrEarnings || null,
-                    selectedMajorTitle:   e.selectedMajorTitle   || null,
-                    selectedMajorEarnings:e.selectedMajorEarnings || null
-                })),
-                gender:               $("#genderSelect").val() || null,
-                race:                 $("#raceSelect").val() || null,
-                firstGeneration:      $("#firstGenCheck").is(":checked") || false,
-                gpa:                  pf($("#gpaInput").val()),
-                extracurriculars:     $("#extracurriculars").val().trim() || null,
-                academicAchievements: $("#academicAchievements").val().trim() || null
-            };
+            // One AJAX call per compare entry, wait for all
+            const allGroqData = new Array(compareList.length).fill(null);
+            const allProfiles = compareList.map(buildProfileDataForEntry);
+            let completed = 0;
+
+            compareList.forEach(function(entry, i) {
+                $.ajax({
+                    url: "/api/llm/advice",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(buildEntryPayload(entry)),
+                    success: function(resp) {
+                        allGroqData[i] = resp.data || null;
+                    },
+                    error: function() {
+                        allGroqData[i] = null;
+                    },
+                    complete: function() {
+                        completed++;
+                        if (completed === compareList.length) {
+                            $("#aiSpinner").hide();
+                            renderCoverageChart(compareList);
+                            $("#aiAdviceBox").html(renderCompareReport(allGroqData, allProfiles)).show();
+                            $("#exportRow").show();
+                            $("#aiButton").prop("disabled", false);
+                        }
+                    }
+                });
+            });
         } else {
+            // Single mode
             const effectiveEarnings = selectedCollege.majorEarnings || selectedCollege.sixYrEarnings;
             const coa      = computeCOA() || 0;
             const pellG    = pf($("#pellGrant").val())          || 0;
@@ -1684,7 +1916,7 @@
             const netPriceCalc  = coa - pellG - instG - schol;
             const unmetNeedCalc = netPriceCalc - subL - unsubL - ws - fam;
 
-            payload = {
+            const payload = {
                 compareMode:          false,
                 collegeName:          selectedCollege.name || $("#collegeSearch").val().trim() || null,
                 major:                selectedCollege.selectedMajor || null,
@@ -1695,12 +1927,6 @@
                 institutionalGrant:   instG,
                 scholarshipAmount:    schol,
                 workStudy:            ws,
-                gender:               $("#genderSelect").val() || null,
-                race:                 $("#raceSelect").val() || null,
-                firstGeneration:      $("#firstGenCheck").is(":checked") || false,
-                gpa:                  pf($("#gpaInput").val()),
-                extracurriculars:     $("#extracurriculars").val().trim() || null,
-                academicAchievements: $("#academicAchievements").val().trim() || null,
                 computedCOA:          coa,
                 computedNetPrice:     Math.max(0, netPriceCalc),
                 computedUnmetNeed:    Math.max(0, unmetNeedCalc),
@@ -1710,38 +1936,255 @@
                 sixYrEarnings:        effectiveEarnings,
                 collegeWideEarnings:  selectedCollege.sixYrEarnings || null
             };
-        }
 
-        $("#aiButton").prop("disabled", true);
-        $("#aiAdviceBox").hide().html("");
-        $("#coverageChartWrap").hide();
-        $("#aiSpinner").show();
-
-        $.ajax({
-            url: "/api/llm/advice",
-            type: "POST",
-            contentType: "application/json",
-            data: JSON.stringify(payload),
-            success: function(resp) {
-                $("#aiSpinner").hide();
-                if (inCompareMode) {
-                    renderCoverageChart(compareList);
+            $.ajax({
+                url: "/api/llm/advice",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(payload),
+                success: function(resp) {
+                    $("#aiSpinner").hide();
+                    if (resp.data) {
+                        const profile = buildProfileData();
+                        $("#aiAdviceBox").html(renderSummaryReport(resp.data, profile)).show();
+                    } else {
+                        $("#aiAdviceBox").html(formatAdvice(resp.advice || "No advice returned.")).show();
+                    }
+                    $("#exportRow").show();
+                    $("#aiButton").prop("disabled", false);
+                },
+                error: function(xhr) {
+                    $("#aiSpinner").hide();
+                    const msg = xhr.responseJSON?.error || "Something went wrong. Please try again.";
+                    $("#aiAdviceBox").html("Error: " + msg).show();
+                    $("#aiButton").prop("disabled", false);
                 }
-                $("#aiAdviceBox").html(formatAdvice(resp.advice || "No advice returned.")).show();
-                $("#exportRow").show();
-                $("#aiButton").prop("disabled", false);
-            },
-            error: function(xhr) {
-                $("#aiSpinner").hide();
-                $("#coverageChartWrap").hide();
-                const msg = xhr.responseJSON?.error || "Something went wrong. Please try again.";
-                $("#aiAdviceBox").html("Error: " + msg).show();
-                $("#aiButton").prop("disabled", false);
-            }
-        });
+            });
+        }
     });
 
-    // ── AI Summary Formatter ──────────────────────────────────────────────────
+    // ── Render: full single-college report ───────────────────────────────────
+    function renderSummaryReport(groqData, profile) {
+        const collegeSection = renderCollegeSection(groqData, profile);
+        const scholSection   = groqData && groqData.privateScholarships
+                             ? renderScholarshipsSection(groqData.privateScholarships)
+                             : '';
+        return `<div class="efas-report">${collegeSection}${scholSection}</div>`;
+    }
+
+    // ── Render: compare report (N colleges then shared scholarships) ──────────
+    function renderCompareReport(groqDataArray, profileArray) {
+        let html = '<div class="efas-report">';
+        groqDataArray.forEach(function(groqData, i) {
+            html += renderCollegeSection(groqData, profileArray[i]);
+        });
+        // Scholarships from first successful response
+        const firstWithSchol = groqDataArray.find(d => d && d.privateScholarships);
+        if (firstWithSchol) {
+            html += renderScholarshipsSection(firstWithSchol.privateScholarships);
+        }
+        html += '</div>';
+        return html;
+    }
+
+    // ── Render: one college's sections ───────────────────────────────────────
+    function renderCollegeSection(groqData, profile) {
+        const d = n => '$' + Math.round(Math.max(0, n || 0)).toLocaleString('en-US');
+        const pct = n => (n * 100).toFixed(1) + '%';
+
+        // Repayment math
+        const sc1Total   = profile.federalLoan * 4;
+        const sc1Monthly = pmtCalc(sc1Total);
+        const sc1Annual  = sc1Monthly * 12;
+        const sc1Pct     = profile.majorEarnings > 0 ? sc1Annual / profile.majorEarnings : 0;
+
+        const sc2Total   = sc1Total + (profile.unmetNeed * 4);
+        const sc2Monthly = pmtCalc(sc2Total);
+        const sc2Annual  = sc2Monthly * 12;
+        const sc2Pct     = profile.majorEarnings > 0 ? sc2Annual / profile.majorEarnings : 0;
+
+        function statusClass(p) { return p < 0.05 ? 'efas-status-good' : p <= 0.10 ? 'efas-status-warn' : 'efas-status-bad'; }
+        function statusLabel(p) { return p < 0.05 ? 'MANAGEABLE' : p <= 0.10 ? 'BORDERLINE' : 'HIGH RISK'; }
+
+        // Profile table
+        const profileTable = `
+            <div class="efas-section-title">Student &amp; School Profile</div>
+            <table class="efas-profile-table">
+                <tr><td>School</td><td>${profile.collegeName}</td></tr>
+                <tr><td>Major</td><td>${profile.major || 'Not Selected'}</td></tr>
+                <tr><td>Year</td><td>${profile.year}</td></tr>
+                <tr><td>Residency</td><td>${profile.residency}</td></tr>
+                <tr><td>Housing</td><td>${profile.living}</td></tr>
+            </table>`;
+
+        // Key metrics banner
+        const metricsBanner = `
+            <div class="efas-section-title">Key Metrics</div>
+            <div class="efas-metrics">
+                <div class="efas-metric-box">
+                    <span class="efas-metric-num">${d(profile.netPrice)}</span>
+                    <span class="efas-metric-lbl">Net Price / Year</span>
+                </div>
+                <div class="efas-metric-box">
+                    <span class="efas-metric-num">${d(profile.federalLoan)}</span>
+                    <span class="efas-metric-lbl">Federal Loans Offered</span>
+                </div>
+                <div class="efas-metric-box">
+                    <span class="efas-metric-num">${d(profile.unmetNeed)}</span>
+                    <span class="efas-metric-lbl">Unmet Need</span>
+                </div>
+            </div>`;
+
+        // Earnings table
+        const earningsTable = `
+            <div class="efas-section-title">For Context: Earnings After Graduation</div>
+            <table class="efas-earnings-table">
+                <thead><tr><th>Earnings Benchmark</th><th>6-Year Median</th></tr></thead>
+                <tbody>
+                    <tr><td>${profile.major ? profile.major + ' graduates' : 'Major-specific graduates'}</td><td>${profile.majorEarnings > 0 ? d(profile.majorEarnings) + '/yr' : 'N/A'}</td></tr>
+                    <tr><td>All graduates of ${profile.collegeName}</td><td>${profile.collegeWideEarnings > 0 ? d(profile.collegeWideEarnings) + '/yr' : 'N/A'}</td></tr>
+                </tbody>
+            </table>`;
+
+        // Repayment table
+        const repaymentTable = `
+            <div class="efas-section-title">Estimated Repayment Scenarios (10-Year Standard Plan)</div>
+            <table class="efas-repayment-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Scenario 1: Federal Loans Only</th>
+                        <th>Scenario 2: Maximum Borrowing</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Est. 4-Year Total Borrowed</td>
+                        <td>${d(sc1Total)}</td>
+                        <td>${d(sc2Total)}</td>
+                    </tr>
+                    <tr>
+                        <td>Monthly Payment</td>
+                        <td>${d(sc1Monthly)}/mo</td>
+                        <td>${d(sc2Monthly)}/mo</td>
+                    </tr>
+                    <tr>
+                        <td>Annual Repayment</td>
+                        <td>${d(sc1Annual)}/yr</td>
+                        <td>${d(sc2Annual)}/yr</td>
+                    </tr>
+                    <tr>
+                        <td>As % of 6-Yr Earnings</td>
+                        <td>${profile.majorEarnings > 0 ? pct(sc1Pct) : 'N/A'}</td>
+                        <td>${profile.majorEarnings > 0 ? pct(sc2Pct) : 'N/A'}</td>
+                    </tr>
+                    <tr>
+                        <td>Debt-to-Income Status</td>
+                        <td class="${statusClass(sc1Pct)}">${profile.majorEarnings > 0 ? statusLabel(sc1Pct) : '—'}</td>
+                        <td class="${statusClass(sc2Pct)}">${profile.majorEarnings > 0 ? statusLabel(sc2Pct) : '—'}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="efas-footnote">Rate: 6.5% fixed, 10-year standard plan. Scenario 2 = federal loans + (unmet need &times; 4 years). Status: MANAGEABLE &lt;5% of earnings, BORDERLINE 5&ndash;10%, HIGH RISK &gt;10%.</p>`;
+
+        // School & Major Resources (AI-generated)
+        let resourcesHtml = '<div class="efas-section-title">School &amp; Major Resources</div>';
+        if (groqData && groqData.schoolMajorResources) {
+            const smr = groqData.schoolMajorResources;
+
+            if (smr.professionalSocieties && smr.professionalSocieties.length) {
+                const socRows = smr.professionalSocieties.map(s =>
+                    `<tr><td>${s.name}</td><td>${s.description}</td></tr>`
+                ).join('');
+                resourcesHtml += `
+                    <div class="efas-resource-box">
+                        <div class="efas-resource-box-header green">Professional Societies &amp; Major-Specific Clubs</div>
+                        <table class="efas-resource-table">
+                            <thead><tr><th>Organization</th><th>Description</th></tr></thead>
+                            <tbody>${socRows}</tbody>
+                        </table>
+                    </div>`;
+            }
+
+            if (smr.freshmanResources && smr.freshmanResources.length) {
+                const freshRows = smr.freshmanResources.map(r =>
+                    `<tr><td>${r.name}</td><td>${r.description}</td></tr>`
+                ).join('');
+                resourcesHtml += `
+                    <div class="efas-resource-box">
+                        <div class="efas-resource-box-header purple">Freshman-Specific Campus Resources &amp; Support</div>
+                        <table class="efas-resource-table">
+                            <thead><tr><th>Resource</th><th>Description</th></tr></thead>
+                            <tbody>${freshRows}</tbody>
+                        </table>
+                    </div>`;
+            }
+        } else {
+            resourcesHtml += '<p style="color:var(--muted);font-size:12px;padding:8px 0;">Resource data unavailable for this college.</p>';
+        }
+
+        // Key Considerations
+        let considerationsHtml = '<div class="efas-section-title">Key Considerations for Families</div>';
+        if (groqData && groqData.keyConsiderations && groqData.keyConsiderations.length) {
+            const rows = groqData.keyConsiderations.map(c =>
+                `<tr><td>${c.title}</td><td>${c.body}</td></tr>`
+            ).join('');
+            considerationsHtml += `
+                <table class="efas-resource-table">
+                    <thead><tr><th>Topic</th><th>Guidance</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>`;
+        } else {
+            considerationsHtml += '<p style="color:var(--muted);font-size:12px;padding:8px 0;">Considerations unavailable.</p>';
+        }
+
+        return `<div class="efas-college-section">
+            <div class="efas-college-header">${profile.collegeName}${profile.major ? ' &mdash; ' + profile.major : ''}</div>
+            ${profileTable}
+            ${metricsBanner}
+            ${earningsTable}
+            ${repaymentTable}
+            ${resourcesHtml}
+            ${considerationsHtml}
+        </div>`;
+    }
+
+    // ── Render: shared scholarships section ──────────────────────────────────
+    function renderScholarshipsSection(scholarships) {
+        const scholCols = '<thead><tr><th>Scholarship</th><th>Amount</th><th>Sponsor</th><th>Eligibility</th><th>Deadline</th><th>Apply At</th></tr></thead>';
+
+        function scholRows(arr) {
+            return (arr || []).map(s =>
+                `<tr>
+                    <td><strong>${s.name}</strong></td>
+                    <td>${s.amount}</td>
+                    <td>${s.sponsor}</td>
+                    <td>${s.eligibility}</td>
+                    <td>${s.deadline}</td>
+                    <td><a href="${s.url}" target="_blank" rel="noopener">Apply &rarr;</a></td>
+                </tr>`
+            ).join('');
+        }
+
+        return `<div class="efas-college-section">
+            <div class="efas-college-header">Private &amp; Foundation Scholarships</div>
+            <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">These scholarships are not personalized — they represent widely available national and field-specific awards. Research each carefully for current eligibility and deadlines.</p>
+            <table class="efas-scholarship-table">
+                ${scholCols}
+                <tbody>
+                    <tr class="efas-schol-section-header national"><td colspan="6">National Foundation &amp; Corporate Scholarships</td></tr>
+                    ${scholRows(scholarships.national)}
+                    <tr class="efas-schol-section-header field"><td colspan="6">STEM / Field-Specific Scholarships</td></tr>
+                    ${scholRows(scholarships.fieldSpecific)}
+                    <tr class="efas-schol-section-header community"><td colspan="6">Community, Identity &amp; Faith-Based Scholarships</td></tr>
+                    ${scholRows(scholarships.communityIdentity)}
+                </tbody>
+            </table>
+            <p class="efas-footnote">Deadlines change each cycle. Always verify at the sponsor's official website before applying. This list is for informational purposes only and does not constitute an endorsement.</p>
+        </div>`;
+    }
+
+    // ── AI Summary Formatter (legacy fallback) ────────────────────────────────
     function formatAdvice(raw) {
         let text = raw.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
@@ -1769,7 +2212,6 @@
             return `<div style="margin:0;">${rows.join('')}</div>`;
         }
 
-        // Fallback: paragraph format
         return text.split(/\n\n+/)
             .map(p => `<p style="margin:0 0 10px;font-size:13px;line-height:1.65;">${p.replace(/\n/g,'<br>')}</p>`)
             .join('');

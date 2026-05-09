@@ -34,7 +34,6 @@ public class GroqService {
         }
         String prompt = buildPrompt(req);
 
-        // Build request body following OpenAI chat completions format
         Map<String, Object> message = new HashMap<>();
         message.put("role", "user");
         message.put("content", prompt);
@@ -42,7 +41,7 @@ public class GroqService {
         Map<String, Object> body = new HashMap<>();
         body.put("model", model);
         body.put("messages", List.of(message));
-        body.put("max_tokens", 600);
+        body.put("max_tokens", 3000);
         body.put("temperature", 0.7);
 
         HttpHeaders headers = new HttpHeaders();
@@ -53,7 +52,6 @@ public class GroqService {
 
         ResponseEntity<Map> response = restTemplate.postForEntity(apiUrl, entity, Map.class);
 
-        // Parse response: choices[0].message.content
         List<Map<String, Object>> choices = (List<Map<String, Object>>) response.getBody().get("choices");
         Map<String, Object> firstChoice = choices.get(0);
         Map<String, Object> messageResp = (Map<String, Object>) firstChoice.get("message");
@@ -61,20 +59,58 @@ public class GroqService {
     }
 
     private String buildDevStubAdvice(LlmAdviceRequest req) {
-        String college = req.getCollegeName() != null ? req.getCollegeName() : "this college";
-        return String.format("""
-            1. Loan Assessment
-            [DEV MODE] Based on the figures entered for %s, the federal loan amount appears within typical range. In production, this section will analyze whether your loan-to-earnings ratio is sustainable given projected starting salaries in your field.
+        String college = req.getCollegeName() != null ? req.getCollegeName() : "Sample University";
+        String major   = req.getMajor()       != null ? req.getMajor()       : "Computer Science";
 
-            2. Key Risks
-            [DEV MODE] Key risks would include interest accrual during enrollment, borrowing across all 4 years compounding the total burden, and dependency on Parent PLUS loans which have fewer repayment protections than federal student loans.
-
-            3. Compounding Impact
-            [DEV MODE] Borrowing even $1,000 more per year than necessary adds roughly $1,200–$1,500 to your total repayment burden over a standard 10-year plan due to interest. Small annual decisions compound significantly by graduation.
-
-            4. Action Step
-            [DEV MODE] Complete your FAFSA early each year and appeal your aid package in writing if your family's financial situation has changed — this one step recovers an average of $2,000–$4,000 in additional grant aid for students who ask.
-            """, college);
+        return """
+            {
+              "schoolMajorResources": {
+                "professionalSocieties": [
+                  {"name": "[DEV] Association for Computing Machinery (ACM) — %s Chapter", "description": "Student chapter hosting weekly coding competitions, guest speakers from industry, and annual hackathon. Open to all CS and related majors. Meetings Thursdays 6pm in Engineering Hall."},
+                  {"name": "[DEV] Institute of Electrical and Electronics Engineers (IEEE) — %s Student Branch", "description": "Hands-on project teams in robotics, embedded systems, and circuit design. Connects members with internship pipelines at Boeing, Intel, and regional tech firms."},
+                  {"name": "[DEV] National Society of Black Engineers (NSBE) — %s Chapter", "description": "Academic excellence and professional development for underrepresented engineering and tech students. Hosts resume workshops and the annual NSBE Regional Conference networking fair."}
+                ],
+                "freshmanResources": [
+                  {"name": "[DEV] First-Year Experience (FYE) Office — %s", "description": "Dedicated staff helping new students navigate registration, campus life transitions, and academic goal-setting. Drop-in hours Monday–Friday 9am–4pm in the Student Success Center, Room 110."},
+                  {"name": "[DEV] Financial Aid Appeals & Special Circumstances — %s Office of Financial Aid", "description": "If your family's financial situation has changed since filing the FAFSA, submit a Special Circumstances appeal form. The average additional award for successful appeals is $2,000–$4,000. Visit finaid.%s.edu or call the aid office directly."},
+                  {"name": "[DEV] Early Alert Academic Support System — %s", "description": "Faculty submit early alerts for students showing early signs of academic struggle. The system connects you with peer tutoring, supplemental instruction, and academic coaching before midterms."},
+                  {"name": "[DEV] Student Emergency Fund — %s", "description": "One-time grants up to $500 for students experiencing unexpected financial hardship (car repair, medical co-pay, textbook emergency). Apply online through the Dean of Students portal; decisions within 48 hours."},
+                  {"name": "[DEV] Honors College & Scholarship Advising — %s", "description": "Even if not in the Honors program, all freshmen can meet with scholarship advisors for Goldwater, Fulbright, and national fellowship guidance. Office hours by appointment in the Honors House."}
+                ]
+              },
+              "privateScholarships": {
+                "national": [
+                  {"name": "Gates Scholarship", "amount": "Full Cost of Attendance", "sponsor": "Bill & Melinda Gates Foundation", "eligibility": "Minority students with Pell Grant eligibility, GPA 3.3+, demonstrated leadership", "deadline": "September 15 annually", "url": "https://www.thegatesscholarship.org/scholarship"},
+                  {"name": "Dell Scholars Program", "amount": "$20,000 + laptop + resources", "sponsor": "Michael & Susan Dell Foundation", "eligibility": "Pell Grant eligible, 2.4+ GPA, first-generation or low-income, strong perseverance story", "deadline": "December 1 annually", "url": "https://www.dellscholars.org/scholarship/"},
+                  {"name": "Jack Kent Cooke Foundation Scholarship", "amount": "Up to $55,000/year", "sponsor": "Jack Kent Cooke Foundation", "eligibility": "High-achieving community college transfer or undergraduate students with financial need", "deadline": "January annually", "url": "https://www.jkcf.org/our-scholarships/college-scholarship-program/"},
+                  {"name": "QuestBridge National College Match", "amount": "Full 4-year scholarship", "sponsor": "QuestBridge", "eligibility": "High-achieving, low-income high school seniors; family income under $65,000", "deadline": "September annually", "url": "https://www.questbridge.org/"},
+                  {"name": "Coca-Cola Scholars Program", "amount": "$20,000", "sponsor": "Coca-Cola Scholars Foundation", "eligibility": "High school seniors with leadership, service, and academic excellence; US citizen or permanent resident", "deadline": "October 31 annually", "url": "https://www.coca-colascholarsfoundation.org/"},
+                  {"name": "Horatio Alger Association Scholarship", "amount": "$25,000", "sponsor": "Horatio Alger Association", "eligibility": "Students who have faced significant adversity; financial need; 2.0+ GPA; US citizen", "deadline": "October 25 annually", "url": "https://scholars.horatioalger.org/"}
+                ],
+                "fieldSpecific": [
+                  {"name": "Google Generation Scholarship", "amount": "$10,000", "sponsor": "Google", "eligibility": "Computer science or related field students who are underrepresented in tech; 3.0+ GPA", "deadline": "December annually", "url": "https://buildyourfuture.withgoogle.com/scholarships/google-scholarship-recipients"},
+                  {"name": "Microsoft Tuition Scholarship", "amount": "$5,000", "sponsor": "Microsoft", "eligibility": "Freshman–senior studying CS, STEM, or related; financial need; underrepresented background encouraged to apply", "deadline": "January annually", "url": "https://careers.microsoft.com/students/us/en/usscholarship"},
+                  {"name": "AFCEA STEM Scholarship", "amount": "$2,500–$5,000", "sponsor": "Armed Forces Communications and Electronics Association", "eligibility": "US citizen studying STEM; sophomore or above; 3.0+ GPA", "deadline": "February 28 annually", "url": "https://www.afcea.org/education/scholarships"},
+                  {"name": "Society of Women Engineers (SWE) Scholarship", "amount": "$1,000–$15,000", "sponsor": "Society of Women Engineers", "eligibility": "Women or nonbinary students in engineering or computer science programs", "deadline": "February 15 annually", "url": "https://swe.org/scholarships/"},
+                  {"name": "National GEM Consortium Fellowship", "amount": "Full tuition + stipend", "sponsor": "GEM Consortium", "eligibility": "Underrepresented minorities pursuing STEM graduate degrees; also supports undergrad pipeline programs", "deadline": "November 15 annually", "url": "https://www.gemfellowship.org/"}
+                ],
+                "communityIdentity": [
+                  {"name": "Hispanic Scholarship Fund (HSF)", "amount": "$500–$5,000", "sponsor": "Hispanic Scholarship Fund", "eligibility": "Hispanic/Latino heritage; US citizen or permanent resident; 3.0+ GPA; financial need", "deadline": "February 15 annually", "url": "https://www.hsf.net/scholarship"},
+                  {"name": "United Negro College Fund (UNCF) Scholarships", "amount": "Varies ($2,000–$10,000+)", "sponsor": "UNCF", "eligibility": "African American students; financial need; GPA requirements vary by program", "deadline": "Rolling / varies by program", "url": "https://uncf.org/scholarships"},
+                  {"name": "Point Foundation Scholarship", "amount": "Up to full cost of attendance", "sponsor": "Point Foundation", "eligibility": "LGBTQ+ students with strong academic record, leadership, and financial need", "deadline": "January annually", "url": "https://pointfoundation.org/point-apply/apply-now/"},
+                  {"name": "First-Generation Foundation Scholarship", "amount": "$1,000–$3,500", "sponsor": "First-Generation Foundation", "eligibility": "First-generation college students with demonstrated financial need and academic promise", "deadline": "March 1 annually", "url": "https://www.firstgenerationfoundation.org/scholarships"},
+                  {"name": "Knights of Columbus Pro Deo & Pro Patria Scholarship", "amount": "$1,500/year", "sponsor": "Knights of Columbus", "eligibility": "Catholic students attending Catholic colleges; financial need; US or Canadian citizen", "deadline": "March 1 annually", "url": "https://www.kofc.org/en/what-we-do/scholarships.html"}
+                ]
+              },
+              "keyConsiderations": [
+                {"title": "[DEV] Federal Loan Sustainability vs. Income Threshold", "body": "Borrowing $5,500/yr in federal loans over 4 years = $22,000 total. At a 6.5%% rate on a 10-year plan, your monthly payment would be approximately $249/month ($2,988/year). This is roughly 5-6%% of a $55,000 median starting salary — within the sustainable range. Aim to keep total debt at graduation at or below one year's projected starting salary."},
+                {"title": "[DEV] Unsubsidized Loan Interest Accrual", "body": "Unlike subsidized loans, unsubsidized loan interest begins accruing the moment funds are disbursed. On $3,500 unsubsidized at 6.5%% over 4 years of enrollment, you will owe approximately $910 in capitalized interest before your first payment is due — increasing your effective loan balance at graduation."},
+                {"title": "[DEV] Unmet Need Gap Strategy — Address the $8,000/yr Shortfall", "body": "With an estimated $8,000/year unmet need, your 4-year gap is approximately $32,000. Options to bridge this: (1) submit a written financial aid appeal citing any change in family income; (2) apply for 3–5 external scholarships before your sophomore year; (3) consider 10–15 hrs/week of part-time work, which at $14/hr yields ~$7,000/yr — nearly closing the gap without additional loans."},
+                {"title": "[DEV] Merit Aid GPA Maintenance Requirement", "body": "Most institutional grants and merit scholarships require maintaining a minimum cumulative GPA (typically 3.0–3.25). A single semester of academic difficulty can trigger a suspension of your institutional award, adding thousands to your out-of-pocket cost. Contact the financial aid office in writing if your GPA drops before they send a renewal notice — early communication often allows a one-semester grace period."},
+                {"title": "[DEV] Family Contribution & Parent PLUS Loan Consideration", "body": "The Family Contribution field includes any Parent PLUS loan your family is considering. PLUS loans carry a 9.08%% interest rate (vs. 6.5%% for federal student loans) and begin repayment immediately upon disbursement unless a deferment is requested. If PLUS borrowing is necessary, request income-contingent deferment and prioritize paying it down before it reaches year 4 compounding."}
+              ]
+            }
+            """.formatted(college, college, college, college, college, college.toLowerCase().replace(" ", ""), college, college, college);
     }
 
     private String buildDevStubInsights(PremiumInsightsRequest req) {
@@ -170,42 +206,84 @@ public class GroqService {
     }
 
     private String buildPrompt(LlmAdviceRequest req) {
-        double totalLoans = (req.getFederalLoan() != null ? req.getFederalLoan() : 0)
-                          + (req.getParentPlusLoan() != null ? req.getParentPlusLoan() : 0);
-        double totalFreeAid = (req.getGrantAmount() != null ? req.getGrantAmount() : 0)
-                            + (req.getScholarshipAmount() != null ? req.getScholarshipAmount() : 0);
+        double federalLoan = (req.getSubsidizedLoan()   != null ? req.getSubsidizedLoan()   : 0)
+                           + (req.getUnsubsidizedLoan() != null ? req.getUnsubsidizedLoan() : 0);
+        double parentPlus  =  req.getParentPlusLoan()   != null ? req.getParentPlusLoan()   : 0;
+        double pellGrant   =  req.getPellGrant()         != null ? req.getPellGrant()         : 0;
+        double instGrant   =  req.getInstitutionalGrant()!= null ? req.getInstitutionalGrant(): 0;
+        double scholarship =  req.getScholarshipAmount() != null ? req.getScholarshipAmount() : 0;
+        double workStudy   =  req.getWorkStudy()         != null ? req.getWorkStudy()         : 0;
+
+        double netPrice  = req.getComputedNetPrice()  != null ? req.getComputedNetPrice()
+                         : (req.getNetPrice()         != null ? req.getNetPrice()  : 0);
+        double unmetNeed = req.getComputedUnmetNeed() != null ? req.getComputedUnmetNeed() : 0;
+        double coa       = req.getComputedCOA()       != null ? req.getComputedCOA()       : 0;
+        double majorEarnings     = req.getSixYrEarnings()         != null ? req.getSixYrEarnings()         : 0;
+        double collegeWideEarnings = req.getCollegeWideEarnings() != null ? req.getCollegeWideEarnings()   : majorEarnings;
+
+        String collegeName = req.getCollegeName() != null ? req.getCollegeName() : "this college";
+        String major       = req.getMajor()       != null ? req.getMajor()       : "Undecided";
+        String residency   = req.getResidency()   != null ? req.getResidency()   : "instate";
+        String living      = req.getLivingSituation() != null ? req.getLivingSituation() : "oncampus";
 
         return String.format("""
-            You are a financial literacy advisor helping undergraduate students and education counselors make responsible decisions about student loans.
+            You are a college financial aid expert producing a structured report for a student and their family. Return ONLY valid JSON — absolutely no markdown, no explanation, no code fences — in exactly this structure:
 
-            A student is considering the following for ONE academic year at %s%s:
-            - Federal Student Loan: $%.2f
-            - Parent PLUS Loan: $%.2f
-            - Grants (free money): $%.2f
-            - Scholarships/Gift Aid: $%.2f
-            - Total loans this year: $%.2f
-            - Total free aid this year: $%.2f
-            %s
-            %s
+            {
+              "schoolMajorResources": {
+                "professionalSocieties": [{"name":"...","description":"..."}, {"name":"...","description":"..."}, {"name":"...","description":"..."}],
+                "freshmanResources": [{"name":"...","description":"..."}, {"name":"...","description":"..."}, {"name":"...","description":"..."}, {"name":"...","description":"..."}, {"name":"...","description":"..."}]
+              },
+              "privateScholarships": {
+                "national": [{"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}, {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}, {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}, {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}, {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}, {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}],
+                "fieldSpecific": [{"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}, {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}, {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}, {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}, {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}],
+                "communityIdentity": [{"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}, {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}, {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}, {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}, {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}]
+              },
+              "keyConsiderations": [{"title":"...","body":"..."}, {"title":"...","body":"..."}, {"title":"...","body":"..."}, {"title":"...","body":"..."}, {"title":"...","body":"..."}]
+            }
 
-            Please provide clear, practical guidance on:
-            1. Whether this loan amount is reasonable given the projected earnings
-            2. Key risks to be aware of
-            3. How borrowing choices each year compound into the full repayment burden at graduation
-            4. One actionable tip to reduce loan dependency for this specific situation
+            STUDENT CONTEXT (use these exact numbers in your response):
+            - College: %s
+            - Major: %s
+            - Residency: %s
+            - Housing: %s
+            - Computed COA: $%.0f/yr
+            - Net Price (after free aid): $%.0f/yr
+            - Unmet Need: $%.0f/yr
+            - Federal Loans (subsidized + unsubsidized): $%.0f/yr
+            - Parent PLUS / Family Contribution: $%.0f/yr
+            - Pell Grant: $%.0f | Institutional Grant: $%.0f | Scholarships: $%.0f | Work-Study: $%.0f
+            - Major-Specific Median Earnings (6yr): $%.0f/yr
+            - College-Wide Median Earnings (6yr): $%.0f/yr
 
-            Keep the response concise, supportive, and easy to understand for an 18-22 year old.
+            RULES:
+            schoolMajorResources: specific to %s and %s.
+              professionalSocieties: exactly 3 real professional organization chapters or student clubs at %s relevant to %s (include chapter name, meeting info if known).
+              freshmanResources: exactly 5 items covering in order: (1) First-Year Experience office specific to %s, (2) Financial Aid Appeals/Special Circumstances process at %s, (3) Early Alert Academic Support system at %s, (4) Student Emergency Fund at %s, (5) Honors College or Scholarship Advising at %s. Each must be specific to the actual institution.
+
+            privateScholarships: use your most current knowledge, NOT personalized to this student.
+              national: exactly 6 — use Gates Scholarship, Dell Scholars Program, Jack Kent Cooke Foundation, QuestBridge, Coca-Cola Scholars, Horatio Alger Association. Real amounts, deadlines, URLs.
+              fieldSpecific: exactly 5 real scholarships relevant to %s field/major. Real organizations, real URLs.
+              communityIdentity: exactly 5 real identity/community/faith scholarships. Real organizations, real URLs.
+
+            keyConsiderations: exactly 5 items referencing the actual dollar figures above. Topics must be:
+              1. Federal loan scenario vs income threshold (reference $%.0f federal loans × 4 years, monthly payment calculation at 6.5%% 10-yr)
+              2. Unsubsidized loan interest accrual during enrollment
+              3. Unmet need gap strategy (reference the $%.0f/yr gap specifically)
+              4. Merit aid GPA maintenance requirement
+              5. Parent PLUS loan situation (reference $%.0f/yr if non-zero, or advise avoiding PLUS if zero)
+
+            All dollar figures must match the student context exactly. Be specific, actionable, and counselor-ready.
             """,
-            req.getCollegeName() != null ? req.getCollegeName() : "this college",
-            req.getMajor() != null ? ", pursuing " + req.getMajor() : "",
-            req.getFederalLoan() != null ? req.getFederalLoan() : 0,
-            req.getParentPlusLoan() != null ? req.getParentPlusLoan() : 0,
-            req.getGrantAmount() != null ? req.getGrantAmount() : 0,
-            req.getScholarshipAmount() != null ? req.getScholarshipAmount() : 0,
-            totalLoans,
-            totalFreeAid,
-            req.getNetPrice() != null ? String.format("- College Net Price: $%.2f/yr", req.getNetPrice()) : "",
-            req.getSixYrEarnings() != null ? String.format("- Median earnings 6 years after graduation: $%.2f/yr", req.getSixYrEarnings()) : ""
+            collegeName, major, residency, living,
+            coa, netPrice, unmetNeed,
+            federalLoan, parentPlus,
+            pellGrant, instGrant, scholarship, workStudy,
+            majorEarnings, collegeWideEarnings,
+            collegeName, major, collegeName, major,
+            collegeName, collegeName, collegeName, collegeName, collegeName,
+            major,
+            federalLoan, unmetNeed, parentPlus
         );
     }
 }
