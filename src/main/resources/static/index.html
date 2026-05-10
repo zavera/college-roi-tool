@@ -1965,24 +1965,15 @@
 
     // ── Render: full single-college report ───────────────────────────────────
     function renderSummaryReport(groqData, profile) {
-        const collegeSection = renderCollegeSection(groqData, profile);
-        const scholSection   = groqData && groqData.privateScholarships
-                             ? renderScholarshipsSection(groqData.privateScholarships)
-                             : '';
-        return `<div class="efas-report">${collegeSection}${scholSection}</div>`;
+        return `<div class="efas-report">${renderCollegeSection(groqData, profile)}</div>`;
     }
 
-    // ── Render: compare report (N colleges then shared scholarships) ──────────
+    // ── Render: compare report (N colleges) ──────────────────────────────────
     function renderCompareReport(groqDataArray, profileArray) {
         let html = '<div class="efas-report">';
         groqDataArray.forEach(function(groqData, i) {
             html += renderCollegeSection(groqData, profileArray[i]);
         });
-        // Scholarships from first successful response
-        const firstWithSchol = groqDataArray.find(d => d && d.privateScholarships);
-        if (firstWithSchol) {
-            html += renderScholarshipsSection(firstWithSchol.privateScholarships);
-        }
         html += '</div>';
         return html;
     }
@@ -2331,12 +2322,9 @@
             ${collegeName}${major ? ' &mdash; ' + major : ''}
         </div>`;
 
-        const scholarships = (data.scholarships || []).map(s => `
-            <div style="margin-bottom:12px;padding:10px 12px;background:var(--bg);border-radius:8px;border-left:3px solid var(--primary)">
-                <div style="font-weight:700;font-size:13px;color:var(--navy)">${s.title} <span style="color:var(--accent);font-weight:800">${s.amount}</span></div>
-                <div style="font-size:12px;color:var(--muted);margin-top:3px">${s.details}</div>
-                ${s.url ? `<a href="${s.url}" target="_blank" rel="noopener" style="font-size:11px;color:var(--primary-dk);font-weight:700;text-decoration:none;border-bottom:1px solid var(--primary-lt);margin-top:5px;display:inline-block;">Apply / Learn More &rarr;</a>` : ''}
-            </div>`).join('');
+        const scholSection = data.privateScholarships
+            ? renderScholarshipsSection(data.privateScholarships)
+            : '';
 
         const employment = (data.employment || []).map(e => `
             <div style="margin-bottom:12px;padding:10px 12px;background:var(--bg);border-radius:8px;border-left:3px solid var(--navy-lt)">
@@ -2350,7 +2338,7 @@
         const lbl = s => `<strong style="display:block;margin-bottom:10px;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--navy-lt)">${s}</strong>`;
 
         return `${sectionLabel}
-            ${lbl('Scholarship Opportunities')}${scholarships}
+            ${scholSection}
             ${lbl('Campus Employment &amp; Research')}${employment}
             ${lbl('4-Year Cost Reduction Plan')}${plan}
             <div style="border-top:2px solid var(--border);margin:24px 0 20px;"></div>`;
