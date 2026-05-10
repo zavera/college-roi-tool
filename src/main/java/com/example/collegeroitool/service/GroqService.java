@@ -9,6 +9,8 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -33,7 +35,14 @@ public class GroqService {
     private String summaryPromptTemplate;
     private String insightsPromptTemplate;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
+
+    public GroqService() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(10_000);
+        factory.setReadTimeout(30_000);
+        restTemplate = new RestTemplate(factory);
+    }
 
     @PostConstruct
     public void loadPromptTemplates() throws IOException {
@@ -52,7 +61,7 @@ public class GroqService {
             return buildDevStubAdvice(req);
         }
         String prompt = buildSummaryPrompt(req);
-        return callGroq(prompt, 1800, 0.7);
+        return callGroq(prompt, 1800, 0.2);
     }
 
     private String buildSummaryPrompt(LlmAdviceRequest req) {
@@ -133,7 +142,7 @@ public class GroqService {
             return buildDevStubInsights(req);
         }
         String prompt = buildInsightsPrompt(req);
-        return callGroq(prompt, 2000, 0.4);
+        return callGroq(prompt, 700, 0.4);
     }
 
     private String buildInsightsPrompt(PremiumInsightsRequest req) {
@@ -154,44 +163,24 @@ public class GroqService {
     }
 
     private String buildDevStubInsights(PremiumInsightsRequest req) {
-        String college = req.getCollegeName() != null ? req.getCollegeName() : "this college";
-        String major   = req.getMajor()       != null ? req.getMajor()       : "your major";
+        String major = req.getMajor() != null ? req.getMajor() : "your major";
         return """
             {
-              "privateScholarships": {
-                "national": [
-                  {"name": "Gates Scholarship", "amount": "Full Cost of Attendance", "sponsor": "Bill & Melinda Gates Foundation", "eligibility": "Minority students with Pell Grant eligibility, GPA 3.3+, demonstrated leadership", "deadline": "September 15 annually", "url": "https://www.thegatesscholarship.org/scholarship"},
-                  {"name": "Dell Scholars Program", "amount": "$20,000 + laptop + resources", "sponsor": "Michael & Susan Dell Foundation", "eligibility": "Pell Grant eligible, 2.4+ GPA, first-generation or low-income", "deadline": "December 1 annually", "url": "https://www.dellscholars.org/scholarship/"},
-                  {"name": "Jack Kent Cooke Foundation Scholarship", "amount": "Up to $55,000/year", "sponsor": "Jack Kent Cooke Foundation", "eligibility": "High-achieving students with financial need", "deadline": "January annually", "url": "https://www.jkcf.org/our-scholarships/college-scholarship-program/"},
-                  {"name": "QuestBridge National College Match", "amount": "Full 4-year scholarship", "sponsor": "QuestBridge", "eligibility": "High-achieving, low-income high school seniors; family income under $65,000", "deadline": "September annually", "url": "https://www.questbridge.org/"},
-                  {"name": "Coca-Cola Scholars Program", "amount": "$20,000", "sponsor": "Coca-Cola Scholars Foundation", "eligibility": "High school seniors with leadership, service, and academic excellence", "deadline": "October 31 annually", "url": "https://www.coca-colascholarsfoundation.org/"},
-                  {"name": "Horatio Alger Association Scholarship", "amount": "$25,000", "sponsor": "Horatio Alger Association", "eligibility": "Students who have faced significant adversity; 2.0+ GPA; US citizen", "deadline": "October 25 annually", "url": "https://scholars.horatioalger.org/"}
-                ],
-                "fieldSpecific": [
-                  {"name": "[DEV] Google Generation Scholarship", "amount": "$10,000", "sponsor": "Google", "eligibility": "CS or related field; underrepresented in tech; 3.0+ GPA", "deadline": "December annually", "url": "https://buildyourfuture.withgoogle.com/scholarships"},
-                  {"name": "[DEV] Microsoft Tuition Scholarship", "amount": "$5,000", "sponsor": "Microsoft", "eligibility": "Freshman–senior in CS or STEM; financial need", "deadline": "January annually", "url": "https://careers.microsoft.com/students/us/en/usscholarship"},
-                  {"name": "[DEV] AFCEA STEM Scholarship", "amount": "$2,500–$5,000", "sponsor": "Armed Forces Communications & Electronics Association", "eligibility": "US citizen; STEM sophomore or above; 3.0+ GPA", "deadline": "February 28 annually", "url": "https://www.afcea.org/education/scholarships"},
-                  {"name": "[DEV] Society of Women Engineers (SWE) Scholarship", "amount": "$1,000–$15,000", "sponsor": "Society of Women Engineers", "eligibility": "Women or nonbinary students in engineering or CS programs", "deadline": "February 15 annually", "url": "https://swe.org/scholarships/"},
-                  {"name": "[DEV] National GEM Consortium Fellowship", "amount": "Full tuition + stipend", "sponsor": "GEM Consortium", "eligibility": "Underrepresented minorities pursuing STEM degrees", "deadline": "November 15 annually", "url": "https://www.gemfellowship.org/"}
-                ],
-                "communityIdentity": [
-                  {"name": "Hispanic Scholarship Fund (HSF)", "amount": "$500–$5,000", "sponsor": "Hispanic Scholarship Fund", "eligibility": "Hispanic/Latino heritage; 3.0+ GPA; US citizen or PR; financial need", "deadline": "February 15 annually", "url": "https://www.hsf.net/scholarship"},
-                  {"name": "United Negro College Fund (UNCF) Scholarships", "amount": "$2,000–$10,000+", "sponsor": "UNCF", "eligibility": "African American students; financial need; GPA varies by program", "deadline": "Rolling / varies", "url": "https://uncf.org/scholarships"},
-                  {"name": "Point Foundation Scholarship", "amount": "Up to full cost of attendance", "sponsor": "Point Foundation", "eligibility": "LGBTQ+ students; strong academics, leadership, and financial need", "deadline": "January annually", "url": "https://pointfoundation.org/point-apply/apply-now/"},
-                  {"name": "First-Generation Foundation Scholarship", "amount": "$1,000–$3,500", "sponsor": "First-Generation Foundation", "eligibility": "First-generation college students; financial need and academic promise", "deadline": "March 1 annually", "url": "https://www.firstgenerationfoundation.org/scholarships"},
-                  {"name": "Knights of Columbus Pro Deo & Pro Patria Scholarship", "amount": "$1,500/year", "sponsor": "Knights of Columbus", "eligibility": "Catholic students at Catholic colleges; financial need; US or Canadian citizen", "deadline": "March 1 annually", "url": "https://www.kofc.org/en/what-we-do/scholarships.html"}
-                ]
-              },
+              "fieldSpecificScholarships": [
+                {"name": "[DEV] Google Generation Scholarship", "amount": "$10,000", "sponsor": "Google", "eligibility": "CS or related field; underrepresented in tech; 3.0+ GPA", "deadline": "December annually", "url": "https://buildyourfuture.withgoogle.com/scholarships"},
+                {"name": "[DEV] Microsoft Tuition Scholarship", "amount": "$5,000", "sponsor": "Microsoft", "eligibility": "Freshman–senior in CS or STEM; financial need", "deadline": "January annually", "url": "https://careers.microsoft.com/students/us/en/usscholarship"},
+                {"name": "[DEV] AFCEA STEM Scholarship", "amount": "$2,500–$5,000", "sponsor": "AFCEA", "eligibility": "US citizen; STEM sophomore or above; 3.0+ GPA", "deadline": "February 28 annually", "url": "https://www.afcea.org/education/scholarships"}
+              ],
               "employment": [
-                {"title": "[DEV] Undergraduate Research Assistant — %s Dept.", "pay": "Volunteer for Credit / $13–$15/hr", "type": "Undergraduate Research", "details": "Faculty in the %s program are actively recruiting research assistants each semester. Contact the department office or check the faculty directory for open positions. Volunteer-for-credit positions count toward graduation requirements.", "url": "https://app.joinhandshake.com/"},
-                {"title": "[DEV] Department Teaching Assistant / Tutor", "pay": "$12–$14/hr", "type": "On-Campus Employment", "details": "On-campus tutoring and TA roles for %s students are posted each term through the department. Federal work-study eligible — earnings do not affect next year's aid calculation.", "url": "https://app.joinhandshake.com/"},
-                {"title": "[DEV] Co-op / Practicum Placement", "pay": "$17–$22/hr", "type": "Co-op / Internship", "details": "Alternating-semester co-op in %s-related firms near campus. Reduces net annual cost by up to $9,000 and converts to full-time offers at a 60%% rate. Apply through the career center in Year 2.", "url": "https://app.joinhandshake.com/"}
+                {"title": "[DEV] Undergraduate Research Assistant — %s Dept.", "pay": "Volunteer for Credit / $13–$15/hr", "type": "Undergraduate Research", "details": "Faculty in the %s program are actively recruiting research assistants each semester. Volunteer-for-credit positions count toward graduation requirements.", "url": "https://app.joinhandshake.com/"},
+                {"title": "[DEV] Department Teaching Assistant / Tutor", "pay": "$12–$14/hr", "type": "On-Campus Employment", "details": "On-campus TA roles for %s students are posted each term. Federal work-study eligible — earnings do not affect next year's aid calculation.", "url": "https://app.joinhandshake.com/"},
+                {"title": "[DEV] Co-op / Practicum Placement", "pay": "$17–$22/hr", "type": "Co-op / Internship", "details": "Alternating-semester co-op in %s-related firms near campus. Converts to full-time offers at a 60%% rate.", "url": "https://app.joinhandshake.com/"}
               ],
               "yearlyTips": [
-                "File FAFSA in October and submit a written aid appeal citing any income changes — first-year borrowers set the baseline, so keep federal loans at or below $5,500.",
-                "Request a merit aid review if your GPA improved; explore department research stipends and apply for 3–5 external scholarships to offset Year 2 cost increases.",
-                "Apply for upperclassman scholarships (fewer applicants); consider co-op or internship income to reduce Parent PLUS dependency.",
-                "Maximize work-study, check if your employer offers tuition assistance, and confirm senior-year GPA qualifies you for post-grad loan forgiveness programs."
+                "File FAFSA in October and submit a written aid appeal — keep federal loans at or below $5,500 in Year 1.",
+                "Request a merit aid review if your GPA improved; explore department research stipends to offset Year 2 cost increases.",
+                "Apply for upperclassman scholarships (fewer applicants); use co-op income to reduce Parent PLUS dependency.",
+                "Maximize work-study and confirm senior-year GPA qualifies you for post-grad loan forgiveness programs."
               ]
             }
             """.formatted(major, major, major, major);

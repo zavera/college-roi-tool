@@ -5,30 +5,11 @@ You are a college financial aid expert. A student is attending {{collegeName}}{{
 Return ONLY valid JSON — no markdown, no explanation, no code fences — in exactly this structure:
 
 {
-  "privateScholarships": {
-    "national": [
-      {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."},
-      {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."},
-      {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."},
-      {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."},
-      {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."},
-      {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}
-    ],
-    "fieldSpecific": [
-      {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."},
-      {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."},
-      {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."},
-      {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."},
-      {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}
-    ],
-    "communityIdentity": [
-      {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."},
-      {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."},
-      {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."},
-      {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."},
-      {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}
-    ]
-  },
+  "fieldSpecificScholarships": [
+    {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."},
+    {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."},
+    {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}
+  ],
   "employment": [
     {"title":"...","pay":"...","type":"...","details":"...","url":"..."},
     {"title":"...","pay":"...","type":"...","details":"...","url":"..."},
@@ -44,16 +25,15 @@ Return ONLY valid JSON — no markdown, no explanation, no code fences — in ex
 
 RULES:
 
-privateScholarships: use your most current training knowledge. These are NOT personalized to this individual student — they are presented as options for any student in this field.
-  national: exactly 6 — use these in order: Gates Scholarship, Dell Scholars Program, Jack Kent Cooke Foundation Scholarship, QuestBridge National College Match, Coca-Cola Scholars Program, Horatio Alger Association Scholarship. Use real amounts, real deadlines, and real URLs.
-  fieldSpecific: exactly 5 real scholarships specific to the {{major}} field or discipline. Use real organizations, real amounts, real deadlines, and real apply/learn-more URLs.
-  communityIdentity: exactly 5 real identity/community/faith-based scholarships available nationally (e.g. HSF, UNCF, Point Foundation, first-gen, religious). Real organizations, real URLs.
+fieldSpecificScholarships: exactly 3 real scholarships specific to the {{major}} field or discipline.
+  Use real organizations, real dollar amounts, real application deadlines, and real apply/learn-more URLs.
+  Do not include general national scholarships (Gates, Dell, QuestBridge, etc.) — those are listed separately.
 
-employment: exactly 3 CAMPUS-BASED, MAJOR-SPECIFIC opportunities for {{collegeName}}, in this order:
+employment: exactly 3 CAMPUS-BASED, MAJOR-SPECIFIC opportunities at {{collegeName}}, in this order:
   1. Undergraduate Research — faculty in the {{major}} program actively recruiting research assistants. Mention a realistic faculty or department contact. If unpaid, note "Volunteer for Credit". Set type = "Undergraduate Research".
-  2. A paid on-campus role directly tied to {{major}} (department TA, lab tech, tutoring center, studio monitor, makerspace, etc.). Set type = "On-Campus Employment".
-  3. A co-op, internship, or practicum tied to {{major}} at or near {{collegeName}}. Set type = "Co-op / Internship".
-  For each: include a real URL (Handshake, the college career center, department page, or O*NET for the role type).
+  2. A paid on-campus role directly tied to {{major}} (department TA, lab tech, tutoring center, studio monitor, etc.). Set type = "On-Campus Employment".
+  3. A co-op, internship, or practicum tied to {{major}} near {{collegeName}}. Set type = "Co-op / Internship".
+  Include a real URL for each (Handshake, college career center, department page, or O*NET).
   Keep details to 1-2 sentences. Be specific to the institution and major.
 
-yearlyTips: one actionable, specific cost-reduction or financial strategy per academic year (Years 1 through 4), tailored to this student's financial situation and the college named above.
+yearlyTips: one actionable, specific cost-reduction or financial strategy per academic year (Years 1–4), tailored to this student's situation at {{collegeName}}.
