@@ -2259,12 +2259,17 @@
         const entries = compareList.length > 0 ? compareList : null;
 
         if (entries) {
-            // ── Compare mode: one section per college ──
-            const sections = new Array(entries.length).fill('');
-            let completed  = 0;
-            $("#premiumContent")
-                .html(`<p style="color:var(--muted);font-size:13px;padding:12px 0;">Generating insights for ${entries.length} colleges…</p>`)
-                .show();
+            // ── Compare mode: render each college as it arrives ──
+            // Pre-render a placeholder div per college so the user sees progress immediately
+            const placeholders = entries.map((entry, i) =>
+                `<div id="prem-slot-${i}" style="padding:14px 0;border-bottom:1px solid var(--border);">
+                    <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px;">
+                        ${entry.college.name}${entry.selectedMajorTitle ? ' &mdash; ' + entry.selectedMajorTitle : ''}
+                    </div>
+                    <div style="color:var(--muted);font-size:12px;">Loading insights…</div>
+                </div>`
+            ).join('');
+            $("#premiumContent").html(placeholders).show();
 
             entries.forEach(function(entry, i) {
                 const loanData = {
@@ -2285,21 +2290,16 @@
                         sixYrEarnings: entry.selectedMajorEarnings || entry.college.sixYrEarnings || null
                     }),
                     success: function(data) {
-                        sections[i] = renderPremiumSection(
+                        const html = renderPremiumSection(
                             data, entry.college.name, entry.selectedMajorTitle,
                             loanData, entry.netPrice,
                             entry.selectedMajorEarnings || entry.college.sixYrEarnings
                         );
+                        $(`#prem-slot-${i}`).replaceWith(html);
                     },
                     error: function(xhr) {
-                        if (xhr.status === 403) { premiumActive = false; $("#premiumOverlay").show(); $("#premiumContent").hide(); }
-                        sections[i] = `<p style="color:var(--muted);font-size:12px;padding:8px 0;">${entry.college.name}: insights unavailable.</p>`;
-                    },
-                    complete: function() {
-                        completed++;
-                        if (completed === entries.length) {
-                            $("#premiumContent").html(sections.join('')).show();
-                        }
+                        if (xhr.status === 403) { premiumActive = false; $("#premiumOverlay").show(); $("#premiumContent").hide(); return; }
+                        $(`#prem-slot-${i}`).html(`<p style="color:var(--muted);font-size:12px;padding:8px 0;">${entry.college.name}: insights unavailable.</p>`);
                     }
                 });
             });
