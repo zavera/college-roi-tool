@@ -42,8 +42,35 @@
         .logo-mark { flex-shrink: 0; }
         header h1  { font-size: 19px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
         header p   { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 3px; }
-        .hdr-badge {
+        .hdr-user {
             margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .hdr-user-name {
+            font-size: 12px;
+            color: rgba(255,255,255,0.75);
+            font-weight: 600;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .hdr-logout {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--primary);
+            background: rgba(201,168,76,0.12);
+            border: 1px solid rgba(201,168,76,0.3);
+            border-radius: 20px;
+            padding: 4px 12px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background .15s;
+        }
+        .hdr-logout:hover { background: rgba(201,168,76,0.22); }
+        .hdr-badge {
             border: 1px solid rgba(201,168,124,0.35);
             background: rgba(201,168,124,0.1);
             color: var(--primary);
@@ -791,7 +818,11 @@
         <h1>Astra Financial Aid Advisor</h1>
         <p>Intelligent financial guidance for students, parents, and education counselors</p>
     </div>
-    <span class="hdr-badge">Advisor</span>
+    <div class="hdr-user">
+        <span class="hdr-badge">Advisor</span>
+        <span class="hdr-user-name" id="hdrUserName" style="display:none;"></span>
+        <a class="hdr-logout" id="hdrLogout" style="display:none;" href="#">Sign Out</a>
+    </div>
 </header>
 
 <div class="container">
@@ -2339,11 +2370,12 @@
             ${collegeName}${major ? ' &mdash; ' + major : ''}
         </div>`;
 
-        // Merge static national/community with Groq-generated field-specific
+        // Merge Groq-returned sections with static fallbacks
+        const ps = data.privateScholarships || {};
         const scholSection = renderScholarshipsSection({
-            national:        STATIC_NATIONAL_SCHOLARSHIPS,
-            fieldSpecific:   data.fieldSpecificScholarships || [],
-            communityIdentity: STATIC_COMMUNITY_SCHOLARSHIPS
+            national:          ps.national          || STATIC_NATIONAL_SCHOLARSHIPS,
+            fieldSpecific:     ps.fieldSpecific     || data.fieldSpecificScholarships || [],
+            communityIdentity: ps.communityIdentity || STATIC_COMMUNITY_SCHOLARSHIPS
         });
 
         const employment = (data.employment || []).map(e => `
@@ -2410,9 +2442,24 @@
         alert("Subscription portal coming soon. Contact us at advisor@callistotech.org.");
     }
 
-    // Check subscription status on load
-    $.getJSON("/api/subscription/status", function(data) {
-        if (data.active) unlockPremium();
+    // On load: fetch current user, populate header, auto-unlock if subscribed
+    $.getJSON("/api/auth/me", function(data) {
+        if (data.loggedIn) {
+            const displayName = data.name || data.email || '';
+            $("#hdrUserName").text(displayName).show();
+            $("#hdrLogout").show();
+            if (data.subscriptionActive) unlockPremium();
+        }
+    });
+
+    // Logout
+    $("#hdrLogout").on("click", function(e) {
+        e.preventDefault();
+        $.post("/api/auth/logout", function() {
+            window.location.href = "/login.html";
+        }).fail(function() {
+            window.location.href = "/login.html";
+        });
     });
 
     function pf(val) {

@@ -1,39 +1,10 @@
-You are a college financial aid expert. A student is attending {{collegeName}}{{majorSuffix}}.
-{{netPriceLine}}
-{{earningsLine}}
+Return ONLY valid JSON, no markdown, no fences, using this exact schema:
+{"privateScholarships":{"national":[{"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}],"fieldSpecific":[{"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}],"communityIdentity":[{"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}]},"employment":[{"title":"...","pay":"...","type":"...","details":"...","url":"..."}],"yearlyTips":["..."]}
 
-Return ONLY valid JSON — no markdown, no explanation, no code fences — in exactly this structure:
+Student attends {{collegeName}}{{majorSuffix}}. {{netPriceLine}} {{earningsLine}}
 
-{
-  "fieldSpecificScholarships": [
-    {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."},
-    {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."},
-    {"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","url":"..."}
-  ],
-  "employment": [
-    {"title":"...","pay":"...","type":"...","details":"...","url":"..."},
-    {"title":"...","pay":"...","type":"...","details":"...","url":"..."},
-    {"title":"...","pay":"...","type":"...","details":"...","url":"..."}
-  ],
-  "yearlyTips": [
-    "Year 1 cost-reduction strategy (1 sentence)",
-    "Year 2 cost-reduction strategy (1 sentence)",
-    "Year 3 cost-reduction strategy (1 sentence)",
-    "Year 4 cost-reduction strategy (1 sentence)"
-  ]
-}
-
-RULES:
-
-fieldSpecificScholarships: exactly 3 real scholarships specific to the {{major}} field or discipline.
-  Use real organizations, real dollar amounts, real application deadlines, and real apply/learn-more URLs.
-  Do not include general national scholarships (Gates, Dell, QuestBridge, etc.) — those are listed separately.
-
-employment: exactly 3 CAMPUS-BASED, MAJOR-SPECIFIC opportunities at {{collegeName}}, in this order:
-  1. Undergraduate Research — faculty in the {{major}} program actively recruiting research assistants. Mention a realistic faculty or department contact. If unpaid, note "Volunteer for Credit". Set type = "Undergraduate Research".
-  2. A paid on-campus role directly tied to {{major}} (department TA, lab tech, tutoring center, studio monitor, etc.). Set type = "On-Campus Employment".
-  3. A co-op, internship, or practicum tied to {{major}} near {{collegeName}}. Set type = "Co-op / Internship".
-  Include a real URL for each (Handshake, college career center, department page, or O*NET).
-  Keep details to 1-2 sentences. Be specific to the institution and major.
-
-yearlyTips: one actionable, specific cost-reduction or financial strategy per academic year (Years 1–4), tailored to this student's situation at {{collegeName}}.
+national: exactly 6 in this order — Gates Scholarship, Dell Scholars Program, Jack Kent Cooke Foundation Scholarship, QuestBridge National College Match, Coca-Cola Scholars Program, Horatio Alger Association Scholarship. Real amounts, deadlines, URLs.
+fieldSpecific: exactly 5 real scholarships for {{major}}. Real orgs, amounts, deadlines, URLs.
+communityIdentity: exactly 5 real identity/community/faith-based scholarships (e.g. HSF, UNCF, Point Foundation, first-gen, religious). Real orgs, URLs.
+employment: exactly 3 campus-based roles at {{collegeName}} for {{major}} in order — (1) Undergraduate Research: faculty/dept contact, note if unpaid, type="Undergraduate Research". (2) Paid on-campus role (TA, lab tech, tutor, makerspace): type="On-Campus Employment". (3) Co-op, internship, or practicum: type="Co-op / Internship". Use Handshake, career center, or dept page for url. 1-2 sentence details each.
+yearlyTips: exactly 4 strings, one per year, each a specific cost-reduction strategy for this student.
