@@ -3,12 +3,12 @@ package com.example.collegeroitool.config;
 import com.example.collegeroitool.model.AppUser;
 import com.example.collegeroitool.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
@@ -19,39 +19,45 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 public class SecurityConfig {
 
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
 
-    public SecurityConfig(UserService userService) {
+    @Value("${premium.dev.bypass:false}")
+    private boolean devBypass;
+
+    public SecurityConfig(UserService userService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userService);
-        provider.setPasswordEncoder(passwordEncoder());
+        provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+        // Dev bypass: no login required — the whole app is open
+        if (devBypass) {
+            http
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"));
+            return http.build();
+        }
+
         http
             .authorizeHttpRequests(auth -> auth
-                // Public: login, register, static assets
                 .requestMatchers(
                     "/login.html", "/register.html",
                     "/api/auth/register",
                     "/astra-logo.jpg",
                     "/error"
                 ).permitAll()
-                // Everything else requires login
                 .anyRequest().authenticated()
             )
-            // Form login (email/password)
             .formLogin(form -> form
                 .loginPage("/login.html")
                 .loginProcessingUrl("/api/auth/login")
@@ -63,12 +69,10 @@ public class SecurityConfig {
                 })
                 .permitAll()
             )
-            // Google OAuth2
             .oauth2Login(oauth -> oauth
                 .loginPage("/login.html")
                 .successHandler(oAuth2SuccessHandler())
             )
-            // Logout
             .logout(logout -> logout
                 .logoutUrl("/api/auth/logout")
                 .logoutSuccessHandler((req, res, auth) -> {
@@ -79,21 +83,17 @@ public class SecurityConfig {
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
             )
-            // CSRF: disable for API calls from jQuery
-            .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/api/**")
-            );
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"));
 
         return http.build();
     }
 
-    /** After email/password login: return JSON so the SPA can react */
     private AuthenticationSuccessHandler jsonSuccessHandler() {
         return (request, response, authentication) -> {
             String email = authentication.getName();
             AppUser user = userService.findByEmail(email).orElse(null);
             boolean subscribed = user != null && user.isSubscriptionActive();
-            String name = user != null ? user.getName() : email;
+            String name = user != null && user.getName() != null ? user.getName() : email;
             response.setContentType("application/json");
             response.getWriter().write(String.format(
                 "{\"loggedIn\":true,\"email\":\"%s\",\"name\":\"%s\",\"subscriptionActive\":%b}",
@@ -101,7 +101,6 @@ public class SecurityConfig {
         };
     }
 
-    /** After Google OAuth2 login: find/create user then redirect to app */
     private AuthenticationSuccessHandler oAuth2SuccessHandler() {
         return (request, response, authentication) -> {
             OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
