@@ -88,6 +88,26 @@ public class AuthController {
         ));
     }
 
+    /** Toggle the calling user's subscription on/off */
+    @PostMapping("/subscription/toggle")
+    public ResponseEntity<?> toggleSubscription(Principal principal) {
+        if (devBypass && principal == null) {
+            return ResponseEntity.ok(Map.of("subscriptionActive", true));
+        }
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        }
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = (auth.getPrincipal() instanceof OAuth2User oAuth2User)
+            ? oAuth2User.<String>getAttribute("email")
+            : principal.getName();
+
+        return userService.toggleSubscription(email)
+            .<ResponseEntity<?>>map(active -> ResponseEntity.ok(Map.of("subscriptionActive", active)))
+            .orElse(ResponseEntity.badRequest().body(Map.of("error", "User not found")));
+    }
+
     /** Admin endpoint — activate a subscription by email */
     @PostMapping("/admin/activate")
     public ResponseEntity<?> activateSubscription(

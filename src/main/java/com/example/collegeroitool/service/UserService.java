@@ -76,4 +76,14 @@ public class UserService implements UserDetailsService {
             return true;
         }).orElse(false);
     }
+
+    /** Toggle subscription on/off; returns the new state, or empty if user not found */
+    public java.util.Optional<Boolean> toggleSubscription(String email) {
+        return userRepository.findByEmail(email.toLowerCase()).map(u -> {
+            boolean newState = !u.isSubscriptionActive();
+            u.setSubscriptionActive(newState);
+            userRepository.save(u);
+            return newState;
+        });
+    }
 }

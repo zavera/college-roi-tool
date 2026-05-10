@@ -70,6 +70,21 @@
             transition: background .15s;
         }
         .hdr-logout:hover { background: rgba(201,168,76,0.22); }
+        .hdr-sub-toggle {
+            font-size: 11px;
+            font-weight: 700;
+            color: #fff;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            padding: 4px 12px;
+            cursor: pointer;
+            transition: background .15s;
+            white-space: nowrap;
+        }
+        .hdr-sub-toggle:hover { background: rgba(255,255,255,0.22); }
+        .hdr-sub-toggle.sub-on  { color: #4ade80; border-color: rgba(74,222,128,0.45); background: rgba(74,222,128,0.12); }
+        .hdr-sub-toggle.sub-off { color: rgba(255,255,255,0.55); }
         .hdr-badge {
             border: 1px solid rgba(201,168,124,0.35);
             background: rgba(201,168,124,0.1);
@@ -844,15 +859,16 @@
 
 <header>
     <div class="logo-mark">
-        <img src="/astra-logo.jpg" alt="Astra logo" style="width:42px;height:42px;object-fit:cover;border-radius:9px;display:block;">
+        <img src="/astra-logo.jpg" alt="Astra logo" style="width:60px;height:60px;object-fit:cover;border-radius:12px;display:block;">
     </div>
     <div>
-        <h1>Astra Financial Aid Advisor</h1>
+        <h1>Astra</h1>
         <p>Intelligent financial guidance for students, parents, and education counselors</p>
     </div>
     <div class="hdr-user">
         <span class="hdr-badge">Advisor</span>
         <span class="hdr-user-name" id="hdrUserName" style="display:none;"></span>
+        <button class="hdr-sub-toggle" id="hdrSubToggle" style="display:none;" onclick="toggleSubscription()">Premium: OFF</button>
         <a class="hdr-logout" id="hdrLogout" style="display:none;" href="#">Sign Out</a>
     </div>
 </header>
@@ -2600,13 +2616,43 @@
         alert("Subscription portal coming soon. Contact us at advisor@callistotech.org.");
     }
 
+    function setSubToggleState(active) {
+        const btn = $("#hdrSubToggle");
+        if (active) {
+            btn.text("Premium: ON").removeClass("sub-off").addClass("sub-on");
+            unlockPremium();
+        } else {
+            btn.text("Premium: OFF").removeClass("sub-on").addClass("sub-off");
+            premiumActive = false;
+            $("#premiumOverlay").show();
+            $("#premiumContent").hide();
+        }
+    }
+
+    function toggleSubscription() {
+        const btn = $("#hdrSubToggle");
+        btn.prop("disabled", true).text("...");
+        $.ajax({
+            url: "/api/auth/subscription/toggle",
+            method: "POST",
+            success: function(res) {
+                setSubToggleState(res.subscriptionActive);
+            },
+            error: function() {
+                alert("Could not update subscription. Please try again.");
+                btn.prop("disabled", false);
+            }
+        });
+    }
+
     // On load: fetch current user, populate header, auto-unlock if subscribed
     $.getJSON("/api/auth/me", function(data) {
         if (data.loggedIn) {
             const displayName = data.name || data.email || '';
             $("#hdrUserName").text(displayName).show();
+            $("#hdrSubToggle").show();
             $("#hdrLogout").show();
-            if (data.subscriptionActive) unlockPremium();
+            setSubToggleState(data.subscriptionActive);
         }
     });
 
