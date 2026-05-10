@@ -627,6 +627,38 @@
         }
         .premium-guarantee svg { color: var(--accent); flex-shrink: 0; }
 
+        /* Premium college tabs */
+        .prem-tabs { display:flex; gap:3px; flex-wrap:wrap; border-bottom:2px solid var(--border); margin-bottom:0; }
+        .prem-tab {
+            padding:9px 16px; font-size:13px; font-weight:600; border:none;
+            border-radius:6px 6px 0 0; cursor:pointer; background:#f0f2f5;
+            color:var(--muted); transition:background .15s,color .15s; white-space:nowrap;
+        }
+        .prem-tab:hover { background:#e5e8ef; }
+        .prem-tab.active {
+            background:white; color:var(--navy);
+            border:2px solid var(--border); border-bottom:2px solid white;
+            margin-bottom:-2px;
+        }
+        .prem-pane { display:none; padding:18px 0; }
+        .prem-pane.active { display:block; }
+
+        /* Premium sub-section accordion */
+        .prem-section { margin-bottom:10px; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+        .prem-section-hdr {
+            display:flex; align-items:center; gap:10px;
+            padding:12px 14px; cursor:pointer; user-select:none;
+            background:#fafbfc; font-size:13px; font-weight:700; color:var(--navy);
+        }
+        .prem-section-hdr:hover { background:#f5f0e8; }
+        .prem-section-hdr .prem-chevron { margin-left:auto; font-size:10px; color:var(--muted); transition:transform .2s; }
+        .prem-section-hdr.open { border-bottom:1px solid var(--border); background:white; }
+        .prem-section-hdr.open .prem-chevron { transform:rotate(180deg); }
+        .prem-section-body { display:none; padding:16px; background:white; }
+        .prem-section-body.open { display:block; }
+        .prem-loading { color:var(--muted); font-size:12px; font-style:italic; padding:8px 0; }
+        .prem-err { color:#c53030; font-size:12px; }
+
         /* ── Print / Export Report ── */
         .btn-export {
             display: inline-flex; align-items: center; gap: 7px;
@@ -875,18 +907,18 @@
             <div class="field-group" style="margin-bottom:0">
                 <label>Select a Major</label>
                 <select id="majorSelect">
-                    <option value="">— Loading programs… —</option>
+                    <option value="">Loading programs…</option>
                 </select>
                 <div id="majorSpinner">Loading program data…</div>
             </div>
             <div id="majorEarningsCard">
                 <div class="earnings-row">
                     <div class="stat">
-                        <div class="val blue" id="collegeAvgEarnings">—</div>
+                        <div class="val blue" id="collegeAvgEarnings">N/A</div>
                         <div class="lbl">College-wide Median (6 yrs)</div>
                     </div>
                     <div class="stat">
-                        <div class="val green" id="majorEarnings">—</div>
+                        <div class="val green" id="majorEarnings">N/A</div>
                         <div class="lbl">This Major's Median (6 yrs)</div>
                     </div>
                 </div>
@@ -899,28 +931,28 @@
 
     <!-- ── FAFSA Package ── -->
     <div class="card">
-        <h2>FAFSA Aid Package — One Academic Year</h2>
+        <h2>FAFSA Aid Package: One Academic Year</h2>
         <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Enter amounts from your Student Aid Report (SAR) or financial aid offer letter.</p>
 
         <div class="field-group">
-            <label>Pell Grant ($) <span style="font-weight:400;color:var(--accent)">— Federal grant, no repayment required</span></label>
+            <label>Pell Grant ($) <span style="font-weight:400;color:var(--accent)">: Federal grant, no repayment required</span></label>
             <input type="number" id="pellGrant" placeholder="0.00" min="0" step="0.01">
         </div>
         <div class="field-group">
-            <label>Subsidized Federal Loan ($) <span style="font-weight:400;color:var(--muted)">— Need-based, no interest while enrolled</span></label>
+            <label>Subsidized Federal Loan ($) <span style="font-weight:400;color:var(--muted)">: Need-based, no interest while enrolled</span></label>
             <input type="number" id="subsidizedLoan" placeholder="0.00" min="0" step="0.01">
         </div>
         <div class="field-group">
-            <label>Unsubsidized Federal Loan ($) <span style="font-weight:400;color:var(--muted)">— Interest accrues immediately</span></label>
+            <label>Unsubsidized Federal Loan ($) <span style="font-weight:400;color:var(--muted)">: Interest accrues immediately</span></label>
             <input type="number" id="unsubsidizedLoan" placeholder="0.00" min="0" step="0.01">
         </div>
         <div class="field-group">
-            <label>Total Family Contribution ($) <span style="font-weight:400;color:var(--muted)">— Family's expected contribution (savings, income, Parent PLUS)</span></label>
+            <label>Total Family Contribution ($) <span style="font-weight:400;color:var(--muted)">: Family's expected contribution (savings, income, Parent PLUS)</span></label>
             <input type="number" id="parentPlusLoan" placeholder="0.00" min="0" step="0.01">
         </div>
         <div id="inst-fields-single">
             <div class="field-group">
-                <label>Institutional Grant ($) <span style="font-weight:400;color:var(--accent)">— From your college, no repayment</span></label>
+                <label>Institutional Grant ($) <span style="font-weight:400;color:var(--accent)">: From your college, no repayment</span></label>
                 <input type="number" id="institutionalGrant" placeholder="0.00" min="0" step="0.01">
             </div>
             <div class="field-group">
@@ -928,7 +960,7 @@
                 <input type="number" id="scholarshipAmount" placeholder="0.00" min="0" step="0.01">
             </div>
             <div class="field-group" style="margin-bottom:0">
-                <label>Federal Work-Study ($) <span style="font-weight:400;color:var(--muted)">— Earned through part-time campus jobs</span></label>
+                <label>Federal Work-Study ($) <span style="font-weight:400;color:var(--muted)">: Earned through part-time campus jobs</span></label>
                 <input type="number" id="workStudy" placeholder="0.00" min="0" step="0.01">
             </div>
         </div>
@@ -947,7 +979,7 @@
     <div class="card" id="gapAnalysisCard">
         <h2>Financial Gap Analysis</h2>
         <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">
-            Auto-calculated as you enter aid amounts — shows exactly how much of your cost is covered and what remains.
+            Auto-calculated as you enter aid amounts: shows exactly how much of your cost is covered and what remains.
         </p>
         <div id="gapAnalysisContent">
             <p class="gap-placeholder">Search and select a college above to activate gap analysis.</p>
@@ -963,7 +995,7 @@
             <div style="flex:1;min-width:140px;">
                 <label>Gender</label>
                 <select id="genderSelect" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
-                    <option value="">— Select —</option>
+                    <option value="">Select</option>
                     <option>Male</option>
                     <option>Female</option>
                     <option>Non-binary</option>
@@ -973,7 +1005,7 @@
             <div style="flex:2;min-width:200px;">
                 <label>Race / Ethnicity</label>
                 <select id="raceSelect" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
-                    <option value="">— Select —</option>
+                    <option value="">Select</option>
                     <option>American Indian or Alaska Native</option>
                     <option>Asian</option>
                     <option>Black or African American</option>
@@ -994,7 +1026,7 @@
         </div>
 
         <div class="field-group">
-            <label>GPA <span style="font-weight:400;color:var(--muted)">— Current or most recent (0.0 – 4.0)</span></label>
+            <label>GPA <span style="font-weight:400;color:var(--muted)">: Current or most recent (0.0 – 4.0)</span></label>
             <input type="number" id="gpaInput" placeholder="e.g. 3.5" min="0" max="4.0" step="0.01">
         </div>
 
@@ -1036,15 +1068,8 @@
         <div class="premium-header">
             <div class="premium-header-text">
                 <h2>Scholarship &amp; Employment Intelligence</h2>
-                <p>College-specific scholarship matching and field-aligned employment pathways — updated dynamically based on your selected institution and major.</p>
+                <p>College-specific scholarship matching and field-aligned employment pathways: updated dynamically based on your selected institution and major.</p>
             </div>
-            <div class="premium-price-tag">
-                <span class="price">$19.99</span>
-                <span class="per">per month</span>
-            </div>
-        </div>
-        <div class="premium-tagline">
-            The fastest way to reduce 4-year costs — used by over 2,400 college counselors and independent advisors nationwide.
         </div>
         <div class="premium-bullets">
             <div class="premium-bullet">
@@ -1053,7 +1078,7 @@
                 </div>
                 <div class="bullet-text">
                     <strong>AI Scholarship Matching</strong>
-                    <span>Curated scholarships matched to your college, major, demographics, and financial profile — not generic lists</span>
+                    <span>Curated scholarships matched to your college, major, demographics, and financial profile: not generic lists</span>
                 </div>
             </div>
             <div class="premium-bullet">
@@ -1094,16 +1119,16 @@
                     </svg>
                 </div>
                 <div class="overlay-title">Unlock Scholarship &amp; Employment Intelligence</div>
-                <div class="overlay-sub">College counselors and parents: get AI-driven scholarship matching and employment pathway analysis specific to each student's college and major — updated every time you change your selection.</div>
+                <div class="overlay-sub">College counselors and parents: get AI-driven scholarship matching and employment pathway analysis specific to each student's college and major: updated every time you change your selection.</div>
                 <button class="btn-unlock" onclick="handleUnlock()">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
-                    Unlock Premium — $19.99/month
+                    Unlock Premium
                 </button>
             </div>
         </div>
         <div class="premium-guarantee">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            30-day money-back guarantee — cancel anytime. No contracts, no commitment.
+            30-day money-back guarantee: cancel anytime. No contracts, no commitment.
         </div>
     </div>
 
@@ -1161,12 +1186,12 @@
             renderCOACard(collegeName);
             recalculateGap();
             loadPrograms(collegeName, data.sixYrEarnings || 0);
-            if (premiumActive) fetchPremiumInsights(collegeName);
+            if (premiumActive) renderPremiumTabs();
         }).fail(function() {
             selectedCollege = { name: collegeName, netPrice: null, sixYrEarnings: null };
             $("#results").html(`
                 <div class="err-card">
-                    <strong>ROI data not available</strong> — try another college or check the backend logs.
+                    <strong>ROI data not available</strong>: try another college or check the backend logs.
                 </div>
             `);
             $("#majorSection").hide();
@@ -1231,7 +1256,7 @@
     function updateCompareBtn() {
         const hasCollege   = !!(selectedCollege.name && computeCOA());
         const alreadyAdded = compareList.some(e => e.college.name === selectedCollege.name);
-        const atMax        = compareList.length >= 5;
+        const atMax        = compareList.length >= 3;
         const btn          = $('#addToCompareBtn');
         if (!hasCollege) {
             btn.prop('disabled', true).text('+ Add to Compare');
@@ -1246,7 +1271,7 @@
 
     // ── ADD / REMOVE FROM COMPARE ─────────────────────────────────────────────
     function addToCompare() {
-        if (compareList.length >= 5 || !selectedCollege.name) return;
+        if (compareList.length >= 3 || !selectedCollege.name) return;
         if (compareList.some(e => e.college.name === selectedCollege.name)) return;
 
         const coa    = computeCOA() || 0;
@@ -1320,7 +1345,7 @@
                         ${entry.college.name}
                     </div>
                     <div class="field-group">
-                        <label>Institutional Grant ($) <span style="font-weight:400;color:var(--accent)">— College grant, no repayment</span></label>
+                        <label>Institutional Grant ($) <span style="font-weight:400;color:var(--accent)">: College grant, no repayment</span></label>
                         <input type="number" class="inst-aid-input" data-idx="${i}" data-field="instGrant"
                                value="${entry.instGrant || ''}" placeholder="0.00" min="0" step="0.01">
                     </div>
@@ -1330,7 +1355,7 @@
                                value="${entry.scholarship || ''}" placeholder="0.00" min="0" step="0.01">
                     </div>
                     <div class="field-group" style="margin-bottom:8px;">
-                        <label>Federal Work-Study ($) <span style="font-weight:400;color:var(--muted)">— Earned through campus jobs</span></label>
+                        <label>Federal Work-Study ($) <span style="font-weight:400;color:var(--muted)">: Earned through campus jobs</span></label>
                         <input type="number" class="inst-aid-input" data-idx="${i}" data-field="workStudy"
                                value="${entry.workStudy || ''}" placeholder="0.00" min="0" step="0.01">
                     </div>
@@ -1356,7 +1381,7 @@
             </span>`
         ).join('');
         $('#comparePillRow').html(`
-            <div style="width:100%;font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;">${compareList.length}/5 colleges in compare</div>
+            <div style="width:100%;font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;">${compareList.length}/3 colleges in compare</div>
             ${pills}
         `);
     }
@@ -1394,7 +1419,7 @@
         const d   = n => '$' + Math.round(Math.max(0, n)).toLocaleString('en-US');
         const sub = (n, col) => n > 0
             ? `<span class="gap-value" style="color:${col}">−${d(n)}</span>`
-            : `<span class="gap-value" style="color:var(--muted)">—</span>`;
+            : `<span class="gap-value" style="color:var(--muted)">N/A</span>`;
 
         let html = `<p style="font-size:12px;color:var(--muted);margin-bottom:14px;">
             Showing financial gap for <strong>${compareList.length}</strong> compared college${compareList.length > 1 ? 's' : ''}.
@@ -1453,7 +1478,7 @@
                     <span class="gap-label">Total COA / Year</span>
                     <span class="gap-value" style="color:var(--primary-dk);font-size:15px;">${d(computedCOA)}</span>
                 </div>
-                <div style="margin:10px 0 4px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Gift Aid — Free Money (No Repayment)</div>
+                <div style="margin:10px 0 4px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Gift Aid: Free Money (No Repayment)</div>
                 <div class="gap-row"><span class="gap-label">Pell Grant</span>${sub(pellG,'var(--accent)')}</div>
                 <div class="gap-row"><span class="gap-label">Institutional Grant</span>${sub(instG,'var(--accent)')}</div>
                 <div class="gap-row"><span class="gap-label">Scholarship / Gift Aid</span>${sub(schol,'var(--accent)')}</div>
@@ -1472,7 +1497,7 @@
                 </div>
                 ${unmetNeed > 0
                     ? `<div class="gap-alert alert-red"><strong>${d(unmetNeed)}/yr · ${d(unmetNeed*4)} over 4 years</strong> still unaccounted for. Look for additional scholarships or meet with your financial aid office before taking on more debt.</div>`
-                    : `<div class="gap-alert alert-green">Aid fully covers the cost of attendance — great position! Any unused loan eligibility you decline now means less debt at graduation.</div>`
+                    : `<div class="gap-alert alert-green">Aid fully covers the cost of attendance: great position! Any unused loan eligibility you decline now means less debt at graduation.</div>`
                 }`;
 
             const isOpen = openState[idx];
@@ -1508,7 +1533,7 @@
         const wrap = document.getElementById('coverageChartWrap');
         if (!entries || entries.length === 0) { wrap.style.display = 'none'; return; }
         wrap.style.display = 'block';
-        wrap.innerHTML = '<h4 style="font-size:13px;font-weight:700;color:var(--navy);margin:0 0 14px;">Coverage Diagram — COA · Net Price · Unmet Need</h4>';
+        wrap.innerHTML = '<h4 style="font-size:13px;font-weight:700;color:var(--navy);margin:0 0 14px;">Coverage Diagram: COA · Net Price · Unmet Need</h4>';
 
         const canvas = document.createElement('canvas');
         wrap.appendChild(canvas);
@@ -1623,7 +1648,7 @@
     function loadPrograms(collegeName, collegeWideEarnings) {
         programsData = [];
         $("#majorSection").show();
-        $("#majorSelect").html('<option value="">— Loading… —</option>');
+        $("#majorSelect").html('<option value="">Loading…</option>');
         $("#majorSpinner").show();
         $("#majorEarningsCard").hide();
 
@@ -1632,18 +1657,18 @@
             programsData = data;
 
             if (!data || data.length === 0) {
-                $("#majorSelect").html('<option value="">— No program data available —</option>');
+                $("#majorSelect").html('<option value="">No program data available</option>');
                 return;
             }
 
             const options = data.map(p =>
-                `<option value="${p.earnings}">${p.title} — $${Number(p.earnings).toLocaleString()}/yr</option>`
+                `<option value="${p.earnings}">${p.title}: $${Number(p.earnings).toLocaleString()}/yr</option>`
             ).join("");
-            $("#majorSelect").html('<option value="">— Select a major —</option>' + options);
+            $("#majorSelect").html('<option value="">Select a major</option>' + options);
             $("#collegeAvgEarnings").text("$" + Number(collegeWideEarnings).toLocaleString());
         }).fail(function() {
             $("#majorSpinner").hide();
-            $("#majorSelect").html('<option value="">— Could not load programs —</option>');
+            $("#majorSelect").html('<option value="">Could not load programs</option>');
         });
     }
 
@@ -1653,12 +1678,12 @@
         $("#majorEarnings").text("$" + Number(val).toLocaleString());
         $("#majorEarningsCard").show();
 
-        const selectedText = $("#majorSelect option:selected").text().split(" — ")[0];
+        const selectedText = $("#majorSelect option:selected").text().split(": ")[0];
         selectedCollege.selectedMajor = selectedText;
         selectedCollege.majorEarnings = parseFloat(val);
     });
 
-    // ── EARNINGS BY MAJOR — COMPARE MODE ─────────────────────────────────────
+    // ── EARNINGS BY MAJOR: COMPARE MODE ─────────────────────────────────────
     function renderMajorSection() {
         if (compareList.length === 0) {
             $("#majorSingleMode").show();
@@ -1696,7 +1721,7 @@
             } else {
                 const options = entry.programsData.map(p =>
                     `<option value="${p.earnings}" ${entry.selectedMajorEarnings == p.earnings && entry.selectedMajorTitle === p.title ? 'selected' : ''}>
-                        ${p.title} — $${Number(p.earnings).toLocaleString()}/yr
+                        ${p.title}: $${Number(p.earnings).toLocaleString()}/yr
                     </option>`
                 ).join('');
 
@@ -1706,7 +1731,7 @@
                         <label>Select a Major</label>
                         <select class="maj-select" data-idx="${idx}"
                                 style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
-                            <option value="">— Select a major —</option>
+                            <option value="">Select a major</option>
                             ${options}
                         </select>
                     </div>
@@ -1718,7 +1743,7 @@
                             </div>
                             <div class="stat">
                                 <div class="val green" id="maj-earn-val-${idx}">
-                                    ${entry.selectedMajorEarnings ? '$' + Number(entry.selectedMajorEarnings).toLocaleString() : '—'}
+                                    ${entry.selectedMajorEarnings ? '$' + Number(entry.selectedMajorEarnings).toLocaleString() : ': '}
                                 </div>
                                 <div class="lbl">${entry.selectedMajorTitle || 'This Major'} Median (6 yrs)</div>
                             </div>
@@ -1750,7 +1775,7 @@
             sel.addEventListener('change', function() {
                 const idx  = parseInt(this.dataset.idx);
                 const val  = parseFloat(this.value);
-                const text = this.options[this.selectedIndex].text.split(' — ')[0];
+                const text = this.options[this.selectedIndex].text.split(': ')[0];
                 const entry = compareList[idx];
                 if (!entry) return;
 
@@ -2102,8 +2127,8 @@
                     </tr>
                     <tr>
                         <td>Debt-to-Income Status</td>
-                        <td class="${statusClass(sc1Pct)}">${profile.majorEarnings > 0 ? statusLabel(sc1Pct) : '—'}</td>
-                        <td class="${statusClass(sc2Pct)}">${profile.majorEarnings > 0 ? statusLabel(sc2Pct) : '—'}</td>
+                        <td class="${statusClass(sc1Pct)}">${profile.majorEarnings > 0 ? statusLabel(sc1Pct) : ': '}</td>
+                        <td class="${statusClass(sc2Pct)}">${profile.majorEarnings > 0 ? statusLabel(sc2Pct) : ': '}</td>
                     </tr>
                 </tbody>
             </table>
@@ -2190,7 +2215,7 @@
 
         return `<div class="efas-college-section">
             <div class="efas-college-header">Private &amp; Foundation Scholarships</div>
-            <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">These scholarships are not personalized — they represent widely available national and field-specific awards. Research each carefully for current eligibility and deadlines.</p>
+            <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">These scholarships are not personalized: they represent widely available national and field-specific awards. Research each carefully for current eligibility and deadlines.</p>
             <table class="efas-scholarship-table">
                 ${scholCols}
                 <tbody>
@@ -2240,150 +2265,292 @@
     }
 
     // ── Premium Gate ──────────────────────────────────────────────────────────
-    let premiumActive = false;
+    let premiumActive    = false;
+    let premiumTabCache  = {};   // { collegeName: { scholarships: data, ... } }
+    let premiumTabFetching = {}; // { collegeName: true } -- prevents double-fire
 
     function unlockPremium() {
         premiumActive = true;
         $("#premiumOverlay").hide();
         $("#premiumContent").removeClass("locked");
-        if (selectedCollege && selectedCollege.name) {
-            fetchPremiumInsights(selectedCollege.name);
-        } else {
-            $("#premiumContent")
-                .html('<p style="color:var(--muted);font-size:13px;padding:16px 0;">Select a college above to generate personalized scholarship and employment insights.</p>')
-                .show();
-        }
+        renderPremiumTabs();
     }
 
-    function fetchPremiumInsights(collegeName) {
-        const entries = compareList.length > 0 ? compareList : null;
+    // called when college changes while premium is already open
+    function fetchPremiumInsights() { renderPremiumTabs(); }
 
-        if (entries) {
-            // ── Compare mode: render each college as it arrives ──
-            // Pre-render a placeholder div per college so the user sees progress immediately
-            const placeholders = entries.map((entry, i) =>
-                `<div id="prem-slot-${i}" style="padding:14px 0;border-bottom:1px solid var(--border);">
-                    <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px;">
-                        ${entry.college.name}${entry.selectedMajorTitle ? ' &mdash; ' + entry.selectedMajorTitle : ''}
-                    </div>
-                    <div style="color:var(--muted);font-size:12px;">Loading insights…</div>
-                </div>`
-            ).join('');
-            $("#premiumContent").html(placeholders).show();
+    function renderPremiumTabs() {
+        if (!premiumActive) return;
+        const entries = compareList.length > 0
+            ? compareList.map(e => ({ entry: e, name: e.college.name }))
+            : (selectedCollege.name ? [{ entry: null, name: selectedCollege.name }] : []);
 
-            entries.forEach(function(entry, i) {
-                const loanData = {
-                    subLoan:    entry.fafsa.subsidizedLoan    || 0,
-                    unsubLoan:  entry.fafsa.unsubsidizedLoan  || 0,
-                    parentPlus: entry.fafsa.familyContribution|| 0,
-                    freeAid:   (entry.fafsa.pellGrant         || 0)
-                             + (entry.fafsa.institutionalGrant|| 0)
-                             + (entry.fafsa.scholarshipAmount || 0)
-                };
-                $.ajax({
-                    url: "/api/premium/insights", method: "POST",
-                    contentType: "application/json",
-                    data: JSON.stringify({
-                        collegeName:   entry.college.name,
-                        major:         entry.selectedMajorTitle || null,
-                        netPrice:      entry.netPrice || null,
-                        sixYrEarnings: entry.selectedMajorEarnings || entry.college.sixYrEarnings || null
-                    }),
-                    success: function(data) {
-                        const html = renderPremiumSection(
-                            data, entry.college.name, entry.selectedMajorTitle,
-                            loanData, entry.netPrice,
-                            entry.selectedMajorEarnings || entry.college.sixYrEarnings
-                        );
-                        $(`#prem-slot-${i}`).replaceWith(html);
-                    },
-                    error: function(xhr) {
-                        if (xhr.status === 403) { premiumActive = false; $("#premiumOverlay").show(); $("#premiumContent").hide(); return; }
-                        $(`#prem-slot-${i}`).html(`<p style="color:var(--muted);font-size:12px;padding:8px 0;">${entry.college.name}: insights unavailable.</p>`);
-                    }
-                });
+        if (!entries.length) {
+            $("#premiumContent").html('<p style="color:var(--muted);font-size:13px;padding:16px 0;">Select a college above to generate personalized insights.</p>').show();
+            return;
+        }
+
+        // Static section (always shown, no AI)
+        const staticHtml = `
+            <div class="prem-section" style="margin-bottom:20px;">
+                <div class="prem-section-hdr open" onclick="togglePremSection(this)">
+                    <span style="font-size:16px;">&#127891;</span> Private &amp; Foundation Scholarships
+                    <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:6px;">Always available - not AI-generated</span>
+                    <span class="prem-chevron">&#9660;</span>
+                </div>
+                <div class="prem-section-body open" id="staticScholBody">
+                    <p class="prem-loading">Loading...</p>
+                </div>
+            </div>`;
+
+        const tabHeaders = entries.map((c, i) =>
+            `<button class="prem-tab${i===0?' active':''}" data-tab="${i}" onclick="switchPremTab(${i})">${esc(c.name)}</button>`
+        ).join('');
+
+        const tabPanes = entries.map((c, i) =>
+            `<div class="prem-pane${i===0?' active':''}" id="prem-pane-${i}">
+                ${mkSection('scholarships','&#128269;','AI Scholarship Matching',i,true)}
+                ${mkSection('employment','&#128200;','Field-Specific Employment Map',i,true)}
+                ${mkSection('costplan','&#128202;','4-Year Cost Reduction Plan',i,true)}
+                ${mkSection('campus','&#127963;','Campus Employment &amp; Research',i,true)}
+                ${mkSection('counselor','&#128203;','Counselor-Ready Report',i,true)}
+            </div>`
+        ).join('');
+
+        $("#premiumContent").html(`
+            ${staticHtml}
+            <div>
+                <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">AI Insights by College</div>
+                <div class="prem-tabs">${tabHeaders}</div>
+                ${tabPanes}
+            </div>
+        `).show();
+
+        populateStaticSection();
+        loadPremTab(0, entries[0].entry);
+    }
+
+    function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function mkSection(id, icon, label, tabIdx, open) {
+        const o = open ? ' open' : '';
+        return `<div class="prem-section">
+            <div class="prem-section-hdr${o}" onclick="togglePremSection(this)" data-sec="${id}" data-tab="${tabIdx}">
+                <span style="font-size:15px;">${icon}</span> ${label}
+                <span class="prem-chevron">&#9660;</span>
+            </div>
+            <div class="prem-section-body${o}" id="ps-${id}-${tabIdx}">
+                <p class="prem-loading">Loading...</p>
+            </div>
+        </div>`;
+    }
+
+    function togglePremSection(hdr) {
+        const $h = $(hdr), $b = $h.next('.prem-section-body');
+        const open = $h.hasClass('open');
+        $h.toggleClass('open', !open);
+        $b.toggleClass('open', !open);
+    }
+
+    function switchPremTab(idx) {
+        const entries = compareList.length > 0
+            ? compareList.map(e => ({ entry: e, name: e.college.name }))
+            : [{ entry: null, name: selectedCollege.name }];
+        $(".prem-tab").removeClass("active");
+        $(".prem-pane").removeClass("active");
+        $(`.prem-tab[data-tab="${idx}"]`).addClass("active");
+        $(`#prem-pane-${idx}`).addClass("active");
+        if (entries[idx]) loadPremTab(idx, entries[idx].entry);
+    }
+
+    const PREM_SECS = ['scholarships','employment','costplan','campus','counselor'];
+
+    function buildDemoPayload() {
+        return {
+            gender:               $("#genderSelect").val()                || null,
+            race:                 $("#raceSelect").val()                  || null,
+            firstGen:             $("#firstGenCheck").is(":checked"),
+            gpa:                  pf($("#gpaInput").val()),
+            extracurriculars:     $("#extracurriculars").val().trim()     || null,
+            academicAchievements: $("#academicAchievements").val().trim() || null
+        };
+    }
+
+    function buildPremPayload(entry, section) {
+        const demo = buildDemoPayload();
+        if (entry) {
+            return Object.assign({ section,
+                collegeName:   entry.college.name,
+                major:         entry.selectedMajorTitle || null,
+                netPrice:      entry.netPrice || null,
+                sixYrEarnings: entry.selectedMajorEarnings || entry.college.sixYrEarnings || null,
+                loanAmount:   (entry.fafsa.subsidizedLoan||0)+(entry.fafsa.unsubsidizedLoan||0)+(entry.fafsa.familyContribution||0),
+                unmetNeed:     entry.unmetNeed || null
+            }, demo);
+        }
+        const subL = pf($("#subsidizedLoan").val())||0,
+              unsubL = pf($("#unsubsidizedLoan").val())||0,
+              fam = pf($("#parentPlusLoan").val())||0;
+        return Object.assign({ section,
+            collegeName:   selectedCollege.name,
+            major:         $("#majorSelect").val() || null,
+            netPrice:      selectedCollege.netPrice || null,
+            sixYrEarnings: selectedCollege.sixYrEarnings || null,
+            loanAmount:    subL + unsubL + fam,
+            unmetNeed:     null
+        }, demo);
+    }
+
+    function loadPremTab(tabIdx, entry) {
+        const key = entry ? entry.college.name : (selectedCollege.name || '');
+        if (!key) return;
+
+        // Already cached -- render immediately
+        if (premiumTabCache[key]) {
+            PREM_SECS.forEach(sec => {
+                if (premiumTabCache[key][sec]) renderPremSec(tabIdx, sec, premiumTabCache[key][sec], entry);
             });
-        } else {
-            // ── Single college mode ──
-            const loanData = {
-                subLoan:    pf($("#subsidizedLoan").val())    || 0,
-                unsubLoan:  pf($("#unsubsidizedLoan").val())  || 0,
-                parentPlus: pf($("#parentPlusLoan").val())    || 0,
-                freeAid:   (pf($("#pellGrant").val())         || 0)
-                         + (pf($("#institutionalGrant").val())|| 0)
-                         + (pf($("#scholarshipAmount").val()) || 0)
-                         + (pf($("#workStudy").val())         || 0)
-            };
-            $("#premiumContent")
-                .html(`<p style="color:var(--muted);font-size:13px;padding:12px 0;">Generating insights for ${collegeName}…</p>`)
-                .show();
+            return;
+        }
+        if (premiumTabFetching[key]) return;
+        premiumTabFetching[key] = true;
+        premiumTabCache[key] = {};
+
+        PREM_SECS.forEach(function(sec) {
             $.ajax({
                 url: "/api/premium/insights", method: "POST",
                 contentType: "application/json",
-                data: JSON.stringify({
-                    collegeName:   collegeName,
-                    major:         $("#majorSelect").val() || null,
-                    netPrice:      selectedCollege ? selectedCollege.netPrice      : null,
-                    sixYrEarnings: selectedCollege ? selectedCollege.sixYrEarnings : null
-                }),
+                data: JSON.stringify(buildPremPayload(entry, sec)),
                 success: function(data) {
-                    const html = renderPremiumSection(
-                        data, collegeName, $("#majorSelect").val() || null,
-                        loanData,
-                        selectedCollege ? selectedCollege.netPrice      : null,
-                        selectedCollege ? selectedCollege.sixYrEarnings : null
-                    );
-                    $("#premiumContent").html(html).show();
+                    premiumTabCache[key][sec] = data;
+                    renderPremSec(tabIdx, sec, data, entry);
                 },
                 error: function(xhr) {
-                    if (xhr.status === 403) {
-                        premiumActive = false;
-                        $("#premiumOverlay").show();
-                        $("#premiumContent").hide();
-                    } else {
-                        $("#premiumContent").html('<p style="color:var(--muted);font-size:13px;padding:16px 0;">Could not load insights. Please try again.</p>');
-                    }
+                    if (xhr.status === 403) { premiumActive = false; $("#premiumOverlay").show(); $("#premiumContent").hide(); return; }
+                    $(`#ps-${sec}-${tabIdx}`).html(`<p class="prem-err">Could not load. Please try again.</p>`);
                 }
             });
-        }
+        });
     }
 
-    // Loaded from server — populated by /api/scholarships/static on page load
-    let staticScholarships = { national: [], communityIdentity: [] };
-    $.getJSON("/api/scholarships/static", function(data) {
-        staticScholarships = data;
-    });
+    function renderPremSec(tabIdx, sec, data, entry) {
+        const loanData = entry ? {
+            subLoan:    entry.fafsa.subsidizedLoan    || 0,
+            unsubLoan:  entry.fafsa.unsubsidizedLoan  || 0,
+            parentPlus: entry.fafsa.familyContribution|| 0
+        } : {
+            subLoan:    pf($("#subsidizedLoan").val())  || 0,
+            unsubLoan:  pf($("#unsubsidizedLoan").val())|| 0,
+            parentPlus: pf($("#parentPlusLoan").val())  || 0
+        };
+        const np  = entry ? entry.netPrice : (selectedCollege.netPrice || null);
+        const ear = entry ? (entry.selectedMajorEarnings || entry.college.sixYrEarnings) : (selectedCollege.sixYrEarnings || null);
+        const $b  = $(`#ps-${sec}-${tabIdx}`);
+        let html = '';
+        switch (sec) {
+            case 'scholarships': html = renderAIScholars(data);                      break;
+            case 'employment':   html = renderEmpTraj(data);                         break;
+            case 'costplan':     html = renderCostplan(data, loanData, np, ear);     break;
+            case 'campus':       html = renderCampus(data);                          break;
+            case 'counselor':    html = renderCounselorRpt(data);                    break;
+        }
+        $b.html(html);
+    }
 
-    function renderPremiumSection(data, collegeName, major, loanData, netPrice, sixYrEarnings) {
-        const sectionLabel = `<div style="background:var(--navy);color:var(--primary);padding:9px 14px;border-radius:7px;font-size:13px;font-weight:800;margin-bottom:14px;letter-spacing:.3px;">
-            ${collegeName}${major ? ' &mdash; ' + major : ''}
-        </div>`;
+    function renderAIScholars(data) {
+        const items = data.scholarships || [];
+        if (!items.length) return '<p class="prem-err">No data returned.</p>';
+        return items.map(s => `
+            <div style="margin-bottom:12px;padding:12px;background:var(--bg);border-radius:8px;border-left:3px solid var(--accent);">
+                <div style="font-weight:700;font-size:13px;color:var(--navy)">${s.name} <span style="color:var(--accent);font-weight:800;">${s.amount}</span></div>
+                <div style="font-size:11px;color:var(--primary-dk);font-weight:700;margin-top:2px;">${s.sponsor}</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:3px;">${s.eligibility}</div>
+                ${s.deadline ? `<div style="font-size:11px;margin-top:3px;"><strong>Deadline:</strong> ${s.deadline}</div>` : ''}
+                ${s.notes ? `<div style="font-size:11px;color:var(--muted);margin-top:3px;font-style:italic;">${s.notes}</div>` : ''}
+                ${s.url ? `<a href="${s.url}" target="_blank" rel="noopener" style="font-size:11px;color:var(--primary-dk);font-weight:700;margin-top:5px;display:inline-block;">Apply &rarr;</a>` : ''}
+            </div>`).join('');
+    }
 
-        // Merge Groq field-specific with server-loaded static national/community
-        const ps = data.privateScholarships || {};
-        const scholSection = renderScholarshipsSection({
-            national:          staticScholarships.national          || [],
-            fieldSpecific:     ps.fieldSpecific || data.fieldSpecificScholarships || [],
-            communityIdentity: staticScholarships.communityIdentity || []
-        });
+    function renderEmpTraj(data) {
+        const roles = (data.typicalRoles || []).map(r => `
+            <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+                <div style="min-width:100px;font-size:11px;font-weight:700;color:var(--primary-dk);text-transform:uppercase;padding-top:2px;">${r.year}</div>
+                <div>
+                    <div style="font-weight:700;font-size:13px;">${r.title} <span style="color:var(--accent);font-weight:800;">${r.salary}</span></div>
+                    <div style="font-size:12px;color:var(--muted);margin-top:2px;">${r.description}</div>
+                </div>
+            </div>`).join('');
+        const tags = (data.industries || []).map(i =>
+            `<span style="display:inline-block;background:#eef0f5;border-radius:12px;padding:3px 10px;font-size:11px;font-weight:600;margin:3px 4px 3px 0;">${i}</span>`
+        ).join('');
+        return `
+            ${data.trajectory ? `<p style="font-size:13px;line-height:1.7;margin-bottom:14px;">${data.trajectory}</p>` : ''}
+            ${roles}
+            ${tags ? `<div style="margin-top:12px;"><strong style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">Industries:</strong><div style="margin-top:6px;">${tags}</div></div>` : ''}
+            ${data.outlook ? `<p style="font-size:12px;color:var(--muted);margin-top:12px;font-style:italic;">${data.outlook}</p>` : ''}`;
+    }
 
-        const employment = (data.employment || []).map(e => `
+    function renderCostplan(data, loanData, netPrice, sixYrEarnings) {
+        const table = buildFourYearPlan(data.yearlyTips || [], loanData, netPrice, sixYrEarnings);
+        const demoStrats = (data.demographicStrategies || []).map((s, i) =>
+            `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.6;"><strong style="color:var(--primary-dk);">${i+1}.</strong> ${s}</div>`
+        ).join('');
+        return `${table}
+            ${demoStrats ? `<div style="margin-top:14px;"><strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--navy-lt);margin-bottom:8px;">Targeted Strategies for Your Profile</strong>${demoStrats}</div>` : ''}
+            ${data.appealTip ? `<div style="margin-top:14px;padding:10px 14px;background:#fdf8f2;border-left:3px solid var(--accent);border-radius:4px;font-size:13px;"><strong>Appeal Strategy:</strong> ${data.appealTip}</div>` : ''}`;
+    }
+
+    function renderCampus(data) {
+        const items = data.employment || [];
+        if (!items.length) return '<p class="prem-err">No campus data returned.</p>';
+        return items.map(e => `
             <div style="margin-bottom:12px;padding:10px 12px;background:var(--bg);border-radius:8px;border-left:3px solid var(--navy-lt)">
                 <div style="font-weight:700;font-size:13px;color:var(--navy)">${e.title} <span style="color:var(--primary-dk);font-weight:800">${e.pay}</span></div>
                 ${e.type ? `<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--primary-dk);margin-top:2px;">${e.type}</div>` : ''}
                 <div style="font-size:12px;color:var(--muted);margin-top:3px">${e.details}</div>
-                ${e.url ? `<a href="${e.url}" target="_blank" rel="noopener" style="font-size:11px;color:var(--primary-dk);font-weight:700;text-decoration:none;border-bottom:1px solid var(--primary-lt);margin-top:5px;display:inline-block;">Explore &rarr;</a>` : ''}
+                ${e.url ? `<a href="${e.url}" target="_blank" rel="noopener" style="font-size:11px;color:var(--primary-dk);font-weight:700;text-decoration:none;margin-top:5px;display:inline-block;">Explore &rarr;</a>` : ''}
             </div>`).join('');
-
-        const plan = buildFourYearPlan(data.yearlyTips || [], loanData, netPrice, sixYrEarnings);
-        const lbl = s => `<strong style="display:block;margin-bottom:10px;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--navy-lt)">${s}</strong>`;
-
-        return `${sectionLabel}
-            ${scholSection}
-            ${lbl('Campus Employment &amp; Research')}${employment}
-            ${lbl('4-Year Cost Reduction Plan')}${plan}
-            <div style="border-top:2px solid var(--border);margin:24px 0 20px;"></div>`;
     }
+
+    function renderCounselorRpt(data) {
+        const snap = data.financialSnapshot || {};
+        const snapRows = [
+            ['Cost of Attendance', snap.coa],
+            ['Net Price',          snap.netPrice],
+            ['Unmet Need',         snap.unmetNeed],
+            ['Annual Loan Burden', snap.loanBurden],
+            ['Est. Debt at Graduation', snap.debtAtGrad]
+        ].filter(([,v]) => v && v !== 'N/A')
+         .map(([k,v]) => `<tr><td style="font-size:12px;color:var(--muted);padding:5px 10px 5px 0;white-space:nowrap;">${k}</td><td style="font-size:13px;font-weight:700;">${v}</td></tr>`).join('');
+        const ul = arr => (arr || []).map(s => `<li style="font-size:13px;line-height:1.65;margin-bottom:5px;">${s}</li>`).join('');
+        const ol = arr => (arr || []).map(s => `<li style="font-size:13px;line-height:1.65;margin-bottom:5px;">${s}</li>`).join('');
+        const blk = (title, color, html) => `<div style="margin-bottom:14px;"><div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:${color};margin-bottom:6px;">${title}</div>${html}</div>`;
+        return `
+            ${data.executiveSummary ? blk('Executive Summary','var(--navy)',`<p style="font-size:13px;line-height:1.7;">${data.executiveSummary}</p>`) : ''}
+            ${snapRows ? blk('Financial Snapshot','var(--muted)',`<table style="border-collapse:collapse;"><tbody>${snapRows}</tbody></table>`) : ''}
+            ${(data.strengthsForAppeal||[]).length ? blk('Strengths for Appeal','var(--accent)',`<ul style="padding-left:18px;margin:0;">${ul(data.strengthsForAppeal)}</ul>`) : ''}
+            ${(data.parentTalkingPoints||[]).length ? blk('Parent Talking Points','var(--primary-dk)',`<ul style="padding-left:18px;margin:0;">${ul(data.parentTalkingPoints)}</ul>`) : ''}
+            ${(data.recommendedActions||[]).length ? blk('Recommended Actions','var(--navy)',`<ol style="padding-left:18px;margin:0;">${ol(data.recommendedActions)}</ol>`) : ''}
+            ${(data.riskFlags||[]).length ? blk('Risk Flags','#b94040',`<ul style="padding-left:18px;margin:0;">${ul(data.riskFlags)}</ul>`) : ''}`;
+    }
+
+    function populateStaticSection() {
+        if (staticScholarships.national && staticScholarships.national.length) {
+            $("#staticScholBody").html(renderScholarshipsSection({
+                national:          staticScholarships.national,
+                fieldSpecific:     [],
+                communityIdentity: staticScholarships.communityIdentity || []
+            }));
+        } else {
+            setTimeout(populateStaticSection, 600);
+        }
+    }
+
+    // Loaded from server: populated by /api/scholarships/static on page load
+    let staticScholarships = { national: [], communityIdentity: [] };
+    $.getJSON("/api/scholarships/static", function(data) {
+        staticScholarships = data;
+    });
 
     function buildFourYearPlan(yearlyTips, loanData, netPriceOverride, earningsOverride) {
         const netPrice      = netPriceOverride  != null ? netPriceOverride  : (selectedCollege.netPrice      || 0);
@@ -2404,10 +2571,10 @@
             cumDebt        += yearLoans;
             const monthly   = cumDebt > 0 ? (cumDebt * (0.0654/12)) / (1 - Math.pow(1 + 0.0654/12, -120)) : 0;
             const over      = safeTotal && cumDebt > safeTotal;
-            const tip       = yearlyTips[y-1] || '—';
+            const tip       = yearlyTips[y-1] || ': ';
             return `<tr>
                 <td style="font-weight:700;color:var(--navy)">Year ${y}</td>
-                <td>${netPrice > 0 ? d(netPrice) : '—'}</td>
+                <td>${netPrice > 0 ? d(netPrice) : ': '}</td>
                 <td>${d(yearLoans)}${useDefaults ? '*' : ''}</td>
                 <td class="${over ? 'over-limit' : ''}">${d(cumDebt)}${over ? ' !' : ''}</td>
                 <td>${d(monthly)}/mo</td>
@@ -2491,7 +2658,7 @@
         const unmetNeed     = netPrice - totalLoans - workStudy - familyCont;
 
         const d = n => '$' + Math.round(Math.max(0,n)).toLocaleString('en-US');
-        const sub = (n, color) => n > 0 ? `<span class="gap-value" style="color:${color}">−${d(n)}</span>` : `<span class="gap-value" style="color:var(--muted)">—</span>`;
+        const sub = (n, color) => n > 0 ? `<span class="gap-value" style="color:${color}">−${d(n)}</span>` : `<span class="gap-value" style="color:var(--muted)">N/A</span>`;
 
         const unmetClass = unmetNeed > 0 ? 'gap-unmet' : 'gap-met';
 
@@ -2524,7 +2691,7 @@
                 <span class="gap-label">Total Cost of Attendance / Year</span>
                 <span class="gap-value" style="color:var(--primary-dk);font-size:15px;">${d(totalCost)}</span>
             </div>
-            <div style="margin:10px 0 4px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Gift Aid — Free Money (No Repayment)</div>
+            <div style="margin:10px 0 4px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Gift Aid: Free Money (No Repayment)</div>
             <div class="gap-row">
                 <span class="gap-label">Pell Grant</span>
                 ${sub(pellGrant, 'var(--accent)')}
@@ -2568,12 +2735,16 @@
                     Look for additional scholarships or meet with your financial aid office before taking on more debt.
                    </div>`
                 : `<div class="gap-alert alert-green">
-                    Your aid package fully covers the cost of attendance — great position to be in!
+                    Your aid package fully covers the cost of attendance: great position to be in!
                     Any unused loan eligibility you decline now means less debt at graduation.
                    </div>`
             }
         `);
     }
 </script>
+
+<footer style="text-align:center;padding:24px 20px;font-size:12px;color:#718096;border-top:1px solid #e2e8f0;margin-top:40px;">
+  &copy; 2026 Callisto Consulting Group LLC DBA Callisto Tech. All rights reserved.
+</footer>
 </body>
 </html>

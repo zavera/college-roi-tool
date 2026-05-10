@@ -1,0 +1,9 @@
+Return ONLY valid JSON, no markdown, no fences:
+{"trajectory":"...","typicalRoles":[{"year":"...","title":"...","salary":"...","description":"..."}],"industries":["..."],"outlook":"..."}
+
+Student at {{collegeName}} pursuing {{major}}. {{earningsLine}}
+
+trajectory: 2-3 sentence realistic career narrative for {{major}} graduates.
+typicalRoles: exactly 4 stages - Entry (Year 1-2), Early Career (Year 3-5), Mid-Career (Year 6-10), Senior (Year 10+) - with realistic salary ranges and job titles specific to {{major}}.
+industries: exactly 4 industries that actively hire {{major}} graduates.
+outlook: one sentence on current job market for {{major}}.

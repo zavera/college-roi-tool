@@ -1,0 +1,13 @@
+Return ONLY valid JSON, no markdown, no fences:
+{"executiveSummary":"...","financialSnapshot":{"coa":"...","netPrice":"...","unmetNeed":"...","loanBurden":"...","debtAtGrad":"..."},"strengthsForAppeal":["...","...","..."],"parentTalkingPoints":["...","...","...","..."],"recommendedActions":["...","...","...","..."],"riskFlags":["...","..."]}
+
+Counselor report: student at {{collegeName}}, major: {{major}}.
+Profile: {{demographicLine}} GPA: {{gpa}}. First-gen: {{firstGen}}. Achievements: {{achievements}}.
+Financial: {{netPriceLine}} {{earningsLine}} Annual loans: ${{loanAmount}}.
+
+executiveSummary: 2-3 sentences for a counselor to open a parent meeting.
+financialSnapshot: key numbers (use "N/A" where unknown).
+strengthsForAppeal: exactly 3 specific student strengths to cite in a financial aid appeal at {{collegeName}}.
+parentTalkingPoints: exactly 4 points a counselor should communicate to parents.
+recommendedActions: exactly 4 prioritized next steps the counselor should drive.
+riskFlags: exactly 2 specific financial risk flags for this package and school.

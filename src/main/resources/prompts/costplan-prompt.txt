@@ -1,0 +1,11 @@
+Return ONLY valid JSON, no markdown, no fences:
+{"yearlyTips":["...","...","...","..."],"demographicStrategies":["...","...","..."],"appealTip":"..."}
+
+Student at {{collegeName}}, major: {{major}}. {{netPriceLine}} {{earningsLine}}
+Demographics: {{demographicLine}} GPA: {{gpa}}. First-generation: {{firstGen}}.
+Achievements: {{achievements}}. Activities: {{extracurriculars}}.
+Annual loans: ${{loanAmount}}.
+
+yearlyTips: exactly 4 year-specific cost reduction strategies for THIS student (Year 1, 2, 3, 4) based on their loan burden and major trajectory. Not generic.
+demographicStrategies: exactly 3 scholarship or aid strategies specific to this student's demographic profile, GPA, and achievements.
+appealTip: one specific financial aid appeal strategy for {{collegeName}} based on this student's profile.

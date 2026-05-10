@@ -1,0 +1,7 @@
+Return ONLY valid JSON, no markdown, no fences:
+{"scholarships":[{"name":"...","amount":"...","sponsor":"...","eligibility":"...","deadline":"...","notes":"...","url":"..."}]}
+
+Student at {{collegeName}}{{majorSuffix}}. {{netPriceLine}} {{earningsLine}}
+Profile: {{demographicLine}}
+
+Provide exactly 5 real scholarships that are SPECIFIC to this student: institutional or alumni foundation awards from {{collegeName}}, local community foundation awards in the college's city/state, or awards from professional associations in {{major}} that match this student's demographic profile. Do NOT list generic national scholarships. Real names, amounts, deadlines, and URLs only.

@@ -1,0 +1,10 @@
+Return ONLY valid JSON, no markdown, no fences:
+{"employment":[{"title":"...","pay":"...","type":"...","details":"...","url":"..."}]}
+
+Student at {{collegeName}} pursuing {{major}}.
+
+List exactly 3 campus-based roles at {{collegeName}} for {{major}} students:
+1. Undergraduate Research: a specific lab, faculty research area, or department at {{collegeName}} relevant to {{major}}. Note if volunteer/credit-based. type="Undergraduate Research".
+2. Paid on-campus role: TA, lab tech, tutor, or department assistant for {{major}} courses at {{collegeName}}. type="On-Campus Employment".
+3. Co-op, internship, or practicum: specific program at {{collegeName}} career center or department for {{major}} students. type="Co-op / Internship".
+Use Handshake or the college's career center URL. 1-2 sentence details each.
