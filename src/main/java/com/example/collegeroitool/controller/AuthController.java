@@ -2,6 +2,7 @@ package com.example.collegeroitool.controller;
 
 import com.example.collegeroitool.model.AppUser;
 import com.example.collegeroitool.service.UserService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,6 +17,9 @@ import java.util.Map;
 public class AuthController {
 
     private final UserService userService;
+
+    @Value("${premium.dev.bypass:false}")
+    private boolean devBypass;
 
     public AuthController(UserService userService) {
         this.userService = userService;
@@ -47,6 +51,15 @@ public class AuthController {
     /** Current logged-in user info + subscription status */
     @GetMapping("/me")
     public ResponseEntity<?> me(Principal principal) {
+        // Dev bypass: no real session — synthesise an active dev user
+        if (devBypass && principal == null) {
+            return ResponseEntity.ok(Map.of(
+                "loggedIn",           true,
+                "email",              "dev@local",
+                "name",               "Dev User",
+                "subscriptionActive", true
+            ));
+        }
         if (principal == null) {
             return ResponseEntity.status(401).body(Map.of("loggedIn", false));
         }
