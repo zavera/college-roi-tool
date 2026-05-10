@@ -1312,6 +1312,7 @@
         updateCompareBtn();
         renderMajorSection();
         loadProgramsForEntry(newEntry);
+        if (premiumActive) renderPremiumTabs();
     }
 
     function removeFromCompare(idx) {
@@ -1321,6 +1322,7 @@
         recalculateGap();
         updateCompareBtn();
         renderMajorSection();
+        if (premiumActive) renderPremiumTabs();
     }
 
     // ── INSTITUTION-SPECIFIC AID SECTION ─────────────────────────────────────
