@@ -178,8 +178,20 @@
   <ul>
     <li><strong>Account information:</strong> name, email address, and (for local accounts) a hashed password.</li>
     <li><strong>Financial aid data:</strong> Expected Family Contribution (EFC/SAI), income figures, household size, and college selections you enter to generate personalized analyses.</li>
-    <li><strong>Payment information:</strong> subscription billing is handled entirely by Stripe, Inc. We do not store credit card numbers or full payment details on our servers.</li>
+    <li><strong>Payment information:</strong> subscription billing is processed entirely by <strong>Stripe, Inc.</strong> When you enter payment details, that information is submitted directly to Stripe's secure servers via Stripe's embedded payment form — it never passes through or is stored on Astra's servers. We do not collect, see, or retain your credit card number, CVV, or bank account details at any time.</li>
   </ul>
+
+  <div class="highlight-box">
+    <strong>Your credit card is handled exclusively by Stripe.</strong><br>
+    Astra never receives, processes, or stores your payment card details. All transactions
+    are handled by <a href="https://stripe.com" target="_blank" rel="noopener">Stripe, Inc.</a>,
+    a PCI-DSS Level 1 certified payment processor — the highest level of certification available.
+    What Astra receives from Stripe is limited to: subscription status (active/inactive),
+    a masked card summary (e.g., "Visa ending in 4242"), and a Stripe customer ID.
+    See <a href="https://stripe.com/privacy" target="_blank" rel="noopener">Stripe's Privacy Policy</a>
+    and <a href="https://stripe.com/docs/security" target="_blank" rel="noopener">Stripe's Security overview</a>
+    for full details.
+  </div>
 
   <h3>3.2 Information Collected Automatically</h3>
   <ul>
@@ -283,7 +295,11 @@
     </li>
     <li>
       <strong>Stripe, Inc.</strong> — Payment processing and subscription management.
-      <a href="https://stripe.com/privacy" target="_blank" rel="noopener">Stripe Privacy Policy</a>
+      Stripe is a PCI-DSS Level 1 certified processor. Your full card details are entered
+      directly into Stripe's hosted payment form and are never transmitted to or stored by Astra.
+      Astra receives only subscription status, a masked card identifier, and a Stripe customer ID.
+      <a href="https://stripe.com/privacy" target="_blank" rel="noopener">Stripe Privacy Policy</a> &nbsp;&middot;&nbsp;
+      <a href="https://stripe.com/docs/security" target="_blank" rel="noopener">Stripe Security</a>
     </li>
     <li>
       <strong>Groq, Inc.</strong> — AI language model inference used to generate financial aid
