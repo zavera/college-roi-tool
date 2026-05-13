@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Astra Financial Aid Advisor</title>
+    <title>Financial Aid Advisor — Astra</title>
     <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300&display=swap" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
@@ -23,6 +24,27 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        .skip-link {
+            position: absolute;
+            top: -100%;
+            left: 8px;
+            padding: 8px 16px;
+            background: #2d3040;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 0 0 6px 6px;
+            z-index: 9999;
+            text-decoration: none;
+            transition: top .15s;
+        }
+        .skip-link:focus { top: 0; }
+        button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
+            outline: 3px solid var(--primary);
+            outline-offset: 2px;
+            border-radius: 3px;
+        }
 
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -147,7 +169,8 @@
             font-family: inherit;
             transition: border-color .2s;
         }
-        input:focus { outline: none; border-color: var(--primary); background: white; }
+        input:focus { border-color: var(--primary); background: white; }
+        input:focus-visible { outline: 3px solid var(--primary); outline-offset: 1px; }
 
         .field-group { margin-bottom: 14px; }
 
@@ -200,7 +223,8 @@
             font-family: inherit;
             transition: border-color .2s;
         }
-        select#majorSelect:focus { outline: none; border-color: var(--primary); background: white; }
+        select#majorSelect:focus { border-color: var(--primary); background: white; }
+        select#majorSelect:focus-visible { outline: 3px solid var(--primary); outline-offset: 1px; }
 
         #majorEarningsCard {
             margin-top: 14px;
@@ -888,6 +912,7 @@
     </style>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
 
 <!-- Auth gate overlay — hidden once session is confirmed -->
 <div id="authGate" style="
@@ -898,9 +923,9 @@
     <div style="font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#a0aec0;">Checking session…</div>
 </div>
 
-<header>
+<header role="banner">
     <div class="logo-mark">
-        <img src="/callisto_high.png" alt="Callisto logo" style="width:60px;height:60px;object-fit:cover;border-radius:12px;display:block;">
+        <img src="/callisto_high.png" alt="Callisto Tech logo" style="width:60px;height:60px;object-fit:cover;border-radius:12px;display:block;">
     </div>
     <div>
         <h1>Astra</h1>
@@ -909,23 +934,25 @@
     <div class="hdr-user">
         <span class="hdr-badge">Advisor</span>
         <span class="hdr-user-name" id="hdrUserName" style="display:none;"></span>
-        <button class="hdr-sub-toggle" id="hdrSubToggle" style="display:none;" onclick="toggleSubscription()">Premium: OFF</button>
+        <button type="button" class="hdr-sub-toggle" id="hdrSubToggle" style="display:none;" onclick="toggleSubscription()">Premium: OFF</button>
         <a class="hdr-logout" id="hdrLogout" style="display:none;" href="#">Sign Out</a>
     </div>
 </header>
 
+<main id="main-content">
 <div class="container">
 
     <!-- ── College Search ── -->
     <div class="card">
         <h2>Search College</h2>
         <div class="field-group">
-            <label>College or University</label>
-            <input type="text" id="collegeSearch" placeholder="Type 2+ characters (e.g. Michigan, Howard, NYU)…">
+            <label for="collegeSearch">College or University</label>
+            <input type="text" id="collegeSearch" placeholder="Type 2+ characters (e.g. Michigan, Howard, NYU)…"
+                   aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false">
         </div>
         <div class="field-group" style="display:flex;gap:14px;flex-wrap:wrap;">
             <div style="flex:1;min-width:140px;">
-                <label>Student Residency Status</label>
+                <label for="residencySelect">Student Residency Status</label>
                 <select id="residencySelect" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
                     <option value="instate" selected>In-State</option>
                     <option value="outofstate">Out-of-State</option>
@@ -934,7 +961,7 @@
                 </select>
             </div>
             <div style="flex:1;min-width:140px;">
-                <label>Where Will You Live?</label>
+                <label for="livingSelect">Where Will You Live?</label>
                 <select id="livingSelect" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
                     <option value="oncampus" selected>On-Campus (University Housing)</option>
                     <option value="offcampus">Off-Campus Apartment</option>
@@ -948,10 +975,10 @@
                 I'm covered under my parent's health insurance plan <span style="font-weight:400;color:var(--muted)">(uncheck to add ~$2,500/yr estimate)</span>
             </label>
         </div>
-        <div id="results"></div>
+        <div id="results" aria-live="polite" aria-atomic="true"></div>
 
-        <button id="searchButton" class="btn-primary">Look Up Cost of Attendance</button>
-        <button id="addToCompareBtn" class="btn-compare" disabled>+ Add to Compare</button>
+        <button type="button" id="searchButton" class="btn-primary">Look Up Cost of Attendance</button>
+        <button type="button" id="addToCompareBtn" class="btn-compare" disabled>+ Add to Compare</button>
         <div id="comparePillRow" class="compare-pill-row"></div>
     </div>
 
@@ -962,11 +989,11 @@
         <!-- Single-college mode (default) -->
         <div id="majorSingleMode">
             <div class="field-group" style="margin-bottom:0">
-                <label>Select a Major</label>
+                <label for="majorSelect">Select a Major</label>
                 <select id="majorSelect">
                     <option value="">Loading programs…</option>
                 </select>
-                <div id="majorSpinner">Loading program data…</div>
+                <div id="majorSpinner" aria-live="polite" aria-atomic="true">Loading program data…</div>
             </div>
             <div id="majorEarningsCard">
                 <div class="earnings-row">
@@ -992,32 +1019,32 @@
         <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Enter amounts from your Student Aid Report (SAR) or financial aid offer letter.</p>
 
         <div class="field-group">
-            <label>Pell Grant ($) <span style="font-weight:400;color:var(--accent)">: Federal grant, no repayment required</span></label>
+            <label for="pellGrant">Pell Grant ($) <span style="font-weight:400;color:var(--accent)">: Federal grant, no repayment required</span></label>
             <input type="number" id="pellGrant" placeholder="0.00" min="0" step="0.01">
         </div>
         <div class="field-group">
-            <label>Subsidized Federal Loan ($) <span style="font-weight:400;color:var(--muted)">: Need-based, no interest while enrolled</span></label>
+            <label for="subsidizedLoan">Subsidized Federal Loan ($) <span style="font-weight:400;color:var(--muted)">: Need-based, no interest while enrolled</span></label>
             <input type="number" id="subsidizedLoan" placeholder="0.00" min="0" step="0.01">
         </div>
         <div class="field-group">
-            <label>Unsubsidized Federal Loan ($) <span style="font-weight:400;color:var(--muted)">: Interest accrues immediately</span></label>
+            <label for="unsubsidizedLoan">Unsubsidized Federal Loan ($) <span style="font-weight:400;color:var(--muted)">: Interest accrues immediately</span></label>
             <input type="number" id="unsubsidizedLoan" placeholder="0.00" min="0" step="0.01">
         </div>
         <div class="field-group">
-            <label>Total Family Contribution ($) <span style="font-weight:400;color:var(--muted)">: Family's expected contribution (savings, income, Parent PLUS)</span></label>
+            <label for="parentPlusLoan">Total Family Contribution ($) <span style="font-weight:400;color:var(--muted)">: Family's expected contribution (savings, income, Parent PLUS)</span></label>
             <input type="number" id="parentPlusLoan" placeholder="0.00" min="0" step="0.01">
         </div>
         <div id="inst-fields-single">
             <div class="field-group">
-                <label>Institutional Grant ($) <span style="font-weight:400;color:var(--accent)">: From your college, no repayment</span></label>
+                <label for="institutionalGrant">Institutional Grant ($) <span style="font-weight:400;color:var(--accent)">: From your college, no repayment</span></label>
                 <input type="number" id="institutionalGrant" placeholder="0.00" min="0" step="0.01">
             </div>
             <div class="field-group">
-                <label>Scholarship / Gift Aid ($)</label>
+                <label for="scholarshipAmount">Scholarship / Gift Aid ($)</label>
                 <input type="number" id="scholarshipAmount" placeholder="0.00" min="0" step="0.01">
             </div>
             <div class="field-group" style="margin-bottom:0">
-                <label>Federal Work-Study ($) <span style="font-weight:400;color:var(--muted)">: Earned through part-time campus jobs</span></label>
+                <label for="workStudy">Federal Work-Study ($) <span style="font-weight:400;color:var(--muted)">: Earned through part-time campus jobs</span></label>
                 <input type="number" id="workStudy" placeholder="0.00" min="0" step="0.01">
             </div>
         </div>
@@ -1038,7 +1065,7 @@
         <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">
             Auto-calculated as you enter aid amounts: shows exactly how much of your cost is covered and what remains.
         </p>
-        <div id="gapAnalysisContent">
+        <div id="gapAnalysisContent" aria-live="polite" aria-atomic="false">
             <p class="gap-placeholder">Search and select a college above to activate gap analysis.</p>
         </div>
     </div>
@@ -1050,7 +1077,7 @@
 
         <div class="field-group" style="display:flex;gap:14px;flex-wrap:wrap;">
             <div style="flex:1;min-width:140px;">
-                <label>Gender</label>
+                <label for="genderSelect">Gender</label>
                 <select id="genderSelect" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
                     <option value="">Select</option>
                     <option>Male</option>
@@ -1060,7 +1087,7 @@
                 </select>
             </div>
             <div style="flex:2;min-width:200px;">
-                <label>Race / Ethnicity</label>
+                <label for="raceSelect">Race / Ethnicity</label>
                 <select id="raceSelect" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
                     <option value="">Select</option>
                     <option>American Indian or Alaska Native</option>
@@ -1083,16 +1110,16 @@
         </div>
 
         <div class="field-group">
-            <label>GPA <span style="font-weight:400;color:var(--muted)">: Current or most recent (0.0 – 4.0)</span></label>
+            <label for="gpaInput">GPA <span style="font-weight:400;color:var(--muted)">: Current or most recent (0.0 – 4.0)</span></label>
             <input type="number" id="gpaInput" placeholder="e.g. 3.5" min="0" max="4.0" step="0.01">
         </div>
 
         <div class="field-group">
-            <label>Extracurricular Activities</label>
+            <label for="extracurriculars">Extracurricular Activities</label>
             <textarea id="extracurriculars" rows="3" placeholder="e.g. Student government, robotics club, varsity soccer, community volunteering…" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;resize:vertical;"></textarea>
         </div>
         <div class="field-group" style="margin-bottom:0">
-            <label>Academic Achievements</label>
+            <label for="academicAchievements">Academic Achievements</label>
             <textarea id="academicAchievements" rows="3" placeholder="e.g. 3.8 GPA, National Honor Society, science fair winner, AP Scholar, Dean's List…" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;resize:vertical;"></textarea>
         </div>
     </div>
@@ -1107,14 +1134,14 @@
             Enter your aid package above, select a college, then click below for personalized summary.
         </p>
 
-        <button id="aiButton" class="btn-ai">Get AI Financial Summary</button>
+        <button type="button" id="aiButton" class="btn-ai">Get AI Financial Summary</button>
 
-        <div id="aiSpinner">Analyzing your financial package…</div>
-        <div id="coverageChartWrap"></div>
-        <div id="aiAdviceBox" style="display:none;"></div>
+        <div id="aiSpinner" aria-live="polite" aria-atomic="true">Analyzing your financial package…</div>
+        <div id="coverageChartWrap" aria-hidden="true"></div>
+        <div id="aiAdviceBox" style="display:none;" aria-live="polite" aria-atomic="true"></div>
         <div id="exportRow" style="display:none;text-align:right;">
-            <button class="btn-export" onclick="exportReport()">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <button type="button" class="btn-export" onclick="exportReport()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Print / Save as PDF
             </button>
         </div>
@@ -1135,7 +1162,7 @@
         <div class="premium-bullets">
             <div class="premium-bullet">
                 <div class="bullet-icon">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                 </div>
                 <div class="bullet-text">
                     <strong>AI Scholarship Matching</strong>
@@ -1144,7 +1171,7 @@
             </div>
             <div class="premium-bullet">
                 <div class="bullet-icon">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" focusable="false"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
                 </div>
                 <div class="bullet-text">
                     <strong>Field-Specific Employment Map</strong>
@@ -1153,7 +1180,7 @@
             </div>
             <div class="premium-bullet">
                 <div class="bullet-icon">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" focusable="false"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                 </div>
                 <div class="bullet-text">
                     <strong>4-Year Cost Reduction Plan</strong>
@@ -1162,7 +1189,7 @@
             </div>
             <div class="premium-bullet">
                 <div class="bullet-icon">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </div>
                 <div class="bullet-text">
                     <strong>Counselor-Ready Reports</strong>
@@ -1171,29 +1198,30 @@
             </div>
         </div>
         <div class="premium-preview">
-            <div id="premiumContent" class="premium-preview-inner locked" style="display:none"></div>
+            <div id="premiumContent" class="premium-preview-inner locked" style="display:none" aria-live="polite" aria-atomic="false"></div>
             <div class="premium-preview-overlay" id="premiumOverlay">
                 <div class="lock-icon">
-                    <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-label="Premium content locked" role="img">
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                         <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                     </svg>
                 </div>
                 <div class="overlay-title">Unlock Scholarship &amp; Employment Intelligence</div>
                 <div class="overlay-sub">College counselors and parents: get AI-driven scholarship matching and employment pathway analysis specific to each student's college and major: updated every time you change your selection.</div>
-                <button class="btn-unlock" onclick="handleUnlock()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+                <button type="button" class="btn-unlock" onclick="handleUnlock()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" focusable="false"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
                     Unlock Premium
                 </button>
             </div>
         </div>
         <div class="premium-guarantee">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             30-day money-back guarantee: cancel anytime. No contracts, no commitment.
         </div>
     </div>
 
 </div>
+</main>
 
 <script>
     // ── STATE ──────────────────────────────────────────────────────────────────
@@ -1408,18 +1436,18 @@
                         ${entry.college.name}
                     </div>
                     <div class="field-group">
-                        <label>Institutional Grant ($) <span style="font-weight:400;color:var(--accent)">: College grant, no repayment</span></label>
-                        <input type="number" class="inst-aid-input" data-idx="${i}" data-field="instGrant"
+                        <label for="instGrant-${i}">Institutional Grant ($) <span style="font-weight:400;color:var(--accent)">: College grant, no repayment</span></label>
+                        <input type="number" id="instGrant-${i}" class="inst-aid-input" data-idx="${i}" data-field="instGrant"
                                value="${entry.instGrant || ''}" placeholder="0.00" min="0" step="0.01">
                     </div>
                     <div class="field-group">
-                        <label>Scholarship / Gift Aid ($)</label>
-                        <input type="number" class="inst-aid-input" data-idx="${i}" data-field="scholarship"
+                        <label for="scholarship-${i}">Scholarship / Gift Aid ($)</label>
+                        <input type="number" id="scholarship-${i}" class="inst-aid-input" data-idx="${i}" data-field="scholarship"
                                value="${entry.scholarship || ''}" placeholder="0.00" min="0" step="0.01">
                     </div>
                     <div class="field-group" style="margin-bottom:8px;">
-                        <label>Federal Work-Study ($) <span style="font-weight:400;color:var(--muted)">: Earned through campus jobs</span></label>
-                        <input type="number" class="inst-aid-input" data-idx="${i}" data-field="workStudy"
+                        <label for="workStudy-${i}">Federal Work-Study ($) <span style="font-weight:400;color:var(--muted)">: Earned through campus jobs</span></label>
+                        <input type="number" id="workStudy-${i}" class="inst-aid-input" data-idx="${i}" data-field="workStudy"
                                value="${entry.workStudy || ''}" placeholder="0.00" min="0" step="0.01">
                     </div>
                 </div>`;
@@ -1440,7 +1468,7 @@
             `<span class="compare-pill" style="border-color:${COMPARE_COLORS[i]};color:${COMPARE_COLORS[i]}">
                 <span class="pill-dot" style="background:${COMPARE_COLORS[i]}"></span>
                 ${e.college.name}
-                <button class="pill-remove" onclick="removeFromCompare(${i})" title="Remove">×</button>
+                <button type="button" class="pill-remove" onclick="removeFromCompare(${i})" aria-label="Remove ${e.college.name} from comparison">×</button>
             </span>`
         ).join('');
         $('#comparePillRow').html(`
@@ -1573,7 +1601,7 @@
                         </span>
                         <span class="ca-meta">${residencyLabel} · ${livingLabel} · Unmet: <strong style="color:${unmetNeed > 0 ? '#c53030' : '#276749'}">${d(unmetNeed)}</strong></span>
                         <span class="ca-chevron" id="chevron-${idx}">${isOpen ? '▲' : '▼'}</span>
-                        <button class="ca-remove" onclick="removeFromCompare(${idx});event.stopPropagation();" title="Remove">×</button>
+                        <button type="button" class="ca-remove" onclick="removeFromCompare(${idx});event.stopPropagation();" aria-label="Remove ${entry.college.name} from list">×</button>
                     </div>
                     <div class="ca-body" id="ca-body-${idx}" style="display:${isOpen ? 'block' : 'none'};">
                         ${gapBody}
@@ -1791,8 +1819,8 @@
                 const earningsVisible = !!entry.selectedMajorTitle;
                 bodyContent = `
                     <div class="field-group" style="margin-bottom:${earningsVisible ? '12px' : '0'}">
-                        <label>Select a Major</label>
-                        <select class="maj-select" data-idx="${idx}"
+                        <label for="maj-select-${idx}">Select a Major</label>
+                        <select id="maj-select-${idx}" class="maj-select" data-idx="${idx}"
                                 style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
                             <option value="">Select a major</option>
                             ${options}
@@ -1991,6 +2019,7 @@
         $("#aiAdviceBox").hide().html("");
         $("#coverageChartWrap").hide();
         $("#aiSpinner").show();
+        $("#aiSection").attr("aria-busy", "true");
 
         if (inCompareMode) {
             // One AJAX call per compare entry, wait for all
@@ -2014,6 +2043,7 @@
                         completed++;
                         if (completed === compareList.length) {
                             $("#aiSpinner").hide();
+                            $("#aiSection").attr("aria-busy", "false");
                             renderCoverageChart(compareList);
                             $("#aiAdviceBox").html(renderCompareReport(allGroqData, allProfiles)).show();
                             $("#exportRow").show();
@@ -2064,6 +2094,7 @@
                 data: JSON.stringify(payload),
                 success: function(resp) {
                     $("#aiSpinner").hide();
+                    $("#aiSection").attr("aria-busy", "false");
                     if (resp.data) {
                         const profile = buildProfileData();
                         $("#aiAdviceBox").html(renderSummaryReport(resp.data, profile)).show();
@@ -2075,6 +2106,7 @@
                 },
                 error: function(xhr) {
                     $("#aiSpinner").hide();
+                    $("#aiSection").attr("aria-busy", "false");
                     const msg = xhr.responseJSON?.error || "Something went wrong. Please try again.";
                     $("#aiAdviceBox").html("Error: " + msg).show();
                     $("#aiButton").prop("disabled", false);
@@ -2368,7 +2400,7 @@
             </div>`;
 
         const tabHeaders = entries.map((c, i) =>
-            `<button class="prem-tab${i===0?' active':''}" data-tab="${i}" onclick="switchPremTab(${i})">${esc(c.name)}</button>`
+            `<button type="button" class="prem-tab${i===0?' active':''}" data-tab="${i}" onclick="switchPremTab(${i})">${esc(c.name)}</button>`
         ).join('');
 
         const tabPanes = entries.map((c, i) =>
@@ -2913,7 +2945,7 @@
     }
 </script>
 
-<footer style="text-align:center;padding:24px 20px;font-size:12px;color:#718096;border-top:1px solid #e2e8f0;margin-top:40px;">
+<footer style="text-align:center;padding:24px 20px;font-size:12px;color:#718096;border-top:1px solid #e2e8f0;margin-top:0;">
   &copy; 2026 Callisto Consulting Group LLC DBA Callisto Tech. All rights reserved.
 </footer>
 </body>
