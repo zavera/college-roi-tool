@@ -858,6 +858,15 @@
 </head>
 <body>
 
+<!-- Auth gate overlay — hidden once session is confirmed -->
+<div id="authGate" style="
+    position:fixed;inset:0;background:#f5f7fa;
+    display:flex;align-items:center;justify-content:center;
+    z-index:99999;flex-direction:column;gap:12px;">
+    <img src="/callisto_high.png" style="width:52px;opacity:.7;">
+    <div style="font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#a0aec0;">Checking session…</div>
+</div>
+
 <header>
     <div class="logo-mark">
         <img src="/callisto_high.png" alt="Callisto logo" style="width:60px;height:60px;object-fit:cover;border-radius:12px;display:block;">
@@ -2714,15 +2723,20 @@
         });
     }
 
-    // On load: fetch current user, populate header, auto-unlock if subscribed
+    // On load: confirm session before showing any content
     $.getJSON("/api/auth/me", function(data) {
         if (data.loggedIn) {
+            $("#authGate").fadeOut(200);
             const displayName = data.name || data.email || '';
             $("#hdrUserName").text(displayName).show();
             $("#hdrSubToggle").show();
             $("#hdrLogout").show();
             setSubToggleState(data.subscriptionActive);
+        } else {
+            window.location.href = "/login.html";
         }
+    }).fail(function() {
+        window.location.href = "/login.html";
     });
 
     // Logout
