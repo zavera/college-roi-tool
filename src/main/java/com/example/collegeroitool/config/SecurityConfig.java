@@ -3,6 +3,8 @@ package com.example.collegeroitool.config;
 import com.example.collegeroitool.model.AppUser;
 import com.example.collegeroitool.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,11 +15,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
@@ -78,6 +83,7 @@ public class SecurityConfig {
                     .authorizationRequestRepository(new CookieOAuth2AuthorizationRequestRepository())
                 )
                 .successHandler(oAuth2SuccessHandler())
+                .failureHandler(oAuth2FailureHandler())
             )
             .logout(logout -> logout
                 .logoutUrl("/api/auth/logout")
@@ -121,6 +127,13 @@ public class SecurityConfig {
             response.getWriter().write(String.format(
                 "{\"loggedIn\":true,\"email\":\"%s\",\"name\":\"%s\",\"subscriptionActive\":%b}",
                 email, name, subscribed));
+        };
+    }
+
+    private AuthenticationFailureHandler oAuth2FailureHandler() {
+        return (request, response, ex) -> {
+            log.error("Google OAuth2 authentication failed: {}", ex.getMessage(), ex);
+            response.sendRedirect("/login.html?error=google");
         };
     }
 

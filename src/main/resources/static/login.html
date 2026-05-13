@@ -166,6 +166,19 @@
 </div>
 
 <script>
+// Show error when redirected back from failed OAuth2 or form login
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('error')) {
+    const err = document.getElementById('errorBox');
+    const type = params.get('error');
+    err.textContent = type === 'google'
+      ? 'Google sign-in failed. Please try again or use email/password.'
+      : 'Sign-in failed. Please check your credentials.';
+    err.style.display = 'block';
+  }
+})();
+
 document.getElementById('loginForm').addEventListener('submit', function(e) {
   e.preventDefault();
   const btn = document.getElementById('submitBtn');
