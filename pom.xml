@@ -55,6 +55,12 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <!-- Stripe -->
+        <dependency>
+            <groupId>com.stripe</groupId>
+            <artifactId>stripe-java</artifactId>
+            <version>25.3.0</version>
+        </dependency>
         <!-- Test dependencies (required for test compilation even when tests are skipped) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

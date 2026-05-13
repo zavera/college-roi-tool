@@ -3,6 +3,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Astra Financial Aid Advisor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300&display=swap" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/ui-lightness/jquery-ui.css">
@@ -40,8 +41,8 @@
             box-shadow: 0 2px 16px rgba(0,0,0,0.3);
         }
         .logo-mark { flex-shrink: 0; }
-        header h1  { font-size: 19px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
-        header p   { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 3px; }
+        header h1  { font-family: 'Josefin Sans', sans-serif; font-size: 22px; font-weight: 300; color: #d4b49c; letter-spacing: 6px; text-transform: uppercase; }
+        header p   { font-family: 'Josefin Sans', sans-serif; font-size: 10px; font-weight: 300; color: rgba(255,255,255,0.6); margin-top: 3px; letter-spacing: 3px; text-transform: uppercase; }
         .hdr-user {
             margin-left: auto;
             display: flex;
@@ -859,7 +860,7 @@
 
 <header>
     <div class="logo-mark">
-        <img src="/astra-logo.jpg" alt="Astra logo" style="width:60px;height:60px;object-fit:cover;border-radius:12px;display:block;">
+        <img src="/callisto_high.png" alt="Callisto logo" style="width:60px;height:60px;object-fit:cover;border-radius:12px;display:block;">
     </div>
     <div>
         <h1>Astra</h1>
@@ -1086,6 +1087,10 @@
                 <h2>Scholarship &amp; Employment Intelligence</h2>
                 <p>College-specific scholarship matching and field-aligned employment pathways: updated dynamically based on your selected institution and major.</p>
             </div>
+            <div class="premium-price-tag">
+                <span class="price">$29.99</span>
+                <span class="per">per month</span>
+            </div>
         </div>
         <div class="premium-bullets">
             <div class="premium-bullet">
@@ -1272,14 +1277,14 @@
     function updateCompareBtn() {
         const hasCollege   = !!(selectedCollege.name && computeCOA());
         const alreadyAdded = compareList.some(e => e.college.name === selectedCollege.name);
-        const atMax        = compareList.length >= 3;
+        const atMax        = compareList.length >= 2;
         const btn          = $('#addToCompareBtn');
         if (!hasCollege) {
             btn.prop('disabled', true).text('+ Add to Compare');
         } else if (alreadyAdded) {
             btn.prop('disabled', true).text('Already in Compare');
         } else if (atMax) {
-            btn.prop('disabled', true).text('Max 5 Colleges Reached');
+            btn.prop('disabled', true).text('Max 2 Colleges Reached');
         } else {
             btn.prop('disabled', false).text('+ Add to Compare');
         }
@@ -1287,7 +1292,7 @@
 
     // ── ADD / REMOVE FROM COMPARE ─────────────────────────────────────────────
     function addToCompare() {
-        if (compareList.length >= 3 || !selectedCollege.name) return;
+        if (compareList.length >= 2 || !selectedCollege.name) return;
         if (compareList.some(e => e.college.name === selectedCollege.name)) return;
 
         const coa    = computeCOA() || 0;
@@ -1399,7 +1404,7 @@
             </span>`
         ).join('');
         $('#comparePillRow').html(`
-            <div style="width:100%;font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;">${compareList.length}/3 colleges in compare</div>
+            <div style="width:100%;font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;">${compareList.length}/2 colleges in compare</div>
             ${pills}
         `);
     }
@@ -1808,7 +1813,7 @@
                     entry.selectedMajorEarnings = val;
                     const earnCard = document.getElementById('maj-earn-' + idx);
                     document.getElementById('maj-earn-val-' + idx).textContent = '$' + Number(val).toLocaleString();
-                    const lblEl = earnCard.querySelector('.lbl:last-child');
+                    const lblEl = earnCard.querySelector('.stat:last-child .lbl');
                     if (lblEl) lblEl.textContent = text + ' Median (6 yrs)';
                     earnCard.style.display = 'block';
                     const meta = document.querySelector(`#maj-body-${idx}`).closest('.ca-item').querySelector('.ca-meta');
@@ -1940,6 +1945,7 @@
 
     // ── AI Financial Summary ──────────────────────────────────────────────────
     $("#aiButton").on("click", function() {
+        recalculateGap();
         const inCompareMode = compareList.length >= 2;
         $("#aiButton").prop("disabled", true);
         $("#aiAdviceBox").hide().html("");
@@ -2543,13 +2549,38 @@
         const ul = arr => (arr || []).map(s => `<li style="font-size:13px;line-height:1.65;margin-bottom:5px;">${s}</li>`).join('');
         const ol = arr => (arr || []).map(s => `<li style="font-size:13px;line-height:1.65;margin-bottom:5px;">${s}</li>`).join('');
         const blk = (title, color, html) => `<div style="margin-bottom:14px;"><div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:${color};margin-bottom:6px;">${title}</div>${html}</div>`;
-        return `
+        const bodyHtml = `
             ${data.executiveSummary ? blk('Executive Summary','var(--navy)',`<p style="font-size:13px;line-height:1.7;">${data.executiveSummary}</p>`) : ''}
             ${snapRows ? blk('Financial Snapshot','var(--muted)',`<table style="border-collapse:collapse;"><tbody>${snapRows}</tbody></table>`) : ''}
             ${(data.strengthsForAppeal||[]).length ? blk('Strengths for Appeal','var(--accent)',`<ul style="padding-left:18px;margin:0;">${ul(data.strengthsForAppeal)}</ul>`) : ''}
             ${(data.parentTalkingPoints||[]).length ? blk('Parent Talking Points','var(--primary-dk)',`<ul style="padding-left:18px;margin:0;">${ul(data.parentTalkingPoints)}</ul>`) : ''}
             ${(data.recommendedActions||[]).length ? blk('Recommended Actions','var(--navy)',`<ol style="padding-left:18px;margin:0;">${ol(data.recommendedActions)}</ol>`) : ''}
             ${(data.riskFlags||[]).length ? blk('Risk Flags','#b94040',`<ul style="padding-left:18px;margin:0;">${ul(data.riskFlags)}</ul>`) : ''}`;
+        const uid = 'crt-' + Date.now();
+        return `<div id="${uid}">${bodyHtml}</div>
+            <div style="margin-top:16px;text-align:right;">
+                <button class="btn-export" onclick="printCounselorReport('${uid}')">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Print / Save as PDF
+                </button>
+            </div>`;
+    }
+
+    function printCounselorReport(uid) {
+        const el = document.getElementById(uid);
+        if (!el) return;
+        const w = window.open('', '_blank', 'width=800,height=700');
+        w.document.write(`<!DOCTYPE html><html><head><title>Counselor-Ready Report</title>
+            <style>
+                body { font-family: 'Segoe UI', Arial, sans-serif; padding: 32px; color: #2d3748; }
+                table { border-collapse: collapse; }
+                ul, ol { padding-left: 18px; margin: 0; }
+                li { font-size: 13px; line-height: 1.65; margin-bottom: 5px; }
+                @media print { body { padding: 16px; } }
+            </style></head><body>${el.innerHTML}</body></html>`);
+        w.document.close();
+        w.focus();
+        w.print();
     }
 
     function populateStaticSection() {
@@ -2613,8 +2644,46 @@
     function exportReport() { window.print(); }
 
     function handleUnlock() {
-        alert("Subscription portal coming soon. Contact us at advisor@callistotech.org.");
+        const btn = document.querySelector('.btn-unlock');
+        if (btn) { btn.disabled = true; btn.textContent = 'Redirecting…'; }
+        $.ajax({
+            url: '/api/stripe/create-checkout-session',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ baseUrl: window.location.origin }),
+            success: function(resp) {
+                if (resp.url) window.location.href = resp.url;
+            },
+            error: function() {
+                if (btn) { btn.disabled = false; btn.textContent = 'Unlock Premium'; }
+                alert('Could not start checkout. Please try again.');
+            }
+        });
     }
+
+    // Handle return from Stripe Checkout
+    (function() {
+        const params = new URLSearchParams(window.location.search);
+        const payment = params.get('payment');
+        if (payment === 'success') {
+            history.replaceState(null, '', '/');
+            $.get('/api/auth/me', function(data) {
+                if (data.subscriptionActive) {
+                    unlockPremium();
+                    const toast = $('<div>').css({
+                        position:'fixed', bottom:'28px', right:'28px',
+                        background:'#166534', color:'white',
+                        padding:'12px 22px', borderRadius:'8px',
+                        fontSize:'14px', fontWeight:'600', zIndex:9999
+                    }).text('Premium unlocked! Welcome aboard.');
+                    $('body').append(toast);
+                    setTimeout(() => toast.fadeOut(400, function(){ $(this).remove(); }), 4000);
+                }
+            });
+        } else if (payment === 'cancelled') {
+            history.replaceState(null, '', '/');
+        }
+    })();
 
     function setSubToggleState(active) {
         const btn = $("#hdrSubToggle");

@@ -53,7 +53,9 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/login.html", "/register.html",
                     "/api/auth/register",
+                    "/api/stripe/webhook",
                     "/astra-logo.jpg",
+                    "/callisto_high.png",
                     "/error"
                 ).permitAll()
                 .anyRequest().authenticated()
@@ -83,7 +85,7 @@ public class SecurityConfig {
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
             )
-            .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"));
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**", "/api/stripe/webhook"));
 
         return http.build();
     }
