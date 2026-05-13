@@ -14,7 +14,6 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -123,10 +122,6 @@ public class SecurityConfig {
     }
 
     private AuthenticationSuccessHandler oAuth2SuccessHandler() {
-        SavedRequestAwareAuthenticationSuccessHandler delegate =
-            new SavedRequestAwareAuthenticationSuccessHandler();
-        delegate.setDefaultTargetUrl("/");
-        delegate.setAlwaysUseDefaultTargetUrl(true);
         return (request, response, authentication) -> {
             try {
                 OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
@@ -134,7 +129,7 @@ public class SecurityConfig {
             } catch (Exception ignored) {
                 // user-persist failure must not block the redirect
             }
-            delegate.onAuthenticationSuccess(request, response, authentication);
+            response.sendRedirect("/");
         };
     }
 }
