@@ -350,59 +350,88 @@
         /* ── Mobile responsive ── */
         @media (max-width: 600px) {
             header {
-                padding: 14px 16px;
+                padding: 12px 14px;
                 flex-wrap: wrap;
-                gap: 8px;
+                gap: 6px;
             }
-            header h1  { font-size: 17px; }
-            header p   { font-size: 12px; }
-            .hdr-badge {
-                margin-left: 0;
-                font-size: 11px;
-                padding: 3px 10px;
+            header h1  { font-size: 16px; letter-spacing: 3px; }
+            header p   { font-size: 9px; letter-spacing: 1.5px; }
+            .logo-mark img { width: 40px !important; height: 40px !important; }
+            .hdr-user {
+                width: 100%;
+                justify-content: flex-end;
+                gap: 6px;
             }
+            .hdr-badge { margin-left: 0; font-size: 10px; padding: 3px 8px; }
+            .hdr-sub-toggle { font-size: 11px; padding: 4px 10px; }
+            .hdr-logout { font-size: 11px; padding: 4px 10px; }
+            .hdr-user-name { font-size: 11px; max-width: 100px; }
             .container {
-                margin: 16px auto;
-                padding: 0 12px 40px;
-                gap: 14px;
+                margin: 12px auto;
+                padding: 0 10px 40px;
+                gap: 12px;
             }
             .card, #aiSection {
-                padding: 16px;
+                padding: 14px;
                 border-radius: 8px;
             }
-            .card h2, #aiSection h2 {
-                font-size: 15px;
-            }
-            input[type="text"], input[type="number"], select#majorSelect {
+            .card h2, #aiSection h2 { font-size: 14px; }
+            input[type="text"], input[type="number"], select, select#majorSelect {
                 font-size: 16px;
                 padding: 11px 12px;
             }
             .btn-primary, .btn-ai {
-                font-size: 15px;
-                padding: 13px;
+                font-size: 14px;
+                padding: 12px;
+                width: 100%;
             }
+            .btn-compare { width: 100%; }
+            #addToCompareBtn { width: 100%; }
             #majorEarningsCard .earnings-row,
             .maj-earnings-card .earnings-row {
                 flex-direction: column;
                 gap: 10px;
             }
             #majorEarningsCard .stat,
-            .maj-earnings-card .stat {
-                min-width: unset;
+            .maj-earnings-card .stat { min-width: unset; }
+            #aiAdviceBox { font-size: 13px; line-height: 1.65; padding: 12px; }
+            .groq-tag { display: block; margin: 6px 0 0 0; font-size: 10px; }
+            .ui-autocomplete { max-width: calc(100vw - 28px) !important; }
+
+            /* Premium card */
+            .premium-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .premium-price-tag { width: 100%; text-align: left; display: flex; align-items: center; gap: 8px; padding: 8px 14px; }
+            .premium-price-tag .price { font-size: 20px; display: inline; }
+            .premium-price-tag .per { display: inline; margin-top: 0; }
+            .premium-bullets { grid-template-columns: 1fr; padding: 14px; gap: 8px; }
+            .premium-preview { padding: 14px; }
+            .prem-tabs { flex-wrap: wrap; gap: 4px; }
+            .prem-tab { font-size: 11px; padding: 5px 10px; }
+
+            /* Tables — horizontal scroll */
+            .plan-table-wrap,
+            .efas-profile-table, .efas-earnings-table,
+            .efas-repayment-table, .efas-resource-table,
+            .efas-scholarship-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .plan-table { font-size: 11px; min-width: 480px; }
+            .efas-profile-table th, .efas-earnings-table th,
+            .efas-repayment-table th, .efas-resource-table th,
+            .efas-scholarship-table th,
+            .efas-profile-table td, .efas-earnings-table td,
+            .efas-repayment-table td, .efas-resource-table td,
+            .efas-scholarship-table td { padding: 6px 8px; font-size: 11px; }
+
+            /* Gap analysis key numbers grid */
+            #gapAnalysisContent > div > div[style*="grid-template-columns:1fr 1fr 1fr"] {
+                grid-template-columns: 1fr !important;
             }
-            #aiAdviceBox {
-                font-size: 13px;
-                line-height: 1.65;
-                padding: 14px;
-            }
-            .groq-tag {
-                display: block;
-                margin: 6px 0 0 0;
-                font-size: 11px;
-            }
-            .ui-autocomplete {
-                max-width: calc(100vw - 32px) !important;
-            }
+
+            /* Export button */
+            .btn-export { width: 100%; justify-content: center; }
+
+            /* Compare accordions */
+            .ca-header { flex-wrap: wrap; gap: 4px; }
+            .ca-meta { font-size: 11px; }
         }
 
         /* ── Financial Gap Analysis ── */
