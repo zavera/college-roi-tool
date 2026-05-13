@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
@@ -85,9 +86,26 @@ public class SecurityConfig {
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
             )
+            .exceptionHandling(ex -> ex.authenticationEntryPoint(authEntryPoint()))
             .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**", "/api/stripe/webhook"));
 
         return http.build();
+    }
+
+    private AuthenticationEntryPoint authEntryPoint() {
+        return (request, response, authException) -> {
+            String xhr = request.getHeader("X-Requested-With");
+            String accept = request.getHeader("Accept");
+            boolean isAjax = "XMLHttpRequest".equals(xhr)
+                || (accept != null && accept.contains("application/json"));
+            if (isAjax) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"loggedIn\":false}");
+            } else {
+                response.sendRedirect("/login.html");
+            }
+        };
     }
 
     private AuthenticationSuccessHandler jsonSuccessHandler() {

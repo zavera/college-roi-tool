@@ -28,7 +28,9 @@
             font-family: 'Segoe UI', Arial, sans-serif;
             background: var(--bg);
             color: var(--text);
+            visibility: hidden;
         }
+        body.auth-ready { visibility: visible; }
 
         /* ── Header ── */
         header {
@@ -2724,19 +2726,27 @@
     }
 
     // On load: confirm session before showing any content
-    $.getJSON("/api/auth/me", function(data) {
-        if (data.loggedIn) {
-            $("#authGate").fadeOut(200);
-            const displayName = data.name || data.email || '';
-            $("#hdrUserName").text(displayName).show();
-            $("#hdrSubToggle").show();
-            $("#hdrLogout").show();
-            setSubToggleState(data.subscriptionActive);
-        } else {
+    $.ajax({
+        url: "/api/auth/me",
+        type: "GET",
+        dataType: "json",
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+        success: function(data) {
+            if (data.loggedIn) {
+                $("body").addClass("auth-ready");
+                $("#authGate").fadeOut(200);
+                const displayName = data.name || data.email || '';
+                $("#hdrUserName").text(displayName).show();
+                $("#hdrSubToggle").show();
+                $("#hdrLogout").show();
+                setSubToggleState(data.subscriptionActive);
+            } else {
+                window.location.href = "/login.html";
+            }
+        },
+        error: function() {
             window.location.href = "/login.html";
         }
-    }).fail(function() {
-        window.location.href = "/login.html";
     });
 
     // Logout
