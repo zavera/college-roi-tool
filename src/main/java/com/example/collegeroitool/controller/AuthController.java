@@ -76,6 +76,10 @@ public class AuthController {
             name  = email;
         }
 
+        if (email == null) {
+            return ResponseEntity.status(401).body(Map.of("loggedIn", false));
+        }
+
         AppUser user = userService.findByEmail(email).orElse(null);
         boolean subscribed = user != null && user.isSubscriptionActive();
         if (user != null && user.getName() != null) name = user.getName();
