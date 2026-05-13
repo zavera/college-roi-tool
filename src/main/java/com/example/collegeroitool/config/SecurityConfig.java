@@ -74,6 +74,9 @@ public class SecurityConfig {
             )
             .oauth2Login(oauth -> oauth
                 .loginPage("/login.html")
+                .authorizationEndpoint(ep -> ep
+                    .authorizationRequestRepository(new CookieOAuth2AuthorizationRequestRepository())
+                )
                 .successHandler(oAuth2SuccessHandler())
             )
             .logout(logout -> logout
