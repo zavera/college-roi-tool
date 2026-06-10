@@ -65,6 +65,7 @@ public class SecurityConfig {
                     "/callisto_high.png",
                     "/sitemap.xml",
                     "/robots.txt",
+                    "/BingSiteAuth.xml",
                     "/error"
                 ).permitAll()
                 .anyRequest().authenticated()
