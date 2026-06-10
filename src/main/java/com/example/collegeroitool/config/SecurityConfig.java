@@ -62,6 +62,8 @@ public class SecurityConfig {
                     "/api/stripe/webhook",
                     "/astra-logo.jpg",
                     "/callisto_high.png",
+                    "/sitemap.xml",
+                    "/robots.txt",
                     "/error"
                 ).permitAll()
                 .anyRequest().authenticated()
