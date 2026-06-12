@@ -29,12 +29,16 @@ public class CookieOAuth2AuthorizationRequestRepository
     @Override
     public void saveAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest,
             HttpServletRequest request, HttpServletResponse response) {
+        boolean https = "https".equalsIgnoreCase(request.getScheme())
+                || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
+        currentRequestIsHttps.set(https);
         if (authorizationRequest == null) {
             clearCookie(response);
             return;
         }
         response.addHeader("Set-Cookie", buildCookieHeader(
                 COOKIE_NAME, serialize(authorizationRequest), MAX_AGE_SECONDS));
+        currentRequestIsHttps.remove();
     }
 
     @Override
@@ -61,13 +65,20 @@ public class CookieOAuth2AuthorizationRequestRepository
     }
 
     private String buildCookieHeader(String name, String value, int maxAge) {
-        return name + "=" + value
+        // Secure + SameSite=None required for cross-site redirect over HTTPS (prod).
+        // Over plain HTTP (local dev) the Secure flag causes the browser to drop the
+        // cookie silently, breaking the Google OAuth callback state check.
+        boolean secure = currentRequestIsHttps.get();
+        String header = name + "=" + value
                 + "; Path=/"
                 + "; HttpOnly"
-                + "; Secure"
-                + "; SameSite=None"
                 + "; Max-Age=" + maxAge;
+        if (secure) header += "; Secure; SameSite=None";
+        return header;
     }
+
+    // Populated by saveAuthorizationRequest so clearCookie/buildCookieHeader can read it.
+    private final ThreadLocal<Boolean> currentRequestIsHttps = ThreadLocal.withInitial(() -> false);
 
     private String serialize(OAuth2AuthorizationRequest req) {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
