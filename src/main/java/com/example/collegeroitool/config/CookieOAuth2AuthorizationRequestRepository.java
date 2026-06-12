@@ -3,6 +3,8 @@ package com.example.collegeroitool.config;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 
@@ -18,6 +20,7 @@ import java.util.Base64;
 public class CookieOAuth2AuthorizationRequestRepository
         implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 
+    private static final Logger log = LoggerFactory.getLogger(CookieOAuth2AuthorizationRequestRepository.class);
     private static final String COOKIE_NAME = "oauth2_auth_req";
     private static final int MAX_AGE_SECONDS = 180;
 
@@ -36,6 +39,9 @@ public class CookieOAuth2AuthorizationRequestRepository
             clearCookie(response);
             return;
         }
+        log.info("[OAuth2Cookie] SAVE state={} https={} scheme={} x-forwarded-proto={}",
+                authorizationRequest.getState(), https,
+                request.getScheme(), request.getHeader("X-Forwarded-Proto"));
         response.addHeader("Set-Cookie", buildCookieHeader(
                 COOKIE_NAME, serialize(authorizationRequest), MAX_AGE_SECONDS));
         currentRequestIsHttps.remove();
@@ -45,14 +51,23 @@ public class CookieOAuth2AuthorizationRequestRepository
     public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request,
             HttpServletResponse response) {
         OAuth2AuthorizationRequest req = loadAuthorizationRequest(request);
+        boolean https = "https".equalsIgnoreCase(request.getScheme())
+                || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
         if (req != null) {
+            log.info("[OAuth2Cookie] REMOVE (callback) state={} https={} scheme={} x-forwarded-proto={}",
+                    req.getState(), https,
+                    request.getScheme(), request.getHeader("X-Forwarded-Proto"));
             // Must set the same Secure+SameSite=None flag used when saving, otherwise
             // browsers on HTTPS treat it as a different cookie and ignore the clear.
-            boolean https = "https".equalsIgnoreCase(request.getScheme())
-                    || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
             currentRequestIsHttps.set(https);
             clearCookie(response);
             currentRequestIsHttps.remove();
+        } else {
+            // Cookie was missing or couldn't be deserialized — Spring will reject the callback
+            Cookie[] cookies = request.getCookies();
+            int cookieCount = (cookies == null) ? 0 : cookies.length;
+            log.warn("[OAuth2Cookie] REMOVE — cookie NOT found (totalCookies={} https={}) — state mismatch will follow",
+                    cookieCount, https);
         }
         return req;
     }
@@ -62,7 +77,12 @@ public class CookieOAuth2AuthorizationRequestRepository
         if (cookies == null) return null;
         for (Cookie c : cookies) {
             if (COOKIE_NAME.equals(c.getName())) {
-                return deserialize(c.getValue());
+                OAuth2AuthorizationRequest req = deserialize(c.getValue());
+                if (req == null) {
+                    log.warn("[OAuth2Cookie] READ — cookie present but deserialization failed (value length={})",
+                            c.getValue().length());
+                }
+                return req;
             }
         }
         return null;

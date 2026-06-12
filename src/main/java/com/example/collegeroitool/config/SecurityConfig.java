@@ -144,19 +144,24 @@ public class SecurityConfig {
 
     private AuthenticationFailureHandler oAuth2FailureHandler() {
         return (request, response, ex) -> {
-            log.error("Google OAuth2 authentication failed: {}", ex.getMessage(), ex);
+            log.error("[OAuth2] FAILURE — {}: {}", ex.getClass().getSimpleName(), ex.getMessage());
             response.sendRedirect("/login.html?error=google");
         };
     }
 
     private AuthenticationSuccessHandler oAuth2SuccessHandler() {
         return (request, response, authentication) -> {
+            OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+            String email = oAuth2User.getAttribute("email");
+            log.info("[OAuth2] SUCCESS — email={} sessionId={}",
+                    email, request.getSession(false) != null ? request.getSession(false).getId() : "NO SESSION");
             try {
-                OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
                 userService.findOrCreateGoogleUser(oAuth2User);
-            } catch (Exception ignored) {
-                // user-persist failure must not block the redirect
+                log.info("[OAuth2] user persisted email={}", email);
+            } catch (Exception e) {
+                log.error("[OAuth2] user persist FAILED email={} error={}", email, e.getMessage(), e);
             }
+            log.info("[OAuth2] redirecting to / for email={}", email);
             response.sendRedirect("/");
         };
     }

@@ -2,6 +2,8 @@ package com.example.collegeroitool.controller;
 
 import com.example.collegeroitool.model.AppUser;
 import com.example.collegeroitool.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,7 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     private final UserService userService;
 
     @Value("${premium.dev.bypass:false}")
@@ -47,8 +50,13 @@ public class AuthController {
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
         } catch (DataAccessException ex) {
+            log.error("[register] DB error for email={}: {}", email, ex.getMessage());
             return ResponseEntity.badRequest().body(Map.of(
                 "error", "An account with this email already exists."));
+        } catch (Exception ex) {
+            log.error("[register] Unexpected error for email={}: {}", email, ex.getMessage(), ex);
+            return ResponseEntity.internalServerError().body(Map.of(
+                "error", "Registration failed. Please try again."));
         }
     }
 
@@ -65,6 +73,7 @@ public class AuthController {
             ));
         }
         if (principal == null) {
+            log.warn("[/me] principal=null — no session or session expired");
             return ResponseEntity.status(401).body(Map.of("loggedIn", false));
         }
 
@@ -75,9 +84,11 @@ public class AuthController {
         if (auth.getPrincipal() instanceof OAuth2User oAuth2User) {
             email = oAuth2User.getAttribute("email");
             name  = oAuth2User.getAttribute("name");
+            log.info("[/me] OAuth2 principal email={}", email);
         } else {
             email = principal.getName();
             name  = email;
+            log.info("[/me] form-login principal email={}", email);
         }
 
         if (email == null) {
