@@ -17,6 +17,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -55,6 +56,13 @@ public class SecurityConfig {
         }
 
         http
+            // Ensure auth is always persisted to the HTTP session (Spring Security 6 default
+            // changed to requireExplicitSave=true which can silently drop the session after
+            // OAuth2 login when custom success handlers are in use).
+            .securityContext(ctx -> ctx
+                .securityContextRepository(new HttpSessionSecurityContextRepository())
+                .requireExplicitSave(false)
+            )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/", "/index.html",

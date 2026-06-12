@@ -1221,7 +1221,7 @@
     const FREE_SEARCHES = 3;
 
     function applyPaywall() {
-        if (searchCount > FREE_SEARCHES) {
+        if (searchCount >= FREE_SEARCHES) {
             $("#paywallSection").css("pointer-events", "none");
             $("#paywallSection > :not(#searchPaywall)").css({ filter: "blur(5px)", opacity: "0.35", "user-select": "none" });
             $("#searchPaywall").css("display", "flex");
@@ -1257,10 +1257,6 @@
 
     // ── ROI Lookup ──
     function loadROI(collegeName) {
-        $.post("/api/auth/search/increment", function(res) {
-            searchCount = res.searchCount || searchCount;
-            applyPaywall();
-        });
         $.get("/api/colleges/" + encodeURIComponent(collegeName), function(data) {
             selectedCollege = {
                 name:                   collegeName,
@@ -2018,6 +2014,16 @@
 
     // ── AI Financial Summary ──────────────────────────────────────────────────
     $("#aiButton").on("click", function() {
+        // Paywall: block on 4th+ click of "Get AI Summary" per account
+        if (searchCount >= FREE_SEARCHES) {
+            applyPaywall();
+            return;
+        }
+        // Increment now; update local count from server response
+        $.post("/api/auth/search/increment", function(res) {
+            searchCount = res.searchCount || (searchCount + 1);
+        });
+
         recalculateGap();
         const inCompareMode = compareList.length >= 2;
         $("#aiButton").prop("disabled", true);
@@ -2512,7 +2518,6 @@
                 $("#hdrUserName").text(displayName).show();
                 $("#hdrLogout").show();
                 searchCount = data.searchCount || 0;
-                applyPaywall();
             } else {
                 window.location.href = "/login.html";
             }

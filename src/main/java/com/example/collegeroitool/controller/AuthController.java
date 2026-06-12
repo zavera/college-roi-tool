@@ -3,6 +3,7 @@ package com.example.collegeroitool.controller;
 import com.example.collegeroitool.model.AppUser;
 import com.example.collegeroitool.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,7 +30,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Map<String, String> body) {
         String name     = body.getOrDefault("name", "").trim();
-        String email    = body.getOrDefault("email", "").trim();
+        String email    = body.getOrDefault("email", "").trim().toLowerCase();
         String password = body.getOrDefault("password", "");
 
         if (name.isEmpty() || email.isEmpty() || password.length() < 8) {
@@ -45,6 +46,9 @@ public class AuthController {
             ));
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
+        } catch (DataAccessException ex) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "error", "An account with this email already exists."));
         }
     }
 

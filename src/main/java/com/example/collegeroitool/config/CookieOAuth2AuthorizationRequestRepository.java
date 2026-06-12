@@ -45,7 +45,15 @@ public class CookieOAuth2AuthorizationRequestRepository
     public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request,
             HttpServletResponse response) {
         OAuth2AuthorizationRequest req = loadAuthorizationRequest(request);
-        if (req != null) clearCookie(response);
+        if (req != null) {
+            // Must set the same Secure+SameSite=None flag used when saving, otherwise
+            // browsers on HTTPS treat it as a different cookie and ignore the clear.
+            boolean https = "https".equalsIgnoreCase(request.getScheme())
+                    || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
+            currentRequestIsHttps.set(https);
+            clearCookie(response);
+            currentRequestIsHttps.remove();
+        }
         return req;
     }
 
