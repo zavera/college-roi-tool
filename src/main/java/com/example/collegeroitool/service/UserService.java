@@ -77,6 +77,15 @@ public class UserService implements UserDetailsService {
         }).orElse(false);
     }
 
+    /** Increment search count; returns new count, or -1 if user not found */
+    public int incrementSearchCount(String email) {
+        return userRepository.findByEmail(email.toLowerCase()).map(u -> {
+            u.setSearchCount(u.getSearchCount() + 1);
+            userRepository.save(u);
+            return u.getSearchCount();
+        }).orElse(-1);
+    }
+
     /** Toggle subscription on/off; returns the new state, or empty if user not found */
     public java.util.Optional<Boolean> toggleSubscription(String email) {
         return userRepository.findByEmail(email.toLowerCase()).map(u -> {

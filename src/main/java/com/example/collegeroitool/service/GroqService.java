@@ -132,27 +132,50 @@ public class GroqService {
             {
               "schoolMajorResources": {
                 "professionalSocieties": [
-                  {"name": "[DEV] Association for Computing Machinery (ACM) -- %s Chapter", "description": "Student chapter hosting weekly coding competitions, guest speakers from industry, and annual hackathon. Open to all CS and related majors. Meetings Thursdays 6pm in Engineering Hall."},
-                  {"name": "[DEV] Institute of Electrical and Electronics Engineers (IEEE) -- %s Student Branch", "description": "Hands-on project teams in robotics, embedded systems, and circuit design. Connects members with internship pipelines at Boeing, Intel, and regional tech firms."},
-                  {"name": "[DEV] National Society of Black Engineers (NSBE) -- %s Chapter", "description": "Academic excellence and professional development for underrepresented engineering and tech students. Hosts resume workshops and the annual NSBE Regional Conference."}
+                  {"name": "Association for Computing Machinery (ACM) -- %s Chapter", "description": "Student chapter hosting weekly coding competitions, guest speakers from industry, and annual hackathon. Open to all CS and related majors. Meetings Thursdays 6pm in Engineering Hall."},
+                  {"name": "Institute of Electrical and Electronics Engineers (IEEE) -- %s Student Branch", "description": "Hands-on project teams in robotics, embedded systems, and circuit design. Connects members with internship pipelines at Boeing, Intel, and regional tech firms."},
+                  {"name": "National Society of Black Engineers (NSBE) -- %s Chapter", "description": "Academic excellence and professional development for underrepresented engineering and tech students. Hosts resume workshops and the annual NSBE Regional Conference."}
                 ],
                 "freshmanResources": [
-                  {"name": "[DEV] First-Year Experience (FYE) Office -- %s", "description": "Dedicated staff helping new students navigate registration, campus life, and academic goal-setting. Drop-in hours Monday-Friday 9am-4pm in the Student Success Center, Room 110."},
-                  {"name": "[DEV] Financial Aid Appeals & Special Circumstances -- %s Office of Financial Aid", "description": "Submit a Special Circumstances appeal if your family income has changed since filing the FAFSA. Average additional award for successful appeals: $2,000-$4,000. Visit finaid.%s.edu or call the aid office."},
-                  {"name": "[DEV] Early Alert Academic Support -- %s", "description": "Faculty submit early alerts for students showing signs of academic struggle. Triggers peer tutoring, supplemental instruction, and academic coaching before midterms."},
-                  {"name": "[DEV] Student Emergency Fund -- %s", "description": "One-time grants up to $500 for unexpected financial hardship. Apply online through the Dean of Students portal; decisions within 48 hours."},
-                  {"name": "[DEV] Honors College & Scholarship Advising -- %s", "description": "All freshmen can meet with scholarship advisors for Goldwater, Fulbright, and national fellowship guidance. Office hours by appointment in the Honors House."}
+                  {"name": "First-Year Experience (FYE) Office -- %s", "description": "Dedicated staff helping new students navigate registration, campus life, and academic goal-setting. Drop-in hours Monday-Friday 9am-4pm in the Student Success Center, Room 110."},
+                  {"name": "Financial Aid Appeals & Special Circumstances -- %s Office of Financial Aid", "description": "Submit a Special Circumstances appeal if your family income has changed since filing the FAFSA. Average additional award for successful appeals: $2,000-$4,000. Visit finaid.%s.edu or call the aid office."},
+                  {"name": "Early Alert Academic Support -- %s", "description": "Faculty submit early alerts for students showing signs of academic struggle. Triggers peer tutoring, supplemental instruction, and academic coaching before midterms."},
+                  {"name": "Student Emergency Fund -- %s", "description": "One-time grants up to $500 for unexpected financial hardship. Apply online through the Dean of Students portal; decisions within 48 hours."},
+                  {"name": "Honors College & Scholarship Advising -- %s", "description": "All freshmen can meet with scholarship advisors for Goldwater, Fulbright, and national fellowship guidance. Office hours by appointment in the Honors House."}
                 ]
               },
+              "scholarships": [
+                {"name": "%s Foundation Merit Scholarship", "amount": "$3,000/yr", "sponsor": "%s Alumni Foundation", "eligibility": "3.0+ GPA, full-time enrollment", "deadline": "March 1", "notes": "Renewable all 4 years"},
+                {"name": "%s Department Excellence Award for %s", "amount": "$2,500", "sponsor": "%s Department", "eligibility": "Declared %s major, sophomore or above, 3.2+ GPA", "deadline": "February 15", "notes": "One per department per year"},
+                {"name": "%s Need-Based Supplemental Grant", "amount": "$1,500/yr", "sponsor": "%s Office of Financial Aid", "eligibility": "EFC below $15,000, full-time enrollment", "deadline": "Rolling", "notes": "Complete FAFSA early; awarded each semester"},
+                {"name": "Professional Association Scholarship for %s Students", "amount": "$2,000", "sponsor": "%s Professional Association", "eligibility": "Active student member, essay required", "deadline": "January 31", "notes": "Submit a 2-page portfolio"},
+                {"name": "Local Community Foundation STEM Award", "amount": "$1,500", "sponsor": "City Community Foundation", "eligibility": "Metro-area resident, STEM field, demonstrated need", "deadline": "April 1", "notes": "200-word essay required"}
+              ],
+              "employmentOpportunities": [
+                {"title": "Undergraduate Research Assistant -- %s Dept.", "type": "Undergraduate Research", "pay": "Volunteer for Credit / $13-$15/hr", "details": "Faculty in the %s program recruit research assistants each semester. Ask your academic advisor or check the department bulletin board; volunteer-for-credit counts toward graduation requirements."},
+                {"title": "Department Teaching Assistant / Tutor", "type": "On-Campus Employment", "pay": "$12-$14/hr", "details": "TA roles for %s courses posted each term on Handshake. Federal work-study eligible -- earnings do not affect FAFSA EFC."},
+                {"title": "Co-op / Practicum at %s-area Firms", "type": "Co-op / Internship", "pay": "$17-$22/hr", "details": "Alternating-semester co-ops through the %s Career Center. 60%% employer conversion rate to full-time. Register on Handshake and attend the Fall Employer Fair in September."},
+                {"title": "Campus IT / Library Student Worker", "type": "On-Campus Employment", "pay": "$13/hr", "details": "Technical support and library positions available each semester. Flexible scheduling; ideal for first-year students. Apply at the Student Employment Office."}
+              ],
               "keyConsiderations": [
-                {"title": "[DEV] Federal Loan Sustainability vs. Income Threshold", "body": "Borrowing $5,500/yr in federal loans over 4 years totals $22,000. At 6.5%% over 10 years, your monthly payment is approximately $249/month ($2,988/yr) -- about 5-6%% of a $55,000 median starting salary. Keep total debt at graduation at or below one year's projected starting salary."},
-                {"title": "[DEV] Unsubsidized Loan Interest Accrual", "body": "Unsubsidized loan interest starts accruing the day funds are disbursed. On $3,500 unsubsidized at 6.5%% over 4 years, approximately $910 in interest capitalizes before your first payment -- increasing your effective balance at graduation."},
-                {"title": "[DEV] Unmet Need Gap Strategy", "body": "With an estimated $8,000/yr unmet need, your 4-year gap is ~$32,000. Options: (1) submit a written financial aid appeal citing income changes; (2) apply for 3-5 external scholarships before sophomore year; (3) 10-15 hrs/week part-time at $14/hr yields ~$7,000/yr."},
-                {"title": "[DEV] Merit Aid GPA Maintenance", "body": "Most institutional grants and merit scholarships require a minimum 3.0-3.25 cumulative GPA. A single difficult semester can suspend your award. Contact the financial aid office proactively if your GPA dips -- early communication often allows a one-semester grace period."},
-                {"title": "[DEV] Parent PLUS Loan Consideration", "body": "PLUS loans carry a 9.08%% interest rate vs. 6.5%% for federal student loans and begin repayment immediately unless deferred. If PLUS borrowing is necessary, request income-contingent deferment and prioritize paying it down before compounding reaches Year 4."}
+                {"title": "Federal Loan Sustainability vs. Income Threshold", "body": "Borrowing $5,500/yr in federal loans over 4 years totals $22,000. At 6.5%% over 10 years, your monthly payment is approximately $249/month ($2,988/yr) -- about 5-6%% of a $55,000 median starting salary. Keep total debt at graduation at or below one year's projected starting salary."},
+                {"title": "Unsubsidized Loan Interest Accrual", "body": "Unsubsidized loan interest starts accruing the day funds are disbursed. On $3,500 unsubsidized at 6.5%% over 4 years, approximately $910 in interest capitalizes before your first payment -- increasing your effective balance at graduation."},
+                {"title": "Unmet Need Gap Strategy", "body": "With an estimated $8,000/yr unmet need, your 4-year gap is ~$32,000. Options: (1) submit a written financial aid appeal citing income changes; (2) apply for 3-5 external scholarships before sophomore year; (3) 10-15 hrs/week part-time at $14/hr yields ~$7,000/yr."},
+                {"title": "Merit Aid GPA Maintenance", "body": "Most institutional grants and merit scholarships require a minimum 3.0-3.25 cumulative GPA. A single difficult semester can suspend your award. Contact the financial aid office proactively if your GPA dips -- early communication often allows a one-semester grace period."},
+                {"title": "Parent PLUS Loan Consideration", "body": "PLUS loans carry a 9.08%% interest rate vs. 6.5%% for federal student loans and begin repayment immediately unless deferred. If PLUS borrowing is necessary, request income-contingent deferment and prioritize paying it down before compounding reaches Year 4."}
               ]
             }
-            """.formatted(college, college, college, college, college, collegeSlug, college, college, college);
+            """.formatted(
+                college, college, college,
+                college, college, collegeSlug, college, college, college,
+                college, college,
+                college, major, college, major,
+                college, college,
+                major, major,
+                major, major,
+                college, major, college,
+                major, college
+            );
     }
 
     // ── Premium Scholarship & Employment Intelligence ─────────────────────────
@@ -309,60 +332,60 @@ public class GroqService {
             case "scholarships":
                 return """
                     {"scholarships":[
-                      {"name":"[DEV] %s Foundation Merit Award","amount":"$3,000","sponsor":"%s Alumni Foundation","eligibility":"3.0+ GPA, enrolled full-time","deadline":"March 1","notes":"Renewable for 4 years","url":"https://app.joinhandshake.com/"},
-                      {"name":"[DEV] %s Departmental Excellence Scholarship","amount":"$2,500","sponsor":"%s Department of %s","eligibility":"Declared %s major, sophomore or above","deadline":"February 15","notes":"One per department","url":"https://app.joinhandshake.com/"},
-                      {"name":"[DEV] Local Community Foundation STEM Award","amount":"$1,500","sponsor":"City Community Foundation","eligibility":"Resident of metro area, STEM field","deadline":"April 1","notes":"Essay required","url":"https://app.joinhandshake.com/"},
-                      {"name":"[DEV] Professional Association Scholarship","amount":"$2,000","sponsor":"%s Professional Association","eligibility":"Active student member","deadline":"January 31","notes":"Submit portfolio","url":"https://app.joinhandshake.com/"},
-                      {"name":"[DEV] Need-Based Supplemental Grant","amount":"$1,000","sponsor":"%s Financial Aid Office","eligibility":"EFC below $10,000, enrolled full-time","deadline":"Rolling","notes":"Awarded each semester","url":"https://app.joinhandshake.com/"}
+                      {"name":"%s Foundation Merit Award","amount":"$3,000","sponsor":"%s Alumni Foundation","eligibility":"3.0+ GPA, enrolled full-time","deadline":"March 1","notes":"Renewable for 4 years","url":"https://app.joinhandshake.com/"},
+                      {"name":"%s Departmental Excellence Scholarship","amount":"$2,500","sponsor":"%s Department of %s","eligibility":"Declared %s major, sophomore or above","deadline":"February 15","notes":"One per department","url":"https://app.joinhandshake.com/"},
+                      {"name":"Local Community Foundation STEM Award","amount":"$1,500","sponsor":"City Community Foundation","eligibility":"Resident of metro area, STEM field","deadline":"April 1","notes":"Essay required","url":"https://app.joinhandshake.com/"},
+                      {"name":"Professional Association Scholarship","amount":"$2,000","sponsor":"%s Professional Association","eligibility":"Active student member","deadline":"January 31","notes":"Submit portfolio","url":"https://app.joinhandshake.com/"},
+                      {"name":"Need-Based Supplemental Grant","amount":"$1,000","sponsor":"%s Financial Aid Office","eligibility":"EFC below $10,000, enrolled full-time","deadline":"Rolling","notes":"Awarded each semester","url":"https://app.joinhandshake.com/"}
                     ]}""".formatted(college, college, college, college, major, major, major, college);
 
             case "employment":
                 return """
-                    {"trajectory":"[DEV] %s graduates build expertise in analytical and applied domains, often beginning in entry-level analyst or associate roles before advancing to specialist and leadership positions. The field rewards continuous learning and networking through professional associations.","typicalRoles":[
+                    {"trajectory":"%s graduates build expertise in analytical and applied domains, often beginning in entry-level analyst or associate roles before advancing to specialist and leadership positions. The field rewards continuous learning and networking through professional associations.","typicalRoles":[
                       {"year":"Entry (Year 1-2)","title":"Junior %s Analyst","salary":"$45,000-$58,000","description":"Foundation roles in established organizations; building core technical and communication skills."},
                       {"year":"Early Career (Year 3-5)","title":"%s Specialist","salary":"$58,000-$78,000","description":"Taking ownership of projects; mentoring interns and junior staff; expanding domain expertise."},
                       {"year":"Mid-Career (Year 6-10)","title":"Senior %s Professional","salary":"$78,000-$105,000","description":"Strategic leadership; cross-functional collaboration; potential people management track."},
                       {"year":"Senior (Year 10+)","title":"Director / Principal %s","salary":"$105,000-$150,000+","description":"Organizational strategy; budget authority; industry thought leadership."}
-                    ],"industries":["Technology","Healthcare","Finance","Government"],"outlook":"[DEV] Demand for %s professionals remains strong through 2027, with above-average growth projected in the technology and healthcare sectors."}""".formatted(major, major, major, major, major, major);
+                    ],"industries":["Technology","Healthcare","Finance","Government"],"outlook":"Demand for %s professionals remains strong through 2027, with above-average growth projected in the technology and healthcare sectors."}""".formatted(major, major, major, major, major, major);
 
             case "costplan":
                 return """
                     {"yearlyTips":[
-                      "[DEV] Year 1: File FAFSA in October and submit a written aid appeal. Limit federal loans to $5,500 and explore work-study positions in the %s department.",
-                      "[DEV] Year 2: Request a merit aid review if GPA improved. Apply for upperclassman scholarships and explore paid research assistant roles.",
-                      "[DEV] Year 3: Secure a co-op or internship to generate $8,000-$15,000 toward Year 4 costs. Apply for professional association awards in %s.",
-                      "[DEV] Year 4: Minimize new loans; use senior-year departmental grants. Confirm post-grad income-driven repayment eligibility."
+                      "Year 1: File FAFSA in October and submit a written aid appeal. Limit federal loans to $5,500 and explore work-study positions in the %s department.",
+                      "Year 2: Request a merit aid review if GPA improved. Apply for upperclassman scholarships and explore paid research assistant roles.",
+                      "Year 3: Secure a co-op or internship to generate $8,000-$15,000 toward Year 4 costs. Apply for professional association awards in %s.",
+                      "Year 4: Minimize new loans; use senior-year departmental grants. Confirm post-grad income-driven repayment eligibility."
                     ],"demographicStrategies":[
-                      "[DEV] Apply for the %s Departmental Diversity Scholarship by February 15 - matches your demographic profile.",
-                      "[DEV] Contact the financial aid office about first-generation student supplemental grants; average award $1,200/yr.",
-                      "[DEV] Submit a Special Circumstances appeal if family income changed since last FAFSA filing."
-                    ],"appealTip":"[DEV] Request a professional judgment review at %s, citing your academic record and any extenuating financial circumstances in writing. Reference competing offers from peer institutions if available."}""".formatted(major, major, major, college);
+                      "Apply for the %s Departmental Diversity Scholarship by February 15 - matches your demographic profile.",
+                      "Contact the financial aid office about first-generation student supplemental grants; average award $1,200/yr.",
+                      "Submit a Special Circumstances appeal if family income changed since last FAFSA filing."
+                    ],"appealTip":"Request a professional judgment review at %s, citing your academic record and any extenuating financial circumstances in writing. Reference competing offers from peer institutions if available."}""".formatted(major, major, major, college);
 
             case "campus":
                 return """
                     {"employment":[
-                      {"title":"[DEV] Undergraduate Research Assistant - %s Dept.","pay":"Volunteer for Credit / $13-$15/hr","type":"Undergraduate Research","details":"Faculty in the %s program recruit research assistants each semester. Volunteer-for-credit positions count toward graduation requirements. Ask your academic advisor or check the department bulletin board.","url":"https://app.joinhandshake.com/"},
-                      {"title":"[DEV] Department Teaching Assistant / Tutor","pay":"$12-$14/hr","type":"On-Campus Employment","details":"On-campus TA roles for %s courses are posted each term. Federal work-study eligible -- earnings do not affect next year's aid calculation.","url":"https://app.joinhandshake.com/"},
-                      {"title":"[DEV] Co-op / Practicum Placement at %s","pay":"$17-$22/hr","type":"Co-op / Internship","details":"Alternating-semester co-op arranged through the %s Career Center. Converts to full-time offers at a 60%% rate for participating employers.","url":"https://app.joinhandshake.com/"}
+                      {"title":"Undergraduate Research Assistant - %s Dept.","pay":"Volunteer for Credit / $13-$15/hr","type":"Undergraduate Research","details":"Faculty in the %s program recruit research assistants each semester. Volunteer-for-credit positions count toward graduation requirements. Ask your academic advisor or check the department bulletin board.","url":"https://app.joinhandshake.com/"},
+                      {"title":"Department Teaching Assistant / Tutor","pay":"$12-$14/hr","type":"On-Campus Employment","details":"On-campus TA roles for %s courses are posted each term. Federal work-study eligible -- earnings do not affect next year's aid calculation.","url":"https://app.joinhandshake.com/"},
+                      {"title":"Co-op / Practicum Placement at %s","pay":"$17-$22/hr","type":"Co-op / Internship","details":"Alternating-semester co-op arranged through the %s Career Center. Converts to full-time offers at a 60%% rate for participating employers.","url":"https://app.joinhandshake.com/"}
                     ]}""".formatted(major, major, major, college, college);
 
             case "counselor":
                 return """
-                    {"executiveSummary":"[DEV] This student is pursuing %s at %s with a solid academic foundation. The current financial package leaves some unmet need that warrants a targeted appeal and external scholarship strategy. Early action on both fronts can meaningfully reduce the 4-year loan burden.","financialSnapshot":{"coa":"N/A","netPrice":"%s","unmetNeed":"N/A","loanBurden":"N/A","debtAtGrad":"N/A"},"strengthsForAppeal":["[DEV] Strong academic record and demonstrated commitment to %s through coursework and activities","[DEV] First-generation student status qualifies for additional institutional priority aid programs at %s","[DEV] Extracurricular leadership demonstrates campus contribution potential valued by %s financial aid committee"],"parentTalkingPoints":["[DEV] The current net price may be reduced by $2,000-$5,000 through a written appeal citing financial circumstances","[DEV] External scholarships in %s can offset up to $3,000-$6,000 per year without affecting federal aid","[DEV] Work-study earnings (up to $3,000/yr) do not count against next year's FAFSA EFC calculation","[DEV] Unsubsidized loan interest begins accruing immediately; interest-only payments during school save hundreds at graduation"],"recommendedActions":["[DEV] Submit a financial aid appeal letter to %s by the next review deadline with documentation","[DEV] Apply for 3-5 major-specific scholarships before the February-March deadline window","[DEV] Register for Handshake and apply to work-study or TA positions for Year 1","[DEV] Schedule a follow-up meeting with the %s financial aid office 30 days after appeal submission"],"riskFlags":["[DEV] Cumulative loan burden may exceed one year's median %s starting salary if aid package is not improved","[DEV] Merit aid renewal requires maintaining minimum GPA; a single difficult semester can suspend awards at %s"]}""".formatted(major, college, req.getNetPrice() != null ? "$" + fmt(req.getNetPrice()) + "/yr" : "N/A", major, college, college, major, college, college, major, college);
+                    {"executiveSummary":"This student is pursuing %s at %s with a solid academic foundation. The current financial package leaves some unmet need that warrants a targeted appeal and external scholarship strategy. Early action on both fronts can meaningfully reduce the 4-year loan burden.","financialSnapshot":{"coa":"N/A","netPrice":"%s","unmetNeed":"N/A","loanBurden":"N/A","debtAtGrad":"N/A"},"strengthsForAppeal":["Strong academic record and demonstrated commitment to %s through coursework and activities","First-generation student status qualifies for additional institutional priority aid programs at %s","Extracurricular leadership demonstrates campus contribution potential valued by %s financial aid committee"],"parentTalkingPoints":["The current net price may be reduced by $2,000-$5,000 through a written appeal citing financial circumstances","External scholarships in %s can offset up to $3,000-$6,000 per year without affecting federal aid","Work-study earnings (up to $3,000/yr) do not count against next year's FAFSA EFC calculation","Unsubsidized loan interest begins accruing immediately; interest-only payments during school save hundreds at graduation"],"recommendedActions":["Submit a financial aid appeal letter to %s by the next review deadline with documentation","Apply for 3-5 major-specific scholarships before the February-March deadline window","Register for Handshake and apply to work-study or TA positions for Year 1","Schedule a follow-up meeting with the %s financial aid office 30 days after appeal submission"],"riskFlags":["Cumulative loan burden may exceed one year's median %s starting salary if aid package is not improved","Merit aid renewal requires maintaining minimum GPA; a single difficult semester can suspend awards at %s"]}""".formatted(major, college, req.getNetPrice() != null ? "$" + fmt(req.getNetPrice()) + "/yr" : "N/A", major, college, college, major, college, college, major, college);
 
             default:
                 // Legacy full-blob stub for backward compat
                 return """
                     {
                       "fieldSpecificScholarships": [
-                        {"name": "[DEV] Google Generation Scholarship", "amount": "$10,000", "sponsor": "Google", "eligibility": "CS or related field; underrepresented in tech; 3.0+ GPA", "deadline": "December annually", "url": "https://buildyourfuture.withgoogle.com/scholarships"},
-                        {"name": "[DEV] Microsoft Tuition Scholarship", "amount": "$5,000", "sponsor": "Microsoft", "eligibility": "Freshman-senior in CS or STEM; financial need", "deadline": "January annually", "url": "https://careers.microsoft.com/students/us/en/usscholarship"},
-                        {"name": "[DEV] AFCEA STEM Scholarship", "amount": "$2,500-$5,000", "sponsor": "AFCEA", "eligibility": "US citizen; STEM sophomore or above; 3.0+ GPA", "deadline": "February 28 annually", "url": "https://www.afcea.org/education/scholarships"}
+                        {"name": "Google Generation Scholarship", "amount": "$10,000", "sponsor": "Google", "eligibility": "CS or related field; underrepresented in tech; 3.0+ GPA", "deadline": "December annually", "url": "https://buildyourfuture.withgoogle.com/scholarships"},
+                        {"name": "Microsoft Tuition Scholarship", "amount": "$5,000", "sponsor": "Microsoft", "eligibility": "Freshman-senior in CS or STEM; financial need", "deadline": "January annually", "url": "https://careers.microsoft.com/students/us/en/usscholarship"},
+                        {"name": "AFCEA STEM Scholarship", "amount": "$2,500-$5,000", "sponsor": "AFCEA", "eligibility": "US citizen; STEM sophomore or above; 3.0+ GPA", "deadline": "February 28 annually", "url": "https://www.afcea.org/education/scholarships"}
                       ],
                       "employment": [
-                        {"title": "[DEV] Undergraduate Research Assistant -- %s Dept.", "pay": "Volunteer for Credit / $13-$15/hr", "type": "Undergraduate Research", "details": "Faculty in the %s program are actively recruiting research assistants each semester.", "url": "https://app.joinhandshake.com/"},
-                        {"title": "[DEV] Department Teaching Assistant / Tutor", "pay": "$12-$14/hr", "type": "On-Campus Employment", "details": "On-campus TA roles for %s students are posted each term.", "url": "https://app.joinhandshake.com/"},
-                        {"title": "[DEV] Co-op / Practicum Placement", "pay": "$17-$22/hr", "type": "Co-op / Internship", "details": "Alternating-semester co-op in %s-related firms near campus.", "url": "https://app.joinhandshake.com/"}
+                        {"title": "Undergraduate Research Assistant -- %s Dept.", "pay": "Volunteer for Credit / $13-$15/hr", "type": "Undergraduate Research", "details": "Faculty in the %s program are actively recruiting research assistants each semester.", "url": "https://app.joinhandshake.com/"},
+                        {"title": "Department Teaching Assistant / Tutor", "pay": "$12-$14/hr", "type": "On-Campus Employment", "details": "On-campus TA roles for %s students are posted each term.", "url": "https://app.joinhandshake.com/"},
+                        {"title": "Co-op / Practicum Placement", "pay": "$17-$22/hr", "type": "Co-op / Internship", "details": "Alternating-semester co-op in %s-related firms near campus.", "url": "https://app.joinhandshake.com/"}
                       ],
                       "yearlyTips": [
                         "File FAFSA in October and submit a written aid appeal -- keep federal loans at or below $5,500 in Year 1.",

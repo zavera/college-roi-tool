@@ -24,6 +24,8 @@ public class AppUser {
 
     private boolean subscriptionActive = false;
 
+    private int searchCount = 0;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     // ── Getters / Setters ─────────────────────────────────────────────────────
@@ -39,5 +41,7 @@ public class AppUser {
     public void   setProvider(String p)        { this.provider = p; }
     public boolean isSubscriptionActive()      { return subscriptionActive; }
     public void    setSubscriptionActive(boolean b) { this.subscriptionActive = b; }
+    public int  getSearchCount()               { return searchCount; }
+    public void setSearchCount(int n)          { this.searchCount = n; }
     public LocalDateTime getCreatedAt()        { return createdAt; }
 }

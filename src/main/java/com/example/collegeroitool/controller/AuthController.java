@@ -82,14 +82,35 @@ public class AuthController {
 
         AppUser user = userService.findByEmail(email).orElse(null);
         boolean subscribed = user != null && user.isSubscriptionActive();
+        int searchCount = user != null ? user.getSearchCount() : 0;
         if (user != null && user.getName() != null) name = user.getName();
 
         return ResponseEntity.ok(Map.of(
             "loggedIn",            true,
             "email",               email,
             "name",                name != null ? name : email,
-            "subscriptionActive",  subscribed
+            "subscriptionActive",  subscribed,
+            "searchCount",         searchCount
         ));
+    }
+
+    /** Increment search count for the calling user and return new count */
+    @PostMapping("/search/increment")
+    public ResponseEntity<?> incrementSearch(Principal principal) {
+        if (devBypass && principal == null) {
+            return ResponseEntity.ok(Map.of("searchCount", 0));
+        }
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        }
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = (auth.getPrincipal() instanceof OAuth2User oAuth2User)
+            ? oAuth2User.<String>getAttribute("email")
+            : principal.getName();
+
+        int count = userService.incrementSearchCount(email);
+        return ResponseEntity.ok(Map.of("searchCount", count));
     }
 
     /** Toggle the calling user's subscription on/off */
