@@ -729,7 +729,7 @@
             max-width: 380px; line-height: 1.55;
         }
         .btn-unlock {
-            display: inline-flex; align-items: center; gap: 8px;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
             background: linear-gradient(135deg, var(--navy) 0%, var(--navy-lt) 100%);
             color: var(--primary); font-size: 14px; font-weight: 700;
             padding: 13px 30px; border-radius: 8px; border: none; cursor: pointer;
@@ -1222,8 +1222,7 @@
 
     function applyPaywall() {
         if (searchCount >= FREE_SEARCHES) {
-            $("#paywallSection").css("pointer-events", "none");
-            $("#paywallSection > :not(#searchPaywall)").css({ filter: "blur(5px)", opacity: "0.35", "user-select": "none" });
+            $("#paywallSection > :not(#searchPaywall)").css({ filter: "blur(5px)", opacity: "0.35", "user-select": "none", "pointer-events": "none" });
             $("#searchPaywall").css("display", "flex");
         }
     }
