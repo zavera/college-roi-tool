@@ -65,7 +65,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/", "/index.html",
+                    "/", "/index.html", "/landing.html",
                     "/login.html", "/register.html", "/privacy-policy.html",
                     "/api/auth/register",
                     "/api/stripe/webhook",
