@@ -1,2668 +1,927 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Astra — AI Assistant for FAFSA</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Astra — AI Assistant for FAFSA & College Financial Aid</title>
+  <meta name="description" content="Astra helps parents, students, and school counselors decode FAFSA, compare college costs, understand financial aid award letters, and make smarter borrowing decisions — powered by AI.">
+  <meta name="keywords" content="FAFSA help, financial aid assistant, AI FAFSA tool, college financial aid, award letter explained, financial aid for parents, school counselor FAFSA tool, student loan help, college cost calculator, Pell Grant, financial gap analysis">
+  <meta name="author" content="Astra">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://astra-ed.org/">
 
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="Astra is an AI assistant that helps parents and school counselors understand FAFSA, decode financial aid award letters, and make smarter college borrowing decisions.">
-    <meta name="keywords" content="FAFSA help, financial aid assistant, AI FAFSA tool, college financial aid, award letter explained, financial aid for parents, school counselor FAFSA tool, student loan help">
-    <meta name="author" content="Astra">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://astra-ed.org/">
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://astra-ed.org/">
+  <meta property="og:title" content="Astra — AI Assistant for FAFSA & College Financial Aid">
+  <meta property="og:description" content="Decode your FAFSA award letter, compare college costs, and get AI-powered financial aid guidance. Built for parents, students, and school counselors.">
+  <meta property="og:image" content="https://astra-ed.org/astra-logo.jpg">
+  <meta property="og:site_name" content="Astra">
 
-    <!-- Open Graph (Facebook, LinkedIn) -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://astra-ed.org/">
-    <meta property="og:title" content="Astra — AI Assistant for FAFSA">
-    <meta property="og:description" content="Helping parents and counselors navigate FAFSA and financial aid with AI. Understand award letters, compare offers, and make smarter borrowing decisions.">
-    <meta property="og:image" content="https://astra-ed.org/astra-logo.jpg">
-    <meta property="og:site_name" content="Astra">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Astra — AI Assistant for FAFSA & College Financial Aid">
+  <meta name="twitter:description" content="Decode your FAFSA award letter, compare college costs, and get AI-powered financial aid guidance.">
+  <meta name="twitter:image" content="https://astra-ed.org/astra-logo.jpg">
 
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Astra — AI Assistant for FAFSA">
-    <meta name="twitter:description" content="Helping parents and counselors navigate FAFSA and financial aid with AI.">
-    <meta name="twitter:image" content="https://astra-ed.org/astra-logo.jpg">
-
-    <!-- Structured Data (JSON-LD) -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Astra",
+    "url": "https://astra-ed.org",
+    "description": "AI assistant that helps parents, students, and school counselors understand FAFSA, decode financial aid award letters, compare college costs, and make smarter borrowing decisions.",
+    "applicationCategory": "EducationApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "29.99",
+      "priceCurrency": "USD",
+      "billingIncrement": "P1M"
+    },
+    "creator": {
+      "@type": "Organization",
       "name": "Astra",
-      "url": "https://astra-ed.org",
-      "description": "AI assistant for FAFSA — helps parents and school counselors understand financial aid, decode award letters, and make smarter borrowing decisions.",
-      "applicationCategory": "EducationApplication",
-      "operatingSystem": "Web",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "creator": {
-        "@type": "Organization",
-        "name": "Astra",
-        "url": "https://astra-ed.org"
-      }
+      "url": "https://astra-ed.org"
+    },
+    "featureList": [
+      "FAFSA financial aid decoder",
+      "College cost of attendance calculator",
+      "Financial gap analysis",
+      "Side-by-side college comparison",
+      "AI-powered financial summary",
+      "Scholarship finder",
+      "Student loan repayment estimator"
+    ]
+  }
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --navy:       #2d3040;
+      --navy-lt:    #3a3f55;
+      --primary:    #C9A87C;
+      --primary-dk: #A68A5E;
+      --primary-lt: #EAD9C0;
+      --accent:     #2d7a4f;
+      --bg:         #f0f1f5;
+      --card:       #ffffff;
+      --text:       #1a1a1a;
+      --muted:      #666666;
+      --border:     #e0e0e0;
     }
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300&display=swap" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/ui-lightness/jquery-ui.css">
-    <style>
-        :root {
-            --primary:   #C9A87C;
-            --primary-dk:#A68A5E;
-            --primary-lt:#EAD9C0;
-            --accent:    #2d7a4f;
-            --navy:      #2d3040;
-            --navy-lt:   #3a3f55;
-            --bg:        #f0f1f5;
-            --card:      #ffffff;
-            --text:      #1a1a1a;
-            --muted:     #666666;
-            --border:    #e0e0e0;
-        }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .skip-link {
-            position: absolute;
-            top: -100%;
-            left: 8px;
-            padding: 8px 16px;
-            background: #2d3040;
-            color: #fff;
-            font-size: 14px;
-            font-weight: 700;
-            border-radius: 0 0 6px 6px;
-            z-index: 9999;
-            text-decoration: none;
-            transition: top .15s;
-        }
-        .skip-link:focus { top: 0; }
-        button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
-            outline: 3px solid var(--primary);
-            outline-offset: 2px;
-            border-radius: 3px;
-        }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
 
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            visibility: hidden;
-        }
-        body.auth-ready { visibility: visible; }
+    a { color: inherit; text-decoration: none; }
 
-        /* ── Header ── */
-        header {
-            background: var(--navy);
-            color: white;
-            padding: 18px 32px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            box-shadow: 0 2px 16px rgba(0,0,0,0.3);
-        }
-        .logo-mark { flex-shrink: 0; }
-        header h1  { font-family: 'Josefin Sans', sans-serif; font-size: 22px; font-weight: 300; color: #d4b49c; letter-spacing: 6px; text-transform: uppercase; }
-        header p   { font-family: 'Josefin Sans', sans-serif; font-size: 10px; font-weight: 300; color: rgba(255,255,255,0.6); margin-top: 3px; letter-spacing: 3px; text-transform: uppercase; }
-        .hdr-user {
-            margin-left: auto;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .hdr-user-name {
-            font-size: 12px;
-            color: rgba(255,255,255,0.75);
-            font-weight: 600;
-            max-width: 180px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .hdr-logout {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--primary);
-            background: rgba(201,168,76,0.12);
-            border: 1px solid rgba(201,168,76,0.3);
-            border-radius: 20px;
-            padding: 4px 12px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background .15s;
-        }
-        .hdr-logout:hover { background: rgba(201,168,76,0.22); }
-        .hdr-sub-toggle {
-            font-size: 11px;
-            font-weight: 700;
-            color: #fff;
-            background: rgba(255,255,255,0.12);
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 20px;
-            padding: 4px 12px;
-            cursor: pointer;
-            transition: background .15s;
-            white-space: nowrap;
-        }
-        .hdr-sub-toggle:hover { background: rgba(255,255,255,0.22); }
-        .hdr-sub-toggle.sub-on  { color: #4ade80; border-color: rgba(74,222,128,0.45); background: rgba(74,222,128,0.12); }
-        .hdr-sub-toggle.sub-off { color: rgba(255,255,255,0.55); }
-        .hdr-badge {
-            border: 1px solid rgba(201,168,124,0.35);
-            background: rgba(201,168,124,0.1);
-            color: var(--primary);
-            border-radius: 20px;
-            padding: 4px 13px;
-            font-size: 10px;
-            font-weight: 700;
-            white-space: nowrap;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
+    /* ── Skip link ── */
+    .skip-link {
+      position: absolute; top: -100%; left: 8px;
+      padding: 8px 16px; background: var(--navy); color: #fff;
+      font-size: 14px; font-weight: 700;
+      border-radius: 0 0 6px 6px; z-index: 9999;
+      text-decoration: none; transition: top .15s;
+    }
+    .skip-link:focus { top: 0; }
+    a:focus-visible, button:focus-visible {
+      outline: 3px solid var(--primary); outline-offset: 2px; border-radius: 3px;
+    }
 
-        /* ── Container ── */
-        .container {
-            max-width: 680px;
-            margin: 36px auto;
-            padding: 0 20px 60px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+    /* ── Nav ── */
+    nav {
+      background: var(--navy);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      height: 64px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.35);
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+    .nav-brand img {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+    .nav-brand-name {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 18px;
+      font-weight: 300;
+      color: var(--primary);
+      letter-spacing: 6px;
+      text-transform: uppercase;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-link {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.7);
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: color .15s, background .15s;
+    }
+    .nav-link:hover { color: #fff; background: rgba(255,255,255,0.08); }
+    .nav-cta {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--navy);
+      background: var(--primary);
+      padding: 8px 18px;
+      border-radius: 20px;
+      transition: filter .15s;
+    }
+    .nav-cta:hover { filter: brightness(1.1); }
 
-        /* ── Card ── */
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 24px;
-            box-shadow: 0 1px 4px rgba(0,0,0,.05);
-        }
-        .card h2 {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 18px;
-        }
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(160deg, var(--navy) 0%, var(--navy-lt) 100%);
+      padding: 80px 32px 72px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 60% 40%, rgba(201,168,76,0.12) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+      max-width: 720px;
+      margin: 0 auto 20px;
+      letter-spacing: -0.5px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--primary);
+    }
+    .hero-sub {
+      font-size: clamp(15px, 2vw, 18px);
+      color: rgba(255,255,255,0.72);
+      max-width: 560px;
+      margin: 0 auto 36px;
+      line-height: 1.6;
+    }
+    .hero-cta-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-hero {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--primary);
+      color: var(--navy);
+      font-size: 15px;
+      font-weight: 800;
+      padding: 14px 32px;
+      border-radius: 8px;
+      transition: filter .15s;
+      letter-spacing: 0.2px;
+    }
+    .btn-hero:hover { filter: brightness(1.1); }
+    .btn-hero-outline {
+      display: inline-flex;
+      align-items: center;
+      background: transparent;
+      color: rgba(255,255,255,0.85);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 14px 28px;
+      border-radius: 8px;
+      border: 1.5px solid rgba(255,255,255,0.3);
+      transition: border-color .15s, color .15s;
+    }
+    .btn-hero-outline:hover { border-color: rgba(255,255,255,0.6); color: #fff; }
+    .hero-trust {
+      margin-top: 36px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.3px;
+    }
 
-        /* ── Form elements ── */
-        label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: .4px;
-            margin-bottom: 5px;
-        }
-        input[type="text"], input[type="number"] {
-            width: 100%;
-            padding: 10px 12px;
-            font-size: 14px;
-            border: 1.5px solid var(--border);
-            border-radius: 6px;
-            background: #fafbfc;
-            color: var(--text);
-            font-family: inherit;
-            transition: border-color .2s;
-        }
-        input:focus { border-color: var(--primary); background: white; }
-        input:focus-visible { outline: 3px solid var(--primary); outline-offset: 1px; }
+    /* ── Section wrapper ── */
+    .section { padding: 72px 32px; }
+    .section-inner { max-width: 1040px; margin: 0 auto; }
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--primary-dk);
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(22px, 3.5vw, 32px);
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 14px;
+      line-height: 1.2;
+      letter-spacing: -0.3px;
+    }
+    .section-sub {
+      font-size: 16px;
+      color: var(--muted);
+      max-width: 580px;
+      line-height: 1.65;
+      margin-bottom: 48px;
+    }
 
-        .field-group { margin-bottom: 14px; }
+    /* ── Problem bar ── */
+    .problem-bar {
+      background: #fff8ec;
+      border-top: 3px solid var(--primary);
+      padding: 40px 32px;
+    }
+    .problem-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 28px;
+    }
+    .problem-item {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .problem-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--primary-lt);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 18px;
+    }
+    .problem-text strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+    .problem-text span {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
 
-        /* ── ROI result panel ── */
-        #results .roi-card {
-            margin-top: 12px;
-            padding: 14px 16px;
-            background: #fdf8f2;
-            border: 1px solid var(--primary-lt);
-            border-radius: 8px;
-        }
-        #results .roi-card h3 {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--navy);
-            margin-bottom: 8px;
-        }
-        #results .roi-card p  { font-size: 13px; margin: 3px 0; color: var(--text); }
-        #results .roi-card strong { color: var(--primary-dk); }
+    /* ── Features grid ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .feature-card:hover {
+      box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+    }
+    .feature-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: var(--navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .feature-icon svg { color: var(--primary); }
+    .feature-card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .feature-card p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
 
-        #results .err-card {
-            margin-top: 12px;
-            padding: 14px 16px;
-            background: #fff5f5;
-            border: 1px solid #fed7d7;
-            border-radius: 8px;
-            color: #c53030;
-            font-size: 13px;
-        }
+    /* ── Who it's for ── */
+    .audience-section { background: var(--navy); }
+    .audience-section .section-label { color: var(--primary-lt); }
+    .audience-section .section-title { color: #fff; }
+    .audience-section .section-sub { color: rgba(255,255,255,0.6); }
+    .audience-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+    .audience-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 28px 24px;
+    }
+    .audience-emoji { font-size: 32px; margin-bottom: 14px; }
+    .audience-card h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+    .audience-card p {
+      font-size: 13px;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.65;
+    }
+    .audience-card ul {
+      margin-top: 12px;
+      padding-left: 0;
+      list-style: none;
+    }
+    .audience-card ul li {
+      font-size: 13px;
+      color: rgba(255,255,255,0.65);
+      padding: 4px 0;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .audience-card ul li::before {
+      content: '✓';
+      color: var(--primary);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
 
-        /* ── Major selector ── */
-        #majorSection {
-            margin-top: 20px;
-            display: none;
-        }
-        #majorSection h2 {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 14px;
-        }
-        select#majorSelect {
-            width: 100%;
-            padding: 10px 12px;
-            font-size: 14px;
-            border: 1.5px solid var(--border);
-            border-radius: 6px;
-            background: #fafbfc;
-            color: var(--text);
-            font-family: inherit;
-            transition: border-color .2s;
-        }
-        select#majorSelect:focus { border-color: var(--primary); background: white; }
-        select#majorSelect:focus-visible { outline: 3px solid var(--primary); outline-offset: 1px; }
+    /* ── How it works ── */
+    .steps { background: #fff; }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 32px;
+      position: relative;
+    }
+    .step {
+      text-align: center;
+      padding: 8px;
+    }
+    .step-number {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--navy);
+      color: var(--primary);
+      font-size: 18px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .step h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .step p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
 
-        #majorEarningsCard {
-            margin-top: 14px;
-            padding: 0;
-            background: transparent;
-            border: none;
-            border-radius: 0;
-            display: none;
-        }
-        .maj-earnings-card {
-            margin-top: 14px;
-            padding: 0;
-            background: transparent;
-            border: none;
-            border-radius: 0;
-        }
-        #majorEarningsCard .earnings-row,
-        .maj-earnings-card .earnings-row {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        #majorEarningsCard .stat,
-        .maj-earnings-card .stat {
-            flex: 1;
-            min-width: 140px;
-            background: white;
-            border: 1.5px solid var(--border);
-            border-radius: 10px;
-            padding: 14px 16px;
-            text-align: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,.05);
-        }
-        #majorEarningsCard .stat .val,
-        .maj-earnings-card .stat .val {
-            font-size: 22px;
-            font-weight: 800;
-            letter-spacing: -.5px;
-        }
-        #majorEarningsCard .stat .val.blue,
-        .maj-earnings-card .stat .val.blue  { color: #1a1a1a; }
-        #majorEarningsCard .stat .val.green,
-        .maj-earnings-card .stat .val.green { color: #d97706; }
-        #majorEarningsCard .stat .lbl,
-        .maj-earnings-card .stat .lbl {
-            font-size: 10px;
-            color: var(--muted);
-            margin-top: 5px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .6px;
-        }
-        #majorSpinner {
-            display: none;
-            font-size: 13px;
-            color: var(--muted);
-            font-style: italic;
-            padding: 10px 0;
-        }
+    /* ── FAQ ── */
+    .faq-list {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+    }
+    .faq-item:first-child { border-top: 1px solid var(--border); }
+    .faq-item h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .faq-item p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
 
-        /* ── Buttons ── */
-        .btn-primary {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            font-size: 14px;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--navy), var(--navy-lt));
-            color: var(--primary);
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 20px;
-            letter-spacing: 0.3px;
-            transition: filter .2s;
-        }
-        .btn-primary:hover { filter: brightness(1.14); }
+    /* ── Pricing ── */
+    .pricing-section { background: var(--bg); }
+    .pricing-card {
+      max-width: 440px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 2px solid var(--primary);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(201,168,76,0.15);
+    }
+    .pricing-header {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-lt) 100%);
+      padding: 32px 32px 28px;
+      text-align: center;
+    }
+    .pricing-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 10px;
+    }
+    .pricing-amount {
+      font-size: 48px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+    }
+    .pricing-amount sup { font-size: 22px; vertical-align: top; margin-top: 8px; }
+    .pricing-period {
+      font-size: 14px;
+      color: rgba(255,255,255,0.55);
+      margin-top: 6px;
+    }
+    .pricing-body { padding: 28px 32px; }
+    .pricing-feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 9px 0;
+      font-size: 14px;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+    }
+    .pricing-feature:last-child { border-bottom: none; }
+    .pricing-check {
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 16px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .btn-pricing {
+      display: block;
+      width: 100%;
+      margin-top: 24px;
+      padding: 15px;
+      font-size: 15px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-lt) 100%);
+      color: var(--primary);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: filter .15s;
+      text-align: center;
+    }
+    .btn-pricing:hover { filter: brightness(1.15); }
+    .pricing-note {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 14px;
+    }
+    .free-badge {
+      display: inline-block;
+      background: #e8f5e9;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
 
-        .btn-ai {
-            display: block;
-            width: 100%;
-            padding: 13px;
-            font-size: 14px;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--navy), var(--navy-lt));
-            color: var(--primary);
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            letter-spacing: 0.3px;
-            transition: filter .2s;
-        }
-        .btn-ai:hover    { filter: brightness(1.14); }
-        .btn-ai:disabled { background: #a0aec0; color: white; cursor: not-allowed; filter: none; }
+    /* ── CTA Banner ── */
+    .cta-banner {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-lt) 100%);
+      padding: 72px 32px;
+      text-align: center;
+    }
+    .cta-banner h2 {
+      font-size: clamp(22px, 3.5vw, 34px);
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 14px;
+      line-height: 1.2;
+    }
+    .cta-banner p {
+      font-size: 16px;
+      color: rgba(255,255,255,0.65);
+      margin-bottom: 32px;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+    }
 
-        /* ── AI section ── */
-        #aiSection {
-            background: #fdf8f2;
-            border: 1px solid var(--primary-lt);
-            border-radius: 10px;
-            padding: 24px;
-        }
-        #aiSection h2 {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--navy);
-            margin-bottom: 6px;
-        }
-        #aiSection p.desc {
-            font-size: 13px;
-            color: var(--muted);
-            margin-bottom: 18px;
-            line-height: 1.5;
-        }
+    /* ── Footer ── */
+    footer {
+      background: var(--navy);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 32px;
+      text-align: center;
+    }
+    .footer-brand {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 300;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .footer-links a {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      transition: color .15s;
+    }
+    .footer-links a:hover { color: rgba(255,255,255,0.85); }
+    .footer-copy {
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+    }
 
-        .groq-tag {
-            display: inline-block;
-            background: rgba(201,168,124,0.15);
-            color: var(--primary-dk);
-            font-size: 11px;
-            font-weight: 700;
-            padding: 2px 9px;
-            border-radius: 12px;
-            margin-left: 8px;
-            vertical-align: middle;
-        }
-
-        #aiSpinner {
-            display: none;
-            padding: 16px 0;
-            color: var(--primary-dk);
-            font-style: italic;
-            font-size: 14px;
-        }
-
-        #aiAdviceBox {
-            margin-top: 14px;
-            padding: 16px;
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 14px;
-            line-height: 1.75;
-            color: var(--text);
-        }
-
-        /* ── Mobile responsive ── */
-        @media (max-width: 600px) {
-            header {
-                padding: 12px 14px;
-                flex-wrap: wrap;
-                gap: 6px;
-            }
-            header h1  { font-size: 16px; letter-spacing: 3px; }
-            header p   { font-size: 9px; letter-spacing: 1.5px; }
-            .logo-mark img { width: 40px !important; height: 40px !important; }
-            .hdr-user {
-                width: 100%;
-                justify-content: flex-end;
-                gap: 6px;
-            }
-            .hdr-badge { margin-left: 0; font-size: 10px; padding: 3px 8px; }
-            .hdr-sub-toggle { font-size: 11px; padding: 4px 10px; }
-            .hdr-logout { font-size: 11px; padding: 4px 10px; }
-            .hdr-user-name { font-size: 11px; max-width: 100px; }
-            .container {
-                margin: 12px auto;
-                padding: 0 10px 40px;
-                gap: 12px;
-            }
-            .card, #aiSection {
-                padding: 14px;
-                border-radius: 8px;
-            }
-            .card h2, #aiSection h2 { font-size: 14px; }
-            input[type="text"], input[type="number"], select, select#majorSelect {
-                font-size: 16px;
-                padding: 11px 12px;
-            }
-            .btn-primary, .btn-ai {
-                font-size: 14px;
-                padding: 12px;
-                width: 100%;
-            }
-            .btn-compare { width: 100%; }
-            #addToCompareBtn { width: 100%; }
-            #majorEarningsCard .earnings-row,
-            .maj-earnings-card .earnings-row {
-                flex-direction: column;
-                gap: 10px;
-            }
-            #majorEarningsCard .stat,
-            .maj-earnings-card .stat { min-width: unset; }
-            #aiAdviceBox { font-size: 13px; line-height: 1.65; padding: 12px; }
-            .groq-tag { display: block; margin: 6px 0 0 0; font-size: 10px; }
-            .ui-autocomplete { max-width: calc(100vw - 28px) !important; }
-
-            /* Premium card */
-            .premium-header { flex-direction: column; align-items: flex-start; gap: 12px; }
-            .premium-price-tag { width: 100%; text-align: left; display: flex; align-items: center; gap: 8px; padding: 8px 14px; }
-            .premium-price-tag .price { font-size: 20px; display: inline; }
-            .premium-price-tag .per { display: inline; margin-top: 0; }
-            .premium-bullets { grid-template-columns: 1fr; padding: 14px; gap: 8px; }
-            .premium-preview { padding: 14px; }
-            .prem-tabs { flex-wrap: wrap; gap: 4px; }
-            .prem-tab { font-size: 11px; padding: 5px 10px; }
-
-            /* Tables — horizontal scroll */
-            .plan-table-wrap,
-            .efas-profile-table, .efas-earnings-table,
-            .efas-repayment-table, .efas-resource-table,
-            .efas-scholarship-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-            .plan-table { font-size: 11px; min-width: 480px; }
-            .efas-profile-table th, .efas-earnings-table th,
-            .efas-repayment-table th, .efas-resource-table th,
-            .efas-scholarship-table th,
-            .efas-profile-table td, .efas-earnings-table td,
-            .efas-repayment-table td, .efas-resource-table td,
-            .efas-scholarship-table td { padding: 6px 8px; font-size: 11px; }
-
-            /* Gap analysis key numbers grid */
-            #gapAnalysisContent > div > div[style*="grid-template-columns:1fr 1fr 1fr"] {
-                grid-template-columns: 1fr !important;
-            }
-
-            /* Export button */
-            .btn-export { width: 100%; justify-content: center; }
-
-            /* Compare accordions */
-            .ca-header { flex-wrap: wrap; gap: 4px; }
-            .ca-meta { font-size: 11px; }
-        }
-
-        /* ── Financial Gap Analysis ── */
-        #gapAnalysisCard { transition: box-shadow .2s; }
-        .gap-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 9px 0;
-            border-bottom: 1px solid var(--border);
-            font-size: 13px;
-        }
-        .gap-row:last-child { border-bottom: none; }
-        .gap-label { color: var(--muted); }
-        .gap-value { font-weight: 600; color: var(--text); }
-        .gap-cost-row { background: #fdf8f2; border-radius: 6px; padding: 10px 12px !important; margin-bottom: 4px; }
-        .gap-cost-row .gap-label { color: var(--primary-dk); font-weight: 700; font-size: 13px; }
-        .gap-cost-row .gap-value { color: var(--primary-dk); font-size: 15px; }
-        .gap-total-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0 0;
-            margin-top: 8px;
-            border-top: 2px solid var(--border);
-            font-size: 15px;
-            font-weight: 700;
-        }
-        .gap-unmet { color: #c53030; }
-        .gap-met   { color: var(--accent); }
-        .gap-alert {
-            margin-top: 12px;
-            padding: 10px 14px;
-            border-radius: 6px;
-            font-size: 12.5px;
-            line-height: 1.55;
-        }
-        .gap-alert.alert-red  { background: #fff5f5; border: 1px solid #fed7d7; color: #c53030; }
-        .gap-alert.alert-green{ background: #f0fdf4; border: 1px solid #bbf7d0; color: #276749; }
-        .gap-placeholder { font-size: 13px; color: var(--muted); text-align: center; padding: 14px 0; }
-
-        /* override jQuery UI autocomplete to match theme */
-        .ui-autocomplete {
-            border: 1.5px solid var(--primary) !important;
-            border-top: none !important;
-            border-radius: 0 0 6px 6px !important;
-            font-size: 14px !important;
-        }
-        .ui-menu-item-wrapper.ui-state-active {
-            background: #fdf8f2 !important;
-            color: var(--primary-dk) !important;
-            border: none !important;
-        }
-
-        /* ── Add to Compare Button ── */
-        .btn-compare {
-            display: block;
-            width: 100%;
-            padding: 11px;
-            font-size: 14px;
-            font-weight: 700;
-            background: white;
-            color: var(--navy);
-            border: 2px solid var(--navy);
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background .2s, color .2s;
-        }
-        .btn-compare:hover:not(:disabled) { background: #eef0f5; }
-        .btn-compare:disabled { border-color: #ccc; color: #aaa; cursor: not-allowed; background: white; }
-
-        /* ── Compare Pills ── */
-        .compare-pill-row { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
-        .compare-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 4px 10px 4px 8px;
-            border-radius: 20px;
-            border: 1.5px solid;
-            font-size: 12px;
-            font-weight: 600;
-            background: white;
-        }
-        .pill-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-        .pill-remove {
-            border: none; background: none; cursor: pointer;
-            font-size: 14px; padding: 0 0 0 4px; line-height: 1;
-            color: inherit; opacity: .7;
-        }
-        .pill-remove:hover { opacity: 1; }
-
-        /* ── Compare Accordion ── */
-        .ca-item {
-            border-radius: 8px;
-            margin-bottom: 8px;
-            border: 1px solid var(--border);
-            overflow: hidden;
-        }
-        .ca-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 14px;
-            cursor: pointer;
-            background: #fafbfc;
-            user-select: none;
-            flex-wrap: wrap;
-        }
-        .ca-header:hover { background: #f5f0e8; }
-        .ca-title { font-size: 14px; font-weight: 700; flex: 1; display: flex; align-items: center; min-width: 160px; }
-        .ca-meta { font-size: 12px; color: var(--muted); flex-shrink: 0; }
-        .ca-chevron { font-size: 11px; color: var(--muted); flex-shrink: 0; }
-        .ca-remove {
-            border: none; background: none; cursor: pointer;
-            font-size: 18px; color: #aaa; padding: 0 4px;
-            line-height: 1; flex-shrink: 0;
-        }
-        .ca-remove:hover { color: #c53030; }
-        .ca-body { padding: 16px; background: white; border-top: 1px solid var(--border); }
-
-        /* ── Coverage Chart ── */
-        #coverageChartWrap {
-            display: none;
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-        #coverageChartWrap canvas { display: block; }
-
-        /* ── Premium Card ── */
-        .premium-card {
-            background: var(--card);
-            border-radius: 10px;
-            border: 2px solid var(--primary);
-            box-shadow: 0 6px 32px rgba(201,168,124,0.18);
-            overflow: hidden;
-        }
-        .premium-header {
-            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-lt) 100%);
-            padding: 22px 26px;
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 20px;
-        }
-        .premium-header-text h2 {
-            font-size: 17px;
-            font-weight: 800;
-            color: var(--primary);
-            margin-bottom: 6px;
-            letter-spacing: -0.3px;
-        }
-        .premium-header-text p {
-            font-size: 12px;
-            color: rgba(255,255,255,0.65);
-            line-height: 1.6;
-            max-width: 380px;
-        }
-        .premium-price-tag {
-            background: var(--primary);
-            color: var(--navy);
-            border-radius: 10px;
-            padding: 10px 18px;
-            text-align: center;
-            flex-shrink: 0;
-        }
-        .premium-price-tag .price { font-size: 22px; font-weight: 800; display: block; line-height: 1; }
-        .premium-price-tag .per   { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; margin-top: 3px; display: block; }
-        .premium-tagline {
-            padding: 13px 26px;
-            background: #fdf8f2;
-            border-bottom: 1px solid var(--border);
-            font-size: 12px;
-            color: var(--navy);
-            font-weight: 600;
-        }
-        .premium-bullets {
-            padding: 20px 26px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            border-bottom: 1px solid var(--border);
-        }
-        @media(max-width:520px){ .premium-bullets { grid-template-columns: 1fr; } }
-        .premium-bullet {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 13px 14px;
-            border-radius: 8px;
-            background: white;
-            border: 1px solid var(--border);
-        }
-        .bullet-icon {
-            width: 30px; height: 30px; border-radius: 7px;
-            background: var(--navy);
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-        }
-        .bullet-icon svg { color: var(--primary); }
-        .bullet-text strong { display: block; font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
-        .bullet-text span   { font-size: 11px; color: var(--muted); line-height: 1.45; }
-        .premium-preview {
-            position: relative; padding: 22px 26px; overflow: hidden; min-height: 200px;
-        }
-        .premium-preview-inner {
-            font-size: 13px; line-height: 1.75; color: var(--text);
-        }
-        .premium-preview-inner.locked {
-            filter: blur(5px); opacity: 0.35; pointer-events: none; user-select: none;
-        }
-        .premium-preview-inner strong { display: block; margin-bottom: 6px; color: var(--navy); }
-        .premium-preview-inner p { margin-bottom: 10px; }
-        .premium-preview-overlay {
-            position: absolute; inset: 0;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: rgba(255,255,255,0.72); backdrop-filter: blur(3px);
-            padding: 28px 24px; text-align: center;
-        }
-        .lock-icon { color: var(--primary-dk); margin-bottom: 14px; }
-        .overlay-title { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
-        .overlay-sub {
-            font-size: 13px; color: var(--muted); margin-bottom: 22px;
-            max-width: 380px; line-height: 1.55;
-        }
-        .btn-unlock {
-            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-lt) 100%);
-            color: var(--primary); font-size: 14px; font-weight: 700;
-            padding: 13px 30px; border-radius: 8px; border: none; cursor: pointer;
-            letter-spacing: 0.3px; transition: filter .2s;
-        }
-        .btn-unlock:hover { filter: brightness(1.14); }
-        .premium-guarantee {
-            padding: 13px 26px; background: #fdf8f2; border-top: 1px solid var(--border);
-            display: flex; align-items: center; gap: 10px; font-size: 11px; color: var(--muted);
-        }
-        .premium-guarantee svg { color: var(--accent); flex-shrink: 0; }
-
-        /* Premium college tabs */
-        .prem-tabs { display:flex; gap:3px; flex-wrap:wrap; border-bottom:2px solid var(--border); margin-bottom:0; }
-        .prem-tab {
-            padding:9px 16px; font-size:13px; font-weight:600; border:none;
-            border-radius:6px 6px 0 0; cursor:pointer; background:#f0f2f5;
-            color:var(--muted); transition:background .15s,color .15s; white-space:nowrap;
-        }
-        .prem-tab:hover { background:#e5e8ef; }
-        .prem-tab.active {
-            background:white; color:var(--navy);
-            border:2px solid var(--border); border-bottom:2px solid white;
-            margin-bottom:-2px;
-        }
-        .prem-pane { display:none; padding:18px 0; }
-        .prem-pane.active { display:block; }
-
-        /* Premium sub-section accordion */
-        .prem-section { margin-bottom:10px; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
-        .prem-section-hdr {
-            display:flex; align-items:center; gap:10px;
-            padding:12px 14px; cursor:pointer; user-select:none;
-            background:#fafbfc; font-size:13px; font-weight:700; color:var(--navy);
-        }
-        .prem-section-hdr:hover { background:#f5f0e8; }
-        .prem-section-hdr .prem-chevron { margin-left:auto; font-size:10px; color:var(--muted); transition:transform .2s; }
-        .prem-section-hdr.open { border-bottom:1px solid var(--border); background:white; }
-        .prem-section-hdr.open .prem-chevron { transform:rotate(180deg); }
-        .prem-section-body { display:none; padding:16px; background:white; }
-        .prem-section-body.open { display:block; }
-        .prem-loading { color:var(--muted); font-size:12px; font-style:italic; padding:8px 0; }
-        .prem-err { color:#c53030; font-size:12px; }
-
-        /* ── Print / Export Report ── */
-        .btn-export {
-            display: inline-flex; align-items: center; gap: 7px;
-            background: transparent; border: 1.5px solid var(--primary);
-            color: var(--primary-dk); font-size: 12px; font-weight: 700;
-            padding: 7px 16px; border-radius: 6px; cursor: pointer;
-            letter-spacing: 0.3px; transition: background .15s;
-            margin-top: 14px;
-        }
-        .btn-export:hover { background: var(--primary-lt); }
-
-        /* ── 4-Year Plan Table ── */
-        .plan-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
-        .plan-table th { background: var(--navy); color: var(--primary); padding: 8px 10px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
-        .plan-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
-        .plan-table tr:last-child td { border-bottom: none; }
-        .plan-table .tip-cell { color: var(--muted); font-size: 11px; line-height: 1.5; }
-        .plan-table .over-limit { color: #b94040; font-weight: 700; }
-
-        /* ── EFAS Report Styles ── */
-        .efas-report { font-size: 13px; color: var(--text); line-height: 1.5; }
-        .efas-college-section { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 2px solid var(--border); }
-        .efas-college-section:last-of-type { border-bottom: none; }
-        .efas-college-header {
-            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-lt) 100%);
-            color: var(--primary);
-            padding: 12px 16px;
-            border-radius: 7px;
-            font-size: 15px;
-            font-weight: 800;
-            margin-bottom: 18px;
-            letter-spacing: 0.2px;
-        }
-        .efas-section-title {
-            color: #2d7a4f;
-            font-weight: 700;
-            font-size: 13px;
-            border-bottom: 2px solid #2d7a4f;
-            padding-bottom: 4px;
-            margin: 18px 0 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .efas-profile-table, .efas-earnings-table, .efas-repayment-table,
-        .efas-resource-table, .efas-scholarship-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12.5px;
-            margin-bottom: 8px;
-        }
-        .efas-profile-table th, .efas-earnings-table th, .efas-repayment-table th,
-        .efas-resource-table th, .efas-scholarship-table th {
-            background: var(--navy);
-            color: var(--primary);
-            padding: 7px 10px;
-            text-align: left;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 700;
-        }
-        .efas-profile-table td, .efas-earnings-table td, .efas-repayment-table td,
-        .efas-resource-table td, .efas-scholarship-table td {
-            padding: 8px 10px;
-            border-bottom: 1px solid var(--border);
-            vertical-align: top;
-        }
-        .efas-profile-table tr:last-child td, .efas-earnings-table tr:last-child td,
-        .efas-repayment-table tr:last-child td, .efas-resource-table tr:last-child td,
-        .efas-scholarship-table tr:last-child td { border-bottom: none; }
-        .efas-profile-table td:first-child { font-weight: 600; color: var(--muted); width: 38%; }
-        .efas-repayment-table td:first-child { font-weight: 600; color: var(--navy); }
-        .efas-repayment-table th:first-child { width: 42%; }
-        .efas-resource-table td:first-child { font-weight: 700; color: var(--navy); width: 35%; }
-        .efas-scholarship-table td:last-child a { color: var(--primary-dk); font-weight: 700; text-decoration: none; border-bottom: 1px solid var(--primary-lt); font-size: 11px; }
-        .efas-metrics {
-            display: flex;
-            gap: 10px;
-            margin: 14px 0;
-            flex-wrap: wrap;
-        }
-        .efas-metric-box {
-            flex: 1;
-            min-width: 120px;
-            background: var(--navy);
-            border: 1px solid var(--navy-lt);
-            border-radius: 8px;
-            padding: 14px 12px;
-            text-align: center;
-        }
-        .efas-metric-num {
-            font-size: 22px;
-            font-weight: 800;
-            color: #C9A87C;
-            letter-spacing: -0.5px;
-            line-height: 1.1;
-            display: block;
-        }
-        .efas-metric-lbl {
-            font-size: 9px;
-            font-weight: 700;
-            color: rgba(255,255,255,0.65);
-            text-transform: uppercase;
-            letter-spacing: 0.7px;
-            margin-top: 5px;
-            display: block;
-        }
-        .efas-status-good { color: #276749; font-weight: 700; }
-        .efas-status-warn { color: #c05621; font-weight: 700; }
-        .efas-status-bad  { color: #c53030; font-weight: 700; }
-        .efas-resource-box {
-            border: 1px solid var(--border);
-            border-radius: 7px;
-            overflow: hidden;
-            margin-bottom: 12px;
-        }
-        .efas-resource-box-header {
-            padding: 7px 12px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: white;
-        }
-        .efas-resource-box-header.green  { background: #2d7a4f; }
-        .efas-resource-box-header.purple { background: #6b46c1; }
-        .efas-resource-box table { margin-bottom: 0; }
-        .efas-schol-section-header td {
-            font-weight: 700;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 6px 10px !important;
-        }
-        .efas-schol-section-header.national  td { background: #fef3c7; color: #c05621; }
-        .efas-schol-section-header.field     td { background: #f0fdf4; color: #276749; }
-        .efas-schol-section-header.community td { background: #f5f3ff; color: #6b46c1; }
-        .efas-footnote {
-            font-size: 11px;
-            color: var(--muted);
-            font-style: italic;
-            margin-top: 8px;
-            padding-top: 6px;
-            border-top: 1px solid var(--border);
-        }
-
-        @media print {
-            header .hdr-badge, #searchCard, .card:not(#gapAnalysisCard),
-            #gapAnalysisCard .accordion-toggle,
-            .premium-header, .premium-tagline, .premium-bullets,
-            .premium-guarantee, .premium-preview-overlay,
-            #aiButton, #aiSpinner, .btn-primary, .btn-compare,
-            .btn-ai, .btn-export, .compare-pill-row,
-            #majorSection, #demographicsCard { display: none !important; }
-            body { background: white; font-size: 13px; }
-            header { background: var(--navy) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .container { max-width: 100%; margin: 8px; padding: 0; gap: 12px; }
-            #aiSection, .premium-card, #results, #gapAnalysisCard { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
-            #aiAdviceBox { display: block !important; }
-            #premiumContent { display: block !important; }
-            .premium-card { border: 1px solid #ccc; border-radius: 8px; }
-            .plan-table th { background: var(--navy) !important; color: var(--primary) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            /* EFAS print styles */
-            .efas-report { font-size: 12px; }
-            .efas-college-header { background: var(--navy) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .efas-profile-table th, .efas-earnings-table th, .efas-repayment-table th,
-            .efas-resource-table th, .efas-scholarship-table th {
-                background: var(--navy) !important; color: var(--primary) !important;
-                -webkit-print-color-adjust: exact; print-color-adjust: exact;
-            }
-            .efas-metric-box { background: var(--navy) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; border: 1px solid #555; }
-            .efas-resource-box-header.green  { background: #2d7a4f !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .efas-resource-box-header.purple { background: #6b46c1 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .efas-schol-section-header.national  td { background: #fef3c7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .efas-schol-section-header.field     td { background: #f0fdf4 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .efas-schol-section-header.community td { background: #f5f3ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .efas-college-section { break-inside: avoid; }
-            .efas-metrics { flex-wrap: nowrap; }
-        }
-    </style>
+    /* ── Mobile ── */
+    @media (max-width: 640px) {
+      nav { padding: 0 16px; }
+      .nav-link { display: none; }
+      .hero { padding: 56px 20px 52px; }
+      .section { padding: 52px 20px; }
+      .problem-bar { padding: 32px 20px; }
+      .audience-section .section { padding: 52px 20px; }
+      .cta-banner { padding: 52px 20px; }
+      footer { padding: 28px 20px; }
+      .pricing-header { padding: 24px 20px; }
+      .pricing-body { padding: 20px 20px; }
+    }
+  </style>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
 
-<!-- Auth gate overlay — hidden once session is confirmed -->
-<div id="authGate" style="
-    position:fixed;inset:0;background:#f5f7fa;
-    display:flex;align-items:center;justify-content:center;
-    z-index:99999;flex-direction:column;gap:12px;">
-    <img src="/callisto_high.png" style="width:52px;opacity:.7;">
-    <div style="font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#a0aec0;">Checking session…</div>
+<!-- ── Nav ── -->
+<nav role="navigation" aria-label="Main navigation">
+  <div class="nav-brand">
+    <img src="/callisto_high.png" alt="Astra logo">
+    <span class="nav-brand-name">Astra</span>
+  </div>
+  <div class="nav-links">
+    <a href="#features" class="nav-link">Features</a>
+    <a href="#how-it-works" class="nav-link">How It Works</a>
+    <a href="#pricing" class="nav-link">Pricing</a>
+    <a href="/login.html" class="nav-link">Sign In</a>
+    <a href="/register.html" class="nav-cta">Get Started Free</a>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<section class="hero" id="main-content" aria-label="Hero">
+  <p class="hero-eyebrow">AI-powered financial aid guidance</p>
+  <h1>FAFSA is confusing.<br><em>Astra makes it simple.</em></h1>
+  <p class="hero-sub">
+    Decode your financial aid award letter, compare college costs side by side,
+    and find out exactly how much you'll need to borrow — in minutes, not weeks.
+  </p>
+  <div class="hero-cta-row">
+    <a href="/register.html" class="btn-hero">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Try Free — No Credit Card
+    </a>
+    <a href="#how-it-works" class="btn-hero-outline">See how it works</a>
+  </div>
+  <p class="hero-trust">Free for your first 3 searches · No credit card required · Cancel anytime</p>
+</section>
+
+<!-- ── Problem bar ── -->
+<div class="problem-bar" aria-label="Common FAFSA problems we solve">
+  <div class="problem-inner">
+    <div class="problem-item">
+      <div class="problem-icon" aria-hidden="true">📄</div>
+      <div class="problem-text">
+        <strong>Award letters are written in jargon</strong>
+        <span>Grants, subsidized loans, EFC — most families don't know what any of it means.</span>
+      </div>
+    </div>
+    <div class="problem-item">
+      <div class="problem-icon" aria-hidden="true">🏫</div>
+      <div class="problem-text">
+        <strong>Every school formats aid differently</strong>
+        <span>It's nearly impossible to compare offers from multiple colleges side by side.</span>
+      </div>
+    </div>
+    <div class="problem-item">
+      <div class="problem-icon" aria-hidden="true">💸</div>
+      <div class="problem-text">
+        <strong>Hidden costs catch families off guard</strong>
+        <span>Tuition is just the beginning. Room, board, books, and fees add thousands more.</span>
+      </div>
+    </div>
+    <div class="problem-item">
+      <div class="problem-icon" aria-hidden="true">🎓</div>
+      <div class="problem-text">
+        <strong>School counselors are overwhelmed</strong>
+        <span>One advisor, hundreds of students. There's never enough time for one-on-one guidance.</span>
+      </div>
+    </div>
+  </div>
 </div>
 
-<header role="banner">
-    <div class="logo-mark">
-        <img src="/callisto_high.png" alt="Callisto Tech logo" style="width:60px;height:60px;object-fit:cover;border-radius:12px;display:block;">
-    </div>
-    <div>
-        <h1>Astra</h1>
-        <p>AI assistant for FAFSA</p>
-    </div>
-    <div class="hdr-user">
-        <span class="hdr-badge">Advisor</span>
-        <span class="hdr-user-name" id="hdrUserName" style="display:none;"></span>
-        <a class="hdr-logout" id="hdrLogout" style="display:none;" href="#">Sign Out</a>
-    </div>
-</header>
+<!-- ── Features ── -->
+<section class="section" id="features" aria-labelledby="features-title">
+  <div class="section-inner">
+    <p class="section-label">What Astra does</p>
+    <h2 class="section-title" id="features-title">Everything you need to make a smart college decision</h2>
+    <p class="section-sub">
+      Built for families navigating the financial aid process — from FAFSA submission through loan repayment planning.
+    </p>
 
-<main id="main-content">
-<div class="container">
+    <div class="features-grid">
 
-    <!-- ── College Search ── -->
-    <div class="card">
-        <h2>Search College</h2>
-        <div class="field-group">
-            <label for="collegeSearch">College or University</label>
-            <input type="text" id="collegeSearch" placeholder="Type 2+ characters (e.g. Michigan, Howard, NYU)…"
-                   aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false">
+      <div class="feature-card">
+        <div class="feature-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </div>
-        <div class="field-group" style="display:flex;gap:14px;flex-wrap:wrap;">
-            <div style="flex:1;min-width:140px;">
-                <label for="residencySelect">Student Residency Status</label>
-                <select id="residencySelect" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
-                    <option value="instate" selected>In-State</option>
-                    <option value="outofstate">Out-of-State</option>
-                    <option value="international">International</option>
-                    <option value="online">Online / Distance Learning</option>
-                </select>
-            </div>
-            <div style="flex:1;min-width:140px;">
-                <label for="livingSelect">Where Will You Live?</label>
-                <select id="livingSelect" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
-                    <option value="oncampus" selected>On-Campus (University Housing)</option>
-                    <option value="offcampus">Off-Campus Apartment</option>
-                    <option value="home">At Home with Family</option>
-                </select>
-            </div>
-        </div>
-        <div class="field-group" style="margin-bottom:0;margin-top:4px;">
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;font-size:13px;font-weight:600;letter-spacing:0;">
-                <input type="checkbox" id="healthInsuranceCheck" checked style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer;">
-                I'm covered under my parent's health insurance plan <span style="font-weight:400;color:var(--muted)">(uncheck to add ~$2,500/yr estimate)</span>
-            </label>
-        </div>
-        <div id="results" aria-live="polite" aria-atomic="true"></div>
-
-        <button type="button" id="searchButton" class="btn-primary">Look Up Cost of Attendance</button>
-        <button type="button" id="addToCompareBtn" class="btn-compare" disabled>+ Add to Compare</button>
-        <div id="comparePillRow" class="compare-pill-row"></div>
-    </div>
-
-    <!-- ── Major / Program Earnings ── -->
-    <div class="card" id="majorSection">
-        <h2>Earnings by Major</h2>
-
-        <!-- Single-college mode (default) -->
-        <div id="majorSingleMode">
-            <div class="field-group" style="margin-bottom:0">
-                <label for="majorSelect">Select a Major</label>
-                <select id="majorSelect">
-                    <option value="">Loading programs…</option>
-                </select>
-                <div id="majorSpinner" aria-live="polite" aria-atomic="true">Loading program data…</div>
-            </div>
-            <div id="majorEarningsCard">
-                <div class="earnings-row">
-                    <div class="stat">
-                        <div class="val blue" id="collegeAvgEarnings">N/A</div>
-                        <div class="lbl">College-wide Median (6 yrs)</div>
-                    </div>
-                    <div class="stat">
-                        <div class="val green" id="majorEarnings">N/A</div>
-                        <div class="lbl">This Major's Median (6 yrs)</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Compare mode: one accordion per college -->
-        <div id="majorCompareMode" style="display:none"></div>
-    </div>
-
-    <!-- ── FAFSA Package ── -->
-    <div class="card">
-        <h2>FAFSA Aid Package: One Academic Year</h2>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Enter amounts from your Student Aid Report (SAR) or financial aid offer letter.</p>
-
-        <div class="field-group">
-            <label for="pellGrant">Pell Grant ($) <span style="font-weight:400;color:var(--accent)">: Federal grant, no repayment required</span></label>
-            <input type="number" id="pellGrant" placeholder="0.00" min="0" step="0.01">
-        </div>
-        <div class="field-group">
-            <label for="subsidizedLoan">Subsidized Federal Loan ($) <span style="font-weight:400;color:var(--muted)">: Need-based, no interest while enrolled</span></label>
-            <input type="number" id="subsidizedLoan" placeholder="0.00" min="0" step="0.01">
-        </div>
-        <div class="field-group">
-            <label for="unsubsidizedLoan">Unsubsidized Federal Loan ($) <span style="font-weight:400;color:var(--muted)">: Interest accrues immediately</span></label>
-            <input type="number" id="unsubsidizedLoan" placeholder="0.00" min="0" step="0.01">
-        </div>
-        <div class="field-group">
-            <label for="parentPlusLoan">Total Family Contribution ($) <span style="font-weight:400;color:var(--muted)">: Family's expected contribution (savings, income, Parent PLUS)</span></label>
-            <input type="number" id="parentPlusLoan" placeholder="0.00" min="0" step="0.01">
-        </div>
-        <div id="inst-fields-single">
-            <div class="field-group">
-                <label for="institutionalGrant">Institutional Grant ($) <span style="font-weight:400;color:var(--accent)">: From your college, no repayment</span></label>
-                <input type="number" id="institutionalGrant" placeholder="0.00" min="0" step="0.01">
-            </div>
-            <div class="field-group">
-                <label for="scholarshipAmount">Scholarship / Gift Aid ($)</label>
-                <input type="number" id="scholarshipAmount" placeholder="0.00" min="0" step="0.01">
-            </div>
-            <div class="field-group" style="margin-bottom:0">
-                <label for="workStudy">Federal Work-Study ($) <span style="font-weight:400;color:var(--muted)">: Earned through part-time campus jobs</span></label>
-                <input type="number" id="workStudy" placeholder="0.00" min="0" step="0.01">
-            </div>
-        </div>
-    </div>
-
-    <!-- ── Institution-Specific Aid (Compare Mode Only) ── -->
-    <div class="card" id="institutionalAidSection" style="display:none;">
-        <h2>Institution-Specific Aid</h2>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">
-            These amounts differ by college. Enter each school's offer from their financial aid letter.
+        <h3>College Cost of Attendance</h3>
+        <p>
+          Look up the real cost of any college — tuition, room and board, books, transportation,
+          and personal expenses — adjusted for whether you live on or off campus.
         </p>
-        <div id="institutionalAidContent"></div>
-    </div>
+      </div>
 
-    <!-- ── Paywall wrapper: blurred on 4th+ search ── -->
-    <div id="paywallSection" style="position:relative;">
-
-    <!-- ── Financial Gap Analysis ── -->
-    <div class="card" id="gapAnalysisCard">
-        <h2>Financial Gap Analysis</h2>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">
-            Auto-calculated as you enter aid amounts: shows exactly how much of your cost is covered and what remains.
+      <div class="feature-card">
+        <div class="feature-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <h3>Financial Aid Decoder</h3>
+        <p>
+          Enter your FAFSA award letter and Astra breaks it down in plain English —
+          what's a grant (free money), what's a loan (debt), and what you still owe.
         </p>
-        <div id="gapAnalysisContent" aria-live="polite" aria-atomic="false">
-            <p class="gap-placeholder">Search and select a college above to activate gap analysis.</p>
-        </div>
-    </div>
+      </div>
 
-    <!-- ── Student Profile ── -->
-    <div class="card">
-        <h2>Student Profile</h2>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Help us personalize your financial advice and surface targeted scholarships.</p>
-
-        <div class="field-group" style="display:flex;gap:14px;flex-wrap:wrap;">
-            <div style="flex:1;min-width:140px;">
-                <label for="genderSelect">Gender</label>
-                <select id="genderSelect" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
-                    <option value="">Select</option>
-                    <option>Male</option>
-                    <option>Female</option>
-                    <option>Non-binary</option>
-                    <option>Prefer not to say</option>
-                </select>
-            </div>
-            <div style="flex:2;min-width:200px;">
-                <label for="raceSelect">Race / Ethnicity</label>
-                <select id="raceSelect" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
-                    <option value="">Select</option>
-                    <option>American Indian or Alaska Native</option>
-                    <option>Asian</option>
-                    <option>Black or African American</option>
-                    <option>Hispanic or Latino</option>
-                    <option>Native Hawaiian or Other Pacific Islander</option>
-                    <option>White</option>
-                    <option>Two or more races</option>
-                    <option>Prefer not to say</option>
-                </select>
-            </div>
+      <div class="feature-card">
+        <div class="feature-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         </div>
-
-        <div class="field-group" style="margin-top:4px;">
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;font-size:13px;font-weight:600;letter-spacing:0;">
-                <input type="checkbox" id="firstGenCheck" style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer;">
-                I am a first-generation college student (neither parent holds a 4-year degree)
-            </label>
-        </div>
-
-        <div class="field-group">
-            <label for="gpaInput">GPA <span style="font-weight:400;color:var(--muted)">: Current or most recent (0.0 – 4.0)</span></label>
-            <input type="number" id="gpaInput" placeholder="e.g. 3.5" min="0" max="4.0" step="0.01">
-        </div>
-
-        <div class="field-group">
-            <label for="extracurriculars">Extracurricular Activities</label>
-            <textarea id="extracurriculars" rows="3" placeholder="e.g. Student government, robotics club, varsity soccer, community volunteering…" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;resize:vertical;"></textarea>
-        </div>
-        <div class="field-group" style="margin-bottom:0">
-            <label for="academicAchievements">Academic Achievements</label>
-            <textarea id="academicAchievements" rows="3" placeholder="e.g. 3.8 GPA, National Honor Society, science fair winner, AP Scholar, Dean's List…" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;resize:vertical;"></textarea>
-        </div>
-    </div>
-
-    <!-- ── AI Financial Summary ── -->
-    <div id="aiSection">
-        <h2>
-            AI Financial Summary
-            <span class="groq-tag">Groq · llama-3.3-70b</span>
-        </h2>
-        <p class="desc">
-            Enter your aid package above, select a college, then click below for personalized summary.
+        <h3>Financial Gap Analysis</h3>
+        <p>
+          Instantly see how much of your cost is covered by grants, loans, and family contributions —
+          and exactly how much unmet need remains before you commit to a school.
         </p>
+      </div>
 
-        <button type="button" id="aiButton" class="btn-ai">Get AI Financial Summary</button>
-
-        <div id="aiSpinner" aria-live="polite" aria-atomic="true">Analyzing your financial package…</div>
-        <div id="coverageChartWrap" aria-hidden="true"></div>
-        <div id="aiAdviceBox" style="display:none;" aria-live="polite" aria-atomic="true"></div>
-        <div id="exportRow" style="display:none;text-align:right;">
-            <button type="button" class="btn-export" onclick="exportReport()">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Print / Save as PDF
-            </button>
+      <div class="feature-card">
+        <div class="feature-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </div>
-    </div>
+        <h3>Side-by-Side College Comparison</h3>
+        <p>
+          Compare up to two colleges at once — cost of attendance, financial gap, net price,
+          and projected earnings for your chosen major — all in one view.
+        </p>
+      </div>
 
-    <!-- ── Search limit paywall overlay ── -->
-    <div id="searchPaywall" style="display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(255,255,255,0.82);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
-        <div style="max-width:420px;text-align:center;">
-            <div style="font-size:36px;margin-bottom:12px;">🔒</div>
-            <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your 3 free searches</h3>
-            <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock unlimited college searches, financial gap analysis, and AI summaries.</p>
-            <div style="background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px;">
-                <div style="font-size:28px;font-weight:800;color:var(--navy);">$29.99<span style="font-size:14px;font-weight:400;color:var(--muted)"> / month</span></div>
-                <div style="font-size:12px;color:var(--muted);margin-top:4px;">Unlimited searches · AI summaries · Financial gap analysis</div>
-            </div>
-            <button type="button" class="btn-unlock" onclick="handleUnlock()" style="width:100%;padding:14px;font-size:15px;">
-                Unlock Full Access
-            </button>
-            <p style="font-size:11px;color:var(--muted);margin-top:10px;">Cancel anytime. Secure checkout via Stripe.</p>
+      <div class="feature-card">
+        <div class="feature-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
         </div>
+        <h3>Earnings by Major</h3>
+        <p>
+          See median earnings for 200+ majors at any college, 6 years after graduation —
+          so you can weigh your degree's earning potential against the cost of borrowing.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <h3>AI Financial Summary</h3>
+        <p>
+          Get a plain-English, personalized AI summary of your entire financial picture —
+          including targeted scholarship suggestions matched to your student profile.
+        </p>
+      </div>
+
     </div>
-
-    </div><!-- end #paywallSection -->
-
-</div>
-</main>
-
-<script>
-    // ── STATE ──────────────────────────────────────────────────────────────────
-    let searchCount = 0;
-    const FREE_SEARCHES = 3;
-
-    function applyPaywall() {
-        if (searchCount >= FREE_SEARCHES) {
-            $("#paywallSection > :not(#searchPaywall)").css({ filter: "blur(5px)", opacity: "0.35", "user-select": "none", "pointer-events": "none" });
-            $("#searchPaywall").css("display", "flex");
-        }
-    }
-
-    let selectedCollege = {
-        name: null, netPrice: null, sixYrEarnings: null, costOfAttendance: null,
-        inStateTuition: null, outOfStateTuition: null, booksSupply: null,
-        roomBoardOnCampus: null, roomBoardOffCampus: null,
-        transportationOnCampus: null, transportationOffCampus: null,
-        otherOnCampus: null, otherOffCampus: null,
-        onlineOnly: false
-    };
-    let programsData = [];
-    let compareList  = [];
-    const COMPARE_COLORS = ['#2d3040','#2563eb','#7c3aed','#d97706','#db2777'];
-
-    // ── Autocomplete ──
-    $("#collegeSearch").autocomplete({
-        source: function(request, response) {
-            $.get("/api/colleges/search?term=" + encodeURIComponent(request.term), function(data) {
-                response(data);
-            }).fail(function() { response([]); });
-        },
-        minLength: 2,
-        select: function(event, ui) {
-            this.value = ui.item.value;
-            loadROI(ui.item.value);
-            return false;
-        }
-    });
-
-    // ── ROI Lookup ──
-    function loadROI(collegeName) {
-        $.get("/api/colleges/" + encodeURIComponent(collegeName), function(data) {
-            selectedCollege = {
-                name:                   collegeName,
-                netPrice:               data.netPrice               || null,
-                sixYrEarnings:          data.sixYrEarnings          || null,
-                costOfAttendance:       data.costOfAttendance       || null,
-                inStateTuition:         data.inStateTuition         || null,
-                outOfStateTuition:      data.outOfStateTuition      || null,
-                booksSupply:            data.booksSupply            || null,
-                roomBoardOnCampus:      data.roomBoardOnCampus      || null,
-                roomBoardOffCampus:     data.roomBoardOffCampus     || null,
-                transportationOnCampus: data.transportationOnCampus || null,
-                transportationOffCampus:data.transportationOffCampus|| null,
-                otherOnCampus:          data.otherExpenseOnCampus   || null,
-                otherOffCampus:         data.otherExpenseOffCampus  || null,
-                onlineOnly:             data.onlineOnly             || false,
-                unitId:                 data.unitId                 || null
-            };
-            renderCOACard(collegeName);
-            recalculateGap();
-            loadPrograms(collegeName, data.sixYrEarnings || 0);
-            if (premiumActive) renderPremiumTabs();
-        }).fail(function() {
-            selectedCollege = { name: collegeName, netPrice: null, sixYrEarnings: null };
-            $("#results").html(`
-                <div class="err-card">
-                    <strong>ROI data not available</strong>: try another college or check the backend logs.
-                </div>
-            `);
-            $("#majorSection").hide();
-            updateCompareBtn();
-        });
-    }
-
-    function renderCOACard(collegeName) {
-        const fmt = n => (n != null && n > 0) ? '$' + Number(n).toLocaleString() : null;
-        const residency = $("#residencySelect").val();
-        const living    = $("#livingSelect").val();
-
-        const tuition = (residency === 'instate') ? selectedCollege.inStateTuition
-                       : selectedCollege.outOfStateTuition;
-        const tuitionLabel = (residency === 'instate')        ? 'In-State Tuition'
-                           : (residency === 'international')  ? 'Tuition (International Rate)'
-                           : (residency === 'online')         ? 'Tuition (Online)'
-                           :                                    'Out-of-State Tuition';
-
-        const roomBoard = (living === 'oncampus')  ? selectedCollege.roomBoardOnCampus
-                        : (living === 'offcampus') ? selectedCollege.roomBoardOffCampus
-                        : 0;
-        const rbLabel   = (living === 'oncampus')  ? 'Room & Board (On-Campus)'
-                        : (living === 'offcampus') ? 'Room & Board (Off-Campus Estimate)'
-                        : null;
-
-        const transport = (living === 'oncampus') ? selectedCollege.transportationOnCampus
-                        : selectedCollege.transportationOffCampus;
-        const other = (living === 'oncampus') ? selectedCollege.otherOnCampus
-                    : selectedCollege.otherOffCampus;
-        const books = selectedCollege.booksSupply;
-        const healthInsurance = $("#healthInsuranceCheck").is(":checked") ? 0 : 2500;
-
-        let rows = '';
-        const row = (label, val, style) => val ? `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;${style||''}"><span style="color:var(--muted)">${label}</span><span>${val}</span></div>` : '';
-
-        rows += row(tuitionLabel, fmt(tuition));
-        if (rbLabel && roomBoard) rows += row(rbLabel, fmt(roomBoard));
-        rows += row('Books & Supplies', fmt(books));
-        rows += row('Transportation', fmt(transport));
-        rows += row('Personal Expenses', fmt(other));
-        if (healthInsurance > 0) rows += row('Health Insurance (est.)', fmt(healthInsurance), 'color:var(--muted)');
-
-        const computedCOA = computeCOA();
-        const coaDisplay = computedCOA ? '$' + Math.round(computedCOA).toLocaleString() : 'N/A';
-
-        $("#results").html(`
-            <div class="roi-card" style="margin-top:14px;">
-                <h3 style="margin-bottom:10px;">${collegeName}${selectedCollege.onlineOnly ? ' <span style="font-size:11px;color:var(--accent);font-weight:400">(Online)</span>' : ''}</h3>
-                ${rows}
-                <div style="display:flex;justify-content:space-between;padding:8px 0 0;margin-top:6px;border-top:2px solid var(--border);font-weight:700;font-size:14px;">
-                    <span>Est. Total COA / Year</span>
-                    <span style="color:var(--primary-dk)">${coaDisplay}</span>
-                </div>
-            </div>
-        `);
-
-        updateCompareBtn();
-    }
-
-    // ── COMPARE BUTTON STATE ──────────────────────────────────────────────────
-    function updateCompareBtn() {
-        const hasCollege   = !!(selectedCollege.name && computeCOA());
-        const alreadyAdded = compareList.some(e => e.college.name === selectedCollege.name);
-        const atMax        = compareList.length >= 2;
-        const btn          = $('#addToCompareBtn');
-        if (!hasCollege) {
-            btn.prop('disabled', true).text('+ Add to Compare');
-        } else if (alreadyAdded) {
-            btn.prop('disabled', true).text('Already in Compare');
-        } else if (atMax) {
-            btn.prop('disabled', true).text('Max 2 Colleges Reached');
-        } else {
-            btn.prop('disabled', false).text('+ Add to Compare');
-        }
-    }
-
-    // ── ADD / REMOVE FROM COMPARE ─────────────────────────────────────────────
-    function addToCompare() {
-        if (compareList.length >= 2 || !selectedCollege.name) return;
-        if (compareList.some(e => e.college.name === selectedCollege.name)) return;
-
-        const coa    = computeCOA() || 0;
-        const pellG  = pf($("#pellGrant").val())          || 0;
-        const instG  = pf($("#institutionalGrant").val()) || 0;
-        const schol  = pf($("#scholarshipAmount").val())  || 0;
-        const subL   = pf($("#subsidizedLoan").val())     || 0;
-        const unsubL = pf($("#unsubsidizedLoan").val())   || 0;
-        const ws     = pf($("#workStudy").val())          || 0;
-        const fam    = pf($("#parentPlusLoan").val())     || 0;
-
-        const netPrice  = coa - pellG - instG - schol;
-        const unmetNeed = Math.max(0, netPrice - subL - unsubL - ws - fam);
-
-        const newEntry = {
-            college:               { ...selectedCollege },
-            fafsa:                 { pellGrant: pellG, institutionalGrant: instG, scholarshipAmount: schol,
-                                     subsidizedLoan: subL, unsubsidizedLoan: unsubL, workStudy: ws, familyContribution: fam },
-            residency:             $("#residencySelect").val(),
-            living:                $("#livingSelect").val(),
-            health:                $("#healthInsuranceCheck").is(":checked") ? 0 : 2500,
-            computedCOA:           coa,
-            netPrice:              Math.max(0, netPrice),
-            unmetNeed:             unmetNeed,
-            instGrant:             instG,
-            scholarship:           schol,
-            workStudy:             ws,
-            programsData:          [],
-            programsLoading:       true,
-            selectedMajorTitle:    null,
-            selectedMajorEarnings: null
-        };
-        compareList.push(newEntry);
-
-        renderComparePills();
-        renderInstitutionalAidSection();
-        recalculateGap();
-        updateCompareBtn();
-        renderMajorSection();
-        loadProgramsForEntry(newEntry);
-    }
-
-    function removeFromCompare(idx) {
-        compareList.splice(idx, 1);
-        renderComparePills();
-        renderInstitutionalAidSection();
-        recalculateGap();
-        updateCompareBtn();
-        renderMajorSection();
-    }
-
-    // ── INSTITUTION-SPECIFIC AID SECTION ─────────────────────────────────────
-    function renderInstitutionalAidSection() {
-        const inCompare = compareList.length > 0;
-        $('#inst-fields-single').toggle(!inCompare);
-
-        if (!inCompare) {
-            $('#institutionalAidSection').hide();
-            return;
-        }
-
-        $('#institutionalAidSection').show();
-
-        let html = '';
-        compareList.forEach((entry, i) => {
-            const color = COMPARE_COLORS[i];
-            html += `
-                <div style="border-left:3px solid ${color};padding:14px 16px 6px;margin-bottom:14px;background:#fafbfc;border-radius:0 8px 8px 0;">
-                    <div style="font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
-                        <span style="width:10px;height:10px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0;"></span>
-                        ${entry.college.name}
-                    </div>
-                    <div class="field-group">
-                        <label for="instGrant-${i}">Institutional Grant ($) <span style="font-weight:400;color:var(--accent)">: College grant, no repayment</span></label>
-                        <input type="number" id="instGrant-${i}" class="inst-aid-input" data-idx="${i}" data-field="instGrant"
-                               value="${entry.instGrant || ''}" placeholder="0.00" min="0" step="0.01">
-                    </div>
-                    <div class="field-group">
-                        <label for="scholarship-${i}">Scholarship / Gift Aid ($)</label>
-                        <input type="number" id="scholarship-${i}" class="inst-aid-input" data-idx="${i}" data-field="scholarship"
-                               value="${entry.scholarship || ''}" placeholder="0.00" min="0" step="0.01">
-                    </div>
-                    <div class="field-group" style="margin-bottom:8px;">
-                        <label for="workStudy-${i}">Federal Work-Study ($) <span style="font-weight:400;color:var(--muted)">: Earned through campus jobs</span></label>
-                        <input type="number" id="workStudy-${i}" class="inst-aid-input" data-idx="${i}" data-field="workStudy"
-                               value="${entry.workStudy || ''}" placeholder="0.00" min="0" step="0.01">
-                    </div>
-                </div>`;
-        });
-
-        $('#institutionalAidContent').html(html);
-        $('.inst-aid-input').on('input', function() {
-            const idx   = parseInt($(this).data('idx'));
-            const field = $(this).data('field');
-            compareList[idx][field] = pf($(this).val()) || 0;
-            recalculateGap();
-        });
-    }
-
-    function renderComparePills() {
-        if (compareList.length === 0) { $('#comparePillRow').html(''); return; }
-        const pills = compareList.map((e, i) =>
-            `<span class="compare-pill" style="border-color:${COMPARE_COLORS[i]};color:${COMPARE_COLORS[i]}">
-                <span class="pill-dot" style="background:${COMPARE_COLORS[i]}"></span>
-                ${e.college.name}
-                <button type="button" class="pill-remove" onclick="removeFromCompare(${i})" aria-label="Remove ${e.college.name} from comparison">×</button>
-            </span>`
-        ).join('');
-        $('#comparePillRow').html(`
-            <div style="width:100%;font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;">${compareList.length}/2 colleges in compare</div>
-            ${pills}
-        `);
-    }
-
-    // ── COA COMPUTATION ───────────────────────────────────────────────────────
-    function computeCOAForEntry(entry) {
-        const c       = entry.college;
-        const res     = entry.residency;
-        const liv     = entry.living;
-        const tuition = (res === 'instate') ? c.inStateTuition : c.outOfStateTuition;
-        const rb      = (liv === 'oncampus')  ? c.roomBoardOnCampus
-                      : (liv === 'offcampus') ? c.roomBoardOffCampus : 0;
-        const trans   = (liv === 'oncampus') ? c.transportationOnCampus : c.transportationOffCampus;
-        const other   = (liv === 'oncampus') ? c.otherOnCampus : c.otherOffCampus;
-        const books   = c.booksSupply || 0;
-        const health  = entry.health;
-        const total   = [tuition, rb, trans, other, books, health].map(v => v || 0).reduce((a, b) => a + b, 0);
-        return total > 1000 ? total : (c.costOfAttendance || 0);
-    }
-
-    // ── COMPARE ACCORDION GAP ANALYSIS ───────────────────────────────────────
-    function renderCompareAccordions() {
-        if (compareList.length === 0) { renderSingleGap(); return; }
-
-        const openState = compareList.map((_, idx) => {
-            const body = document.getElementById('ca-body-' + idx);
-            return body ? body.style.display !== 'none' : (idx === 0);
-        });
-
-        const pellG  = pf($("#pellGrant").val())         || 0;
-        const subL   = pf($("#subsidizedLoan").val())    || 0;
-        const unsubL = pf($("#unsubsidizedLoan").val())  || 0;
-        const fam    = pf($("#parentPlusLoan").val())    || 0;
-
-        const d   = n => '$' + Math.round(Math.max(0, n)).toLocaleString('en-US');
-        const sub = (n, col) => n > 0
-            ? `<span class="gap-value" style="color:${col}">−${d(n)}</span>`
-            : `<span class="gap-value" style="color:var(--muted)">N/A</span>`;
-
-        let html = `<p style="font-size:12px;color:var(--muted);margin-bottom:14px;">
-            Showing financial gap for <strong>${compareList.length}</strong> compared college${compareList.length > 1 ? 's' : ''}.
-            Gap auto-updates as you edit your aid package. Click a header to expand/collapse.
-        </p>`;
-
-        compareList.forEach((entry, idx) => {
-            const color = COMPARE_COLORS[idx];
-            const { residency, living } = entry;
-
-            const computedCOA = computeCOAForEntry(entry);
-            const instG = entry.instGrant   || 0;
-            const schol = entry.scholarship || 0;
-            const ws    = entry.workStudy   || 0;
-
-            const totalGiftAid = pellG + instG + schol;
-            const netPrice     = Math.max(0, computedCOA - totalGiftAid);
-            const unmetNeed    = Math.max(0, netPrice - subL - unsubL - ws - fam);
-
-            entry.computedCOA = computedCOA;
-            entry.netPrice    = netPrice;
-            entry.unmetNeed   = unmetNeed;
-            entry.fafsa = { pellGrant: pellG, institutionalGrant: instG, scholarshipAmount: schol,
-                            subsidizedLoan: subL, unsubsidizedLoan: unsubL, workStudy: ws, familyContribution: fam };
-
-            const unmetClass = unmetNeed > 0 ? 'gap-unmet' : 'gap-met';
-            const residencyLabel = { instate:'In-State', outofstate:'Out-of-State', international:'International', online:'Online' }[residency] || residency;
-            const livingLabel    = { oncampus:'On-Campus', offcampus:'Off-Campus', home:'At Home' }[living] || living;
-
-            const keyNumbers = `
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px;">
-                    <div style="background:#fdf8f2;border:1.5px solid var(--primary-lt);border-radius:8px;padding:12px;text-align:center;">
-                        <div style="font-size:11px;font-weight:700;color:var(--primary-dk);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total COA</div>
-                        <div style="font-size:18px;font-weight:800;color:var(--primary-dk)">${d(computedCOA)}</div>
-                        <div style="font-size:10px;color:var(--muted);margin-top:2px;">per year</div>
-                    </div>
-                    <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:8px;padding:12px;text-align:center;">
-                        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Net Price</div>
-                        <div style="font-size:18px;font-weight:800;color:#276749">${d(netPrice)}</div>
-                        <div style="font-size:10px;color:var(--muted);margin-top:2px;">after free aid</div>
-                    </div>
-                    <div style="background:${unmetNeed > 0 ? '#fff5f5' : '#f0fdf4'};border:1.5px solid ${unmetNeed > 0 ? '#fed7d7' : '#bbf7d0'};border-radius:8px;padding:12px;text-align:center;">
-                        <div style="font-size:11px;font-weight:700;color:${unmetNeed > 0 ? '#c53030' : 'var(--accent)'};text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Unmet Need</div>
-                        <div style="font-size:18px;font-weight:800;color:${unmetNeed > 0 ? '#c53030' : '#276749'}">${d(unmetNeed)}</div>
-                        <div style="font-size:10px;color:var(--muted);margin-top:2px;">true gap remaining</div>
-                    </div>
-                </div>
-                <div style="font-size:10.5px;color:var(--muted);margin-bottom:14px;line-height:1.5;">
-                    <strong>Net Price</strong> = COA − free gift aid (Pell + grants + scholarships) &nbsp;·&nbsp;
-                    <strong>Unmet Need</strong> = Net Price − loans − work-study − family contribution
-                </div>`;
-
-            const gapBody = `
-                ${keyNumbers}
-                <div class="gap-row gap-cost-row">
-                    <span class="gap-label">Total COA / Year</span>
-                    <span class="gap-value" style="color:var(--primary-dk);font-size:15px;">${d(computedCOA)}</span>
-                </div>
-                <div style="margin:10px 0 4px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Gift Aid: Free Money (No Repayment)</div>
-                <div class="gap-row"><span class="gap-label">Pell Grant</span>${sub(pellG,'var(--accent)')}</div>
-                <div class="gap-row"><span class="gap-label">Institutional Grant</span>${sub(instG,'var(--accent)')}</div>
-                <div class="gap-row"><span class="gap-label">Scholarship / Gift Aid</span>${sub(schol,'var(--accent)')}</div>
-                <div class="gap-row" style="border-top:1px solid var(--border);margin-top:6px;padding-top:8px;font-weight:600;">
-                    <span class="gap-label">= Net Price (What You Pay)</span>
-                    <span class="gap-value" style="color:#276749;font-size:14px;">${d(netPrice)}</span>
-                </div>
-                <div style="margin:10px 0 4px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Financing Sources (Reduce Unmet Need)</div>
-                <div class="gap-row"><span class="gap-label">Subsidized Loan</span>${sub(subL,'var(--muted)')}</div>
-                <div class="gap-row"><span class="gap-label">Unsubsidized Loan</span>${sub(unsubL,'var(--muted)')}</div>
-                <div class="gap-row"><span class="gap-label">Federal Work-Study</span>${sub(ws,'var(--muted)')}</div>
-                <div class="gap-row"><span class="gap-label">Family Contribution</span>${sub(fam,'var(--muted)')}</div>
-                <div class="gap-total-row">
-                    <span class="${unmetClass}">Unmet Need</span>
-                    <span class="gap-value ${unmetClass}" style="font-size:17px;">${d(unmetNeed)}</span>
-                </div>
-                ${unmetNeed > 0
-                    ? `<div class="gap-alert alert-red"><strong>${d(unmetNeed)}/yr · ${d(unmetNeed*4)} over 4 years</strong> still unaccounted for. Look for additional scholarships or meet with your financial aid office before taking on more debt.</div>`
-                    : `<div class="gap-alert alert-green">Aid fully covers the cost of attendance: great position! Any unused loan eligibility you decline now means less debt at graduation.</div>`
-                }`;
-
-            const isOpen = openState[idx];
-            html += `
-                <div class="ca-item" style="border-left:3px solid ${color};">
-                    <div class="ca-header" onclick="toggleAccordion(${idx})">
-                        <span class="ca-title">
-                            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color};margin-right:8px;flex-shrink:0;"></span>
-                            ${entry.college.name}
-                        </span>
-                        <span class="ca-meta">${residencyLabel} · ${livingLabel} · Unmet: <strong style="color:${unmetNeed > 0 ? '#c53030' : '#276749'}">${d(unmetNeed)}</strong></span>
-                        <span class="ca-chevron" id="chevron-${idx}">${isOpen ? '▲' : '▼'}</span>
-                        <button type="button" class="ca-remove" onclick="removeFromCompare(${idx});event.stopPropagation();" aria-label="Remove ${entry.college.name} from list">×</button>
-                    </div>
-                    <div class="ca-body" id="ca-body-${idx}" style="display:${isOpen ? 'block' : 'none'};">
-                        ${gapBody}
-                    </div>
-                </div>`;
-        });
-
-        $("#gapAnalysisContent").html(html);
-    }
-
-    function toggleAccordion(idx) {
-        const body   = $(`#ca-body-${idx}`);
-        const isOpen = body.is(':visible');
-        body.toggle(!isOpen);
-        $(`#chevron-${idx}`).text(isOpen ? '▼' : '▲');
-    }
-
-    // ── COVERAGE DIAGRAM ──────────────────────────────────────────────────────
-    function renderCoverageChart(entries) {
-        const wrap = document.getElementById('coverageChartWrap');
-        if (!entries || entries.length === 0) { wrap.style.display = 'none'; return; }
-        wrap.style.display = 'block';
-        wrap.innerHTML = '<h4 style="font-size:13px;font-weight:700;color:var(--navy);margin:0 0 14px;">Coverage Diagram: COA · Net Price · Unmet Need</h4>';
-
-        const canvas = document.createElement('canvas');
-        wrap.appendChild(canvas);
-
-        const DPR = window.devicePixelRatio || 1;
-        const W   = wrap.offsetWidth || 560;
-        const H   = 300;
-        canvas.width  = W * DPR;
-        canvas.height = H * DPR;
-        canvas.style.width  = W + 'px';
-        canvas.style.height = H + 'px';
-
-        const ctx = canvas.getContext('2d');
-        ctx.scale(DPR, DPR);
-
-        const pad    = { top: 38, right: 20, bottom: 72, left: 68 };
-        const cW     = W - pad.left - pad.right;
-        const cH     = H - pad.top - pad.bottom;
-        const maxVal = Math.max(...entries.map(e => e.computedCOA || 0)) * 1.15 || 60000;
-        const n      = entries.length;
-        const grpW   = cW / n;
-        const barW   = Math.min(38, grpW * 0.2);
-        const barGap = barW * 0.55;
-
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(0, 0, W, H);
-
-        for (let i = 0; i <= 5; i++) {
-            const val = maxVal * i / 5;
-            const y   = pad.top + cH - (val / maxVal * cH);
-            ctx.strokeStyle = '#ebebeb'; ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + cW, y); ctx.stroke();
-            ctx.fillStyle = '#777'; ctx.font = '10px Segoe UI,Arial'; ctx.textAlign = 'right';
-            ctx.fillText(val >= 1000 ? '$' + (val/1000).toFixed(0) + 'k' : '$0', pad.left - 5, y + 4);
-        }
-
-        ctx.strokeStyle = '#ccc'; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(pad.left, pad.top + cH); ctx.lineTo(pad.left + cW, pad.top + cH); ctx.stroke();
-
-        const COLORS = { coa: '#4a90d9', net: '#2d7a4f', unmet: '#c53030' };
-
-        entries.forEach((entry, gi) => {
-            const cx  = pad.left + gi * grpW + grpW / 2;
-            const bars = [
-                { val: entry.computedCOA || 0, color: COLORS.coa },
-                { val: entry.netPrice    || 0, color: COLORS.net },
-                { val: entry.unmetNeed   || 0, color: COLORS.unmet }
-            ];
-            const totalBW = bars.length * barW + (bars.length - 1) * barGap;
-            const startX  = cx - totalBW / 2;
-
-            bars.forEach((bar, bi) => {
-                const x  = startX + bi * (barW + barGap);
-                const bH = (bar.val / maxVal) * cH;
-                const y  = pad.top + cH - bH;
-                ctx.fillStyle = bar.color;
-                ctx.fillRect(x, y, barW, bH);
-                if (bar.val > 500) {
-                    ctx.fillStyle = '#222'; ctx.font = 'bold 9px Segoe UI,Arial'; ctx.textAlign = 'center';
-                    ctx.fillText('$' + Math.round(bar.val / 1000) + 'k', x + barW / 2, y - 4);
-                }
-            });
-
-            ctx.fillStyle = '#333'; ctx.font = '10px Segoe UI,Arial'; ctx.textAlign = 'center';
-            const name  = entry.college.name;
-            const words = name.split(' ');
-            let line1 = '', line2 = '';
-            words.forEach(w => { if ((line1 + ' ' + w).trim().length <= 16) line1 = (line1 + ' ' + w).trim(); else line2 = (line2 + ' ' + w).trim(); });
-            ctx.fillText(line1, cx, pad.top + cH + 16);
-            if (line2) ctx.fillText(line2, cx, pad.top + cH + 28);
-        });
-
-        const legItems = [
-            { color: COLORS.coa,   label: 'Total COA' },
-            { color: COLORS.net,   label: 'Net Price' },
-            { color: COLORS.unmet, label: 'Unmet Need' }
-        ];
-        ctx.font = '10px Segoe UI,Arial';
-        const legW = legItems.reduce((a, it) => a + ctx.measureText(it.label).width + 22, 0);
-        let lx = (W - legW) / 2;
-        legItems.forEach(it => {
-            ctx.fillStyle = it.color;
-            ctx.fillRect(lx, H - 14, 12, 12);
-            ctx.fillStyle = '#333'; ctx.textAlign = 'left';
-            ctx.fillText(it.label, lx + 16, H - 4);
-            lx += ctx.measureText(it.label).width + 28;
-        });
-    }
-
-    // ── Compute COA ───────────────────────────────────────────────────────────
-    function computeCOA() {
-        if (!selectedCollege.name) return null;
-        const residency = $("#residencySelect").val();
-        const living    = $("#livingSelect").val();
-
-        const tuition     = (residency === 'instate') ? selectedCollege.inStateTuition
-                           : selectedCollege.outOfStateTuition;
-        const roomBoard   = (living === 'oncampus')  ? selectedCollege.roomBoardOnCampus
-                          : (living === 'offcampus') ? selectedCollege.roomBoardOffCampus
-                          : 0;
-        const transport   = (living === 'oncampus') ? selectedCollege.transportationOnCampus
-                          : selectedCollege.transportationOffCampus;
-        const other       = (living === 'oncampus') ? selectedCollege.otherOnCampus
-                          : selectedCollege.otherOffCampus;
-        const books       = selectedCollege.booksSupply || 0;
-        const health      = $("#healthInsuranceCheck").is(":checked") ? 0 : 2500;
-
-        const total = [tuition, roomBoard, transport, other, books, health].map(v => v || 0).reduce((a, b) => a + b, 0);
-        return total > 1000 ? total : selectedCollege.costOfAttendance;
-    }
-
-    function loadPrograms(collegeName, collegeWideEarnings) {
-        programsData = [];
-        $("#majorSection").show();
-        $("#majorSelect").html('<option value="">Loading…</option>');
-        $("#majorSpinner").show();
-        $("#majorEarningsCard").hide();
-
-        $.get("/api/colleges/" + encodeURIComponent(collegeName) + "/programs", function(data) {
-            $("#majorSpinner").hide();
-            programsData = data;
-
-            if (!data || data.length === 0) {
-                $("#majorSelect").html('<option value="">No program data available</option>');
-                return;
-            }
-
-            const options = data.map(p =>
-                `<option value="${p.earnings}">${p.title}: $${Number(p.earnings).toLocaleString()}/yr</option>`
-            ).join("");
-            $("#majorSelect").html('<option value="">Select a major</option>' + options);
-            $("#collegeAvgEarnings").text("$" + Number(collegeWideEarnings).toLocaleString());
-        }).fail(function() {
-            $("#majorSpinner").hide();
-            $("#majorSelect").html('<option value="">Could not load programs</option>');
-        });
-    }
-
-    $("#majorSelect").on("change", function() {
-        const val = $(this).val();
-        if (!val) { $("#majorEarningsCard").hide(); return; }
-        $("#majorEarnings").text("$" + Number(val).toLocaleString());
-        $("#majorEarningsCard").show();
-
-        const selectedText = $("#majorSelect option:selected").text().split(": ")[0];
-        selectedCollege.selectedMajor = selectedText;
-        selectedCollege.majorEarnings = parseFloat(val);
-    });
-
-    // ── EARNINGS BY MAJOR: COMPARE MODE ─────────────────────────────────────
-    function renderMajorSection() {
-        if (compareList.length === 0) {
-            $("#majorSingleMode").show();
-            $("#majorCompareMode").hide().html('');
-        } else {
-            $("#majorSingleMode").hide();
-            $("#majorCompareMode").show();
-            $("#majorSection").show();
-            renderMajorCompareAccordions();
-        }
-    }
-
-    function renderMajorCompareAccordions() {
-        const container = document.getElementById('majorCompareMode');
-        if (!container) return;
-
-        const openState = compareList.map((_, idx) => {
-            const body = document.getElementById('maj-body-' + idx);
-            return body ? body.style.display !== 'none' : (idx === 0);
-        });
-
-        let html = `<p style="font-size:12px;color:var(--muted);margin-bottom:14px;">
-            Select a major for each college to compare field-specific earnings.
-        </p>`;
-
-        compareList.forEach((entry, idx) => {
-            const color  = COMPARE_COLORS[idx];
-            const isOpen = openState[idx];
-
-            let bodyContent;
-            if (entry.programsLoading) {
-                bodyContent = `<p style="font-size:13px;color:var(--muted);font-style:italic;padding:10px 0;">Loading program data…</p>`;
-            } else if (!entry.programsData || entry.programsData.length === 0) {
-                bodyContent = `<p style="font-size:13px;color:var(--muted);font-style:italic;padding:10px 0;">No program-level earnings data available for this college.</p>`;
-            } else {
-                const options = entry.programsData.map(p =>
-                    `<option value="${p.earnings}" ${entry.selectedMajorEarnings == p.earnings && entry.selectedMajorTitle === p.title ? 'selected' : ''}>
-                        ${p.title}: $${Number(p.earnings).toLocaleString()}/yr
-                    </option>`
-                ).join('');
-
-                const earningsVisible = !!entry.selectedMajorTitle;
-                bodyContent = `
-                    <div class="field-group" style="margin-bottom:${earningsVisible ? '12px' : '0'}">
-                        <label for="maj-select-${idx}">Select a Major</label>
-                        <select id="maj-select-${idx}" class="maj-select" data-idx="${idx}"
-                                style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
-                            <option value="">Select a major</option>
-                            ${options}
-                        </select>
-                    </div>
-                    <div class="maj-earnings-card" id="maj-earn-${idx}" style="display:${earningsVisible ? 'block' : 'none'}">
-                        <div class="earnings-row">
-                            <div class="stat">
-                                <div class="val blue">$${Number(entry.college.sixYrEarnings || 0).toLocaleString()}</div>
-                                <div class="lbl">College-wide Median (6 yrs)</div>
-                            </div>
-                            <div class="stat">
-                                <div class="val green" id="maj-earn-val-${idx}">
-                                    ${entry.selectedMajorEarnings ? '$' + Number(entry.selectedMajorEarnings).toLocaleString() : ': '}
-                                </div>
-                                <div class="lbl">${entry.selectedMajorTitle || 'This Major'} Median (6 yrs)</div>
-                            </div>
-                        </div>
-                    </div>`;
-            }
-
-            html += `
-                <div class="ca-item" style="border-left:3px solid ${color};margin-bottom:8px;">
-                    <div class="ca-header" onclick="toggleMajorAccordion(${idx})">
-                        <span class="ca-title">
-                            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color};margin-right:8px;flex-shrink:0;"></span>
-                            ${entry.college.name}
-                        </span>
-                        ${entry.selectedMajorTitle
-                            ? `<span class="ca-meta" style="color:${color};font-weight:600;">${entry.selectedMajorTitle}</span>`
-                            : `<span class="ca-meta">No major selected</span>`}
-                        <span class="ca-chevron" id="maj-chevron-${idx}">${isOpen ? '▲' : '▼'}</span>
-                    </div>
-                    <div class="ca-body" id="maj-body-${idx}" style="display:${isOpen ? 'block' : 'none'};">
-                        ${bodyContent}
-                    </div>
-                </div>`;
-        });
-
-        container.innerHTML = html;
-
-        document.querySelectorAll('.maj-select').forEach(sel => {
-            sel.addEventListener('change', function() {
-                const idx  = parseInt(this.dataset.idx);
-                const val  = parseFloat(this.value);
-                const text = this.options[this.selectedIndex].text.split(': ')[0];
-                const entry = compareList[idx];
-                if (!entry) return;
-
-                if (!this.value) {
-                    entry.selectedMajorTitle    = null;
-                    entry.selectedMajorEarnings = null;
-                    document.getElementById('maj-earn-' + idx).style.display = 'none';
-                    const meta = document.querySelector(`#maj-body-${idx}`).closest('.ca-item').querySelector('.ca-meta');
-                    if (meta) meta.textContent = 'No major selected';
-                } else {
-                    entry.selectedMajorTitle    = text;
-                    entry.selectedMajorEarnings = val;
-                    const earnCard = document.getElementById('maj-earn-' + idx);
-                    document.getElementById('maj-earn-val-' + idx).textContent = '$' + Number(val).toLocaleString();
-                    const lblEl = earnCard.querySelector('.stat:last-child .lbl');
-                    if (lblEl) lblEl.textContent = text + ' Median (6 yrs)';
-                    earnCard.style.display = 'block';
-                    const meta = document.querySelector(`#maj-body-${idx}`).closest('.ca-item').querySelector('.ca-meta');
-                    if (meta) { meta.textContent = text; meta.style.color = COMPARE_COLORS[idx]; meta.style.fontWeight = '600'; }
-                }
-            });
-        });
-    }
-
-    function toggleMajorAccordion(idx) {
-        const body = document.getElementById('maj-body-' + idx);
-        const chev = document.getElementById('maj-chevron-' + idx);
-        if (!body) return;
-        const isOpen = body.style.display !== 'none';
-        body.style.display = isOpen ? 'none' : 'block';
-        if (chev) chev.textContent = isOpen ? '▼' : '▲';
-    }
-
-    function loadProgramsForEntry(entry) {
-        entry.programsLoading = true;
-        entry.programsData    = [];
-        renderMajorCompareAccordions();
-
-        $.get("/api/colleges/" + encodeURIComponent(entry.college.name) + "/programs", function(data) {
-            entry.programsLoading = false;
-            entry.programsData    = data || [];
-            renderMajorCompareAccordions();
-        }).fail(function() {
-            entry.programsLoading = false;
-            entry.programsData    = [];
-            renderMajorCompareAccordions();
-        });
-    }
-
-    $("#searchButton").on("click", function() {
-        const college = $("#collegeSearch").val().trim();
-        if (college) loadROI(college);
-    });
-
-    $("#addToCompareBtn").on("click", addToCompare);
-
-    $("#residencySelect, #livingSelect").on("change", function() {
-        if (selectedCollege.name) { renderCOACard(selectedCollege.name); recalculateGap(); }
-    });
-    $("#healthInsuranceCheck").on("change", function() {
-        if (selectedCollege.name) { renderCOACard(selectedCollege.name); recalculateGap(); }
-    });
-
-    // ── Residency / Living label maps ─────────────────────────────────────────
-    const RESIDENCY_LABELS = { instate: 'In-State', outofstate: 'Out-of-State', international: 'International', online: 'Online' };
-    const LIVING_LABELS    = { oncampus: 'On-Campus', offcampus: 'Off-Campus', home: 'At Home' };
-
-    // ── Financial math ────────────────────────────────────────────────────────
-    const LOAN_RATE = 0.065 / 12, LOAN_N = 120;
-    function pmtCalc(principal) {
-        return principal > 0 ? (principal * LOAN_RATE) / (1 - Math.pow(1 + LOAN_RATE, -LOAN_N)) : 0;
-    }
-
-    // ── Build profile data (single mode) ──────────────────────────────────────
-    function buildProfileData() {
-        const coa    = computeCOA() || 0;
-        const pellG  = pf($("#pellGrant").val())          || 0;
-        const instG  = pf($("#institutionalGrant").val()) || 0;
-        const schol  = pf($("#scholarshipAmount").val())  || 0;
-        const subL   = pf($("#subsidizedLoan").val())     || 0;
-        const unsubL = pf($("#unsubsidizedLoan").val())   || 0;
-        const ws     = pf($("#workStudy").val())          || 0;
-        const fam    = pf($("#parentPlusLoan").val())     || 0;
-        const netPriceCalc  = Math.max(0, coa - pellG - instG - schol);
-        const unmetNeedCalc = Math.max(0, netPriceCalc - subL - unsubL - ws - fam);
-        const residencyVal  = $("#residencySelect").val();
-        const livingVal     = $("#livingSelect").val();
-        return {
-            collegeName:        selectedCollege.name || $("#collegeSearch").val().trim() || 'N/A',
-            major:              selectedCollege.selectedMajor || null,
-            residency:          RESIDENCY_LABELS[residencyVal] || residencyVal,
-            living:             LIVING_LABELS[livingVal] || livingVal,
-            year:               'Freshman – Year 1 of 4',
-            federalLoan:        subL + unsubL,
-            parentPlus:         fam,
-            freeAid:            pellG + instG + schol + ws,
-            netPrice:           netPriceCalc,
-            unmetNeed:          unmetNeedCalc,
-            majorEarnings:      selectedCollege.majorEarnings || selectedCollege.sixYrEarnings || 0,
-            collegeWideEarnings:selectedCollege.sixYrEarnings || 0
-        };
-    }
-
-    // ── Build profile data from compare entry ─────────────────────────────────
-    function buildProfileDataForEntry(entry) {
-        return {
-            collegeName:        entry.college.name,
-            major:              entry.selectedMajorTitle || null,
-            residency:          RESIDENCY_LABELS[entry.residency] || entry.residency,
-            living:             LIVING_LABELS[entry.living] || entry.living,
-            year:               'Freshman – Year 1 of 4',
-            federalLoan:        (entry.fafsa.subsidizedLoan || 0) + (entry.fafsa.unsubsidizedLoan || 0),
-            parentPlus:         entry.fafsa.familyContribution || 0,
-            freeAid:            (entry.fafsa.pellGrant || 0) + (entry.fafsa.institutionalGrant || 0) + (entry.fafsa.scholarshipAmount || 0) + (entry.fafsa.workStudy || 0),
-            netPrice:           entry.netPrice || 0,
-            unmetNeed:          entry.unmetNeed || 0,
-            majorEarnings:      entry.selectedMajorEarnings || entry.college.sixYrEarnings || 0,
-            collegeWideEarnings:entry.college.sixYrEarnings || 0
-        };
-    }
-
-    // ── Build AJAX payload for one compare entry ──────────────────────────────
-    function buildEntryPayload(entry) {
-        return {
-            compareMode:        false,
-            collegeName:        entry.college.name,
-            major:              entry.selectedMajorTitle || null,
-            pellGrant:          entry.fafsa.pellGrant          || 0,
-            subsidizedLoan:     entry.fafsa.subsidizedLoan     || 0,
-            unsubsidizedLoan:   entry.fafsa.unsubsidizedLoan   || 0,
-            parentPlusLoan:     entry.fafsa.familyContribution || 0,
-            institutionalGrant: entry.fafsa.institutionalGrant || 0,
-            scholarshipAmount:  entry.fafsa.scholarshipAmount  || 0,
-            workStudy:          entry.fafsa.workStudy          || 0,
-            computedCOA:        entry.computedCOA              || 0,
-            computedNetPrice:   entry.netPrice                 || 0,
-            computedUnmetNeed:  entry.unmetNeed                || 0,
-            residency:          entry.residency,
-            livingSituation:    entry.living,
-            sixYrEarnings:      entry.selectedMajorEarnings || entry.college.sixYrEarnings || null,
-            collegeWideEarnings:entry.college.sixYrEarnings || null
-        };
-    }
-
-    // ── AI Financial Summary ──────────────────────────────────────────────────
-    $("#aiButton").on("click", function() {
-        // Paywall: block on 4th+ click of "Get AI Summary" per account
-        if (searchCount >= FREE_SEARCHES) {
-            applyPaywall();
-            return;
-        }
-        // Increment now; update local count from server response
-        $.post("/api/auth/search/increment", function(res) {
-            searchCount = res.searchCount || (searchCount + 1);
-        });
-
-        recalculateGap();
-        const inCompareMode = compareList.length >= 2;
-        $("#aiButton").prop("disabled", true);
-        $("#aiAdviceBox").hide().html("");
-        $("#coverageChartWrap").hide();
-        $("#aiSpinner").show();
-        $("#aiSection").attr("aria-busy", "true");
-
-        if (inCompareMode) {
-            // One AJAX call per compare entry, wait for all
-            const allGroqData = new Array(compareList.length).fill(null);
-            const allProfiles = compareList.map(buildProfileDataForEntry);
-            let completed = 0;
-
-            compareList.forEach(function(entry, i) {
-                $.ajax({
-                    url: "/api/llm/advice",
-                    type: "POST",
-                    contentType: "application/json",
-                    data: JSON.stringify(buildEntryPayload(entry)),
-                    success: function(resp) {
-                        allGroqData[i] = resp.data || null;
-                    },
-                    error: function() {
-                        allGroqData[i] = null;
-                    },
-                    complete: function() {
-                        completed++;
-                        if (completed === compareList.length) {
-                            $("#aiSpinner").hide();
-                            $("#aiSection").attr("aria-busy", "false");
-                            renderCoverageChart(compareList);
-                            $("#aiAdviceBox").html(renderCompareReport(allGroqData, allProfiles)).show();
-                            $("#exportRow").show();
-                            $("#aiButton").prop("disabled", false);
-                        }
-                    }
-                });
-            });
-        } else {
-            // Single mode
-            const effectiveEarnings = selectedCollege.majorEarnings || selectedCollege.sixYrEarnings;
-            const coa      = computeCOA() || 0;
-            const pellG    = pf($("#pellGrant").val())          || 0;
-            const instG    = pf($("#institutionalGrant").val()) || 0;
-            const schol    = pf($("#scholarshipAmount").val())  || 0;
-            const subL     = pf($("#subsidizedLoan").val())     || 0;
-            const unsubL   = pf($("#unsubsidizedLoan").val())   || 0;
-            const ws       = pf($("#workStudy").val())          || 0;
-            const fam      = pf($("#parentPlusLoan").val())     || 0;
-            const netPriceCalc  = coa - pellG - instG - schol;
-            const unmetNeedCalc = netPriceCalc - subL - unsubL - ws - fam;
-
-            const payload = {
-                compareMode:          false,
-                collegeName:          selectedCollege.name || $("#collegeSearch").val().trim() || null,
-                major:                selectedCollege.selectedMajor || null,
-                pellGrant:            pellG,
-                subsidizedLoan:       subL,
-                unsubsidizedLoan:     unsubL,
-                parentPlusLoan:       fam,
-                institutionalGrant:   instG,
-                scholarshipAmount:    schol,
-                workStudy:            ws,
-                computedCOA:          coa,
-                computedNetPrice:     Math.max(0, netPriceCalc),
-                computedUnmetNeed:    Math.max(0, unmetNeedCalc),
-                residency:            $("#residencySelect").val(),
-                livingSituation:      $("#livingSelect").val(),
-                netPrice:             selectedCollege.netPrice,
-                sixYrEarnings:        effectiveEarnings,
-                collegeWideEarnings:  selectedCollege.sixYrEarnings || null
-            };
-
-            $.ajax({
-                url: "/api/llm/advice",
-                type: "POST",
-                contentType: "application/json",
-                data: JSON.stringify(payload),
-                success: function(resp) {
-                    $("#aiSpinner").hide();
-                    $("#aiSection").attr("aria-busy", "false");
-                    if (resp.data) {
-                        const profile = buildProfileData();
-                        $("#aiAdviceBox").html(renderSummaryReport(resp.data, profile)).show();
-                    } else {
-                        $("#aiAdviceBox").html(formatAdvice(resp.advice || "No advice returned.")).show();
-                    }
-                    $("#exportRow").show();
-                    $("#aiButton").prop("disabled", false);
-                },
-                error: function(xhr) {
-                    $("#aiSpinner").hide();
-                    $("#aiSection").attr("aria-busy", "false");
-                    const msg = xhr.responseJSON?.error || "Something went wrong. Please try again.";
-                    $("#aiAdviceBox").html("Error: " + msg).show();
-                    $("#aiButton").prop("disabled", false);
-                }
-            });
-        }
-    });
-
-    // ── Render: full single-college report ───────────────────────────────────
-    function renderSummaryReport(groqData, profile) {
-        return `<div class="efas-report">${renderCollegeSection(groqData, profile)}</div>`;
-    }
-
-    // ── Render: compare report (N colleges) ──────────────────────────────────
-    function renderCompareReport(groqDataArray, profileArray) {
-        let html = '<div class="efas-report">';
-        groqDataArray.forEach(function(groqData, i) {
-            html += renderCollegeSection(groqData, profileArray[i]);
-        });
-        html += '</div>';
-        return html;
-    }
-
-    // ── Render: one college's sections ───────────────────────────────────────
-    function renderCollegeSection(groqData, profile) {
-        const d = n => '$' + Math.round(Math.max(0, n || 0)).toLocaleString('en-US');
-        const pct = n => (n * 100).toFixed(1) + '%';
-
-        // Repayment math
-        const sc1Total   = profile.federalLoan * 4;
-        const sc1Monthly = pmtCalc(sc1Total);
-        const sc1Annual  = sc1Monthly * 12;
-        const sc1Pct     = profile.majorEarnings > 0 ? sc1Annual / profile.majorEarnings : 0;
-
-        const sc2Total   = sc1Total + (profile.unmetNeed * 4);
-        const sc2Monthly = pmtCalc(sc2Total);
-        const sc2Annual  = sc2Monthly * 12;
-        const sc2Pct     = profile.majorEarnings > 0 ? sc2Annual / profile.majorEarnings : 0;
-
-        function statusClass(p) { return p < 0.05 ? 'efas-status-good' : p <= 0.10 ? 'efas-status-warn' : 'efas-status-bad'; }
-        function statusLabel(p) { return p < 0.05 ? 'MANAGEABLE' : p <= 0.10 ? 'BORDERLINE' : 'HIGH RISK'; }
-
-        // Profile table
-        const profileTable = `
-            <div class="efas-section-title">Student &amp; School Profile</div>
-            <table class="efas-profile-table">
-                <tr><td>School</td><td>${profile.collegeName}</td></tr>
-                <tr><td>Major</td><td>${profile.major || 'Not Selected'}</td></tr>
-                <tr><td>Year</td><td>${profile.year}</td></tr>
-                <tr><td>Residency</td><td>${profile.residency}</td></tr>
-                <tr><td>Housing</td><td>${profile.living}</td></tr>
-            </table>`;
-
-        // Key metrics banner
-        const metricsBanner = `
-            <div class="efas-section-title">Key Metrics</div>
-            <div class="efas-metrics">
-                <div class="efas-metric-box">
-                    <span class="efas-metric-num">${d(profile.netPrice)}</span>
-                    <span class="efas-metric-lbl">Net Price / Year</span>
-                </div>
-                <div class="efas-metric-box">
-                    <span class="efas-metric-num">${d(profile.federalLoan)}</span>
-                    <span class="efas-metric-lbl">Federal Loans Offered</span>
-                </div>
-                <div class="efas-metric-box">
-                    <span class="efas-metric-num">${d(profile.unmetNeed)}</span>
-                    <span class="efas-metric-lbl">Unmet Need</span>
-                </div>
-            </div>`;
-
-        // Earnings table
-        const earningsTable = `
-            <div class="efas-section-title">For Context: Earnings After Graduation</div>
-            <table class="efas-earnings-table">
-                <thead><tr><th>Earnings Benchmark</th><th>6-Year Median</th></tr></thead>
-                <tbody>
-                    <tr><td>${profile.major ? profile.major + ' graduates' : 'Major-specific graduates'}</td><td>${profile.majorEarnings > 0 ? d(profile.majorEarnings) + '/yr' : 'N/A'}</td></tr>
-                    <tr><td>All graduates of ${profile.collegeName}</td><td>${profile.collegeWideEarnings > 0 ? d(profile.collegeWideEarnings) + '/yr' : 'N/A'}</td></tr>
-                </tbody>
-            </table>`;
-
-        // Repayment table
-        const repaymentTable = `
-            <div class="efas-section-title">Estimated Repayment Scenarios (10-Year Standard Plan)</div>
-            <table class="efas-repayment-table">
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th>Scenario 1: Federal Loans Only</th>
-                        <th>Scenario 2: Maximum Borrowing</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Est. 4-Year Total Borrowed</td>
-                        <td>${d(sc1Total)}</td>
-                        <td>${d(sc2Total)}</td>
-                    </tr>
-                    <tr>
-                        <td>Monthly Payment</td>
-                        <td>${d(sc1Monthly)}/mo</td>
-                        <td>${d(sc2Monthly)}/mo</td>
-                    </tr>
-                    <tr>
-                        <td>Annual Repayment</td>
-                        <td>${d(sc1Annual)}/yr</td>
-                        <td>${d(sc2Annual)}/yr</td>
-                    </tr>
-                    <tr>
-                        <td>As % of 6-Yr Earnings</td>
-                        <td>${profile.majorEarnings > 0 ? pct(sc1Pct) : 'N/A'}</td>
-                        <td>${profile.majorEarnings > 0 ? pct(sc2Pct) : 'N/A'}</td>
-                    </tr>
-                    <tr>
-                        <td>Debt-to-Income Status</td>
-                        <td class="${statusClass(sc1Pct)}">${profile.majorEarnings > 0 ? statusLabel(sc1Pct) : ': '}</td>
-                        <td class="${statusClass(sc2Pct)}">${profile.majorEarnings > 0 ? statusLabel(sc2Pct) : ': '}</td>
-                    </tr>
-                </tbody>
-            </table>
-            <p class="efas-footnote">Rate: 6.5% fixed, 10-year standard plan. Scenario 2 = federal loans + (unmet need &times; 4 years). Status: MANAGEABLE &lt;5% of earnings, BORDERLINE 5&ndash;10%, HIGH RISK &gt;10%.</p>`;
-
-        // School & Major Resources (AI-generated)
-        let resourcesHtml = '<div class="efas-section-title">School &amp; Major Resources</div>';
-        if (groqData && groqData.schoolMajorResources) {
-            const smr = groqData.schoolMajorResources;
-
-            if (smr.professionalSocieties && smr.professionalSocieties.length) {
-                const socRows = smr.professionalSocieties.map(s =>
-                    `<tr><td>${s.name}</td><td>${s.description}</td></tr>`
-                ).join('');
-                resourcesHtml += `
-                    <div class="efas-resource-box">
-                        <div class="efas-resource-box-header green">Professional Societies &amp; Major-Specific Clubs</div>
-                        <table class="efas-resource-table">
-                            <thead><tr><th>Organization</th><th>Description</th></tr></thead>
-                            <tbody>${socRows}</tbody>
-                        </table>
-                    </div>`;
-            }
-
-            if (smr.freshmanResources && smr.freshmanResources.length) {
-                const freshRows = smr.freshmanResources.map(r =>
-                    `<tr><td>${r.name}</td><td>${r.description}</td></tr>`
-                ).join('');
-                resourcesHtml += `
-                    <div class="efas-resource-box">
-                        <div class="efas-resource-box-header purple">Freshman-Specific Campus Resources &amp; Support</div>
-                        <table class="efas-resource-table">
-                            <thead><tr><th>Resource</th><th>Description</th></tr></thead>
-                            <tbody>${freshRows}</tbody>
-                        </table>
-                    </div>`;
-            }
-        } else {
-            resourcesHtml += '<p style="color:var(--muted);font-size:12px;padding:8px 0;">Resource data unavailable for this college.</p>';
-        }
-
-        // School-specific Scholarships (AI-generated)
-        let scholarshipsHtml = '<div class="efas-section-title">School &amp; Major-Specific Scholarships</div>';
-        if (groqData && groqData.scholarships && groqData.scholarships.length) {
-            const rows = groqData.scholarships.map(s =>
-                `<tr>
-                    <td><strong>${s.name}</strong>${s.notes ? `<br><span style="font-size:11px;color:var(--muted);">${s.notes}</span>` : ''}</td>
-                    <td style="font-weight:700;color:var(--accent)">${s.amount}</td>
-                    <td>${s.sponsor}</td>
-                    <td>${s.eligibility}</td>
-                    <td>${s.deadline}</td>
-                </tr>`
-            ).join('');
-            scholarshipsHtml += `
-                <div class="efas-resource-box">
-                    <div class="efas-resource-box-header green">Scholarships for ${profile.collegeName}${profile.major ? ' · ' + profile.major : ''}</div>
-                    <table class="efas-resource-table">
-                        <thead><tr><th>Scholarship</th><th>Amount</th><th>Sponsor</th><th>Eligibility</th><th>Deadline</th></tr></thead>
-                        <tbody>${rows}</tbody>
-                    </table>
-                </div>`;
-        } else {
-            scholarshipsHtml += '<p style="color:var(--muted);font-size:12px;padding:8px 0;">Scholarship data unavailable — enter a major for personalized results.</p>';
-        }
-
-        // Employment Opportunities (AI-generated)
-        let employmentHtml = '<div class="efas-section-title">Employment Opportunities in This Major</div>';
-        if (groqData && groqData.employmentOpportunities && groqData.employmentOpportunities.length) {
-            const rows = groqData.employmentOpportunities.map(e =>
-                `<tr>
-                    <td><strong>${e.title}</strong><br><span style="font-size:11px;color:var(--primary-dk);font-weight:600;">${e.type}</span></td>
-                    <td style="font-weight:700;color:var(--accent);white-space:nowrap">${e.pay}</td>
-                    <td>${e.details}</td>
-                </tr>`
-            ).join('');
-            employmentHtml += `
-                <div class="efas-resource-box">
-                    <div class="efas-resource-box-header purple">On-Campus &amp; Career-Track Roles</div>
-                    <table class="efas-resource-table">
-                        <thead><tr><th>Role</th><th>Pay</th><th>How to Find It</th></tr></thead>
-                        <tbody>${rows}</tbody>
-                    </table>
-                </div>`;
-        } else {
-            employmentHtml += '<p style="color:var(--muted);font-size:12px;padding:8px 0;">Employment data unavailable — enter a major above for personalized results.</p>';
-        }
-
-        // Key Considerations
-        let considerationsHtml = '<div class="efas-section-title">Key Considerations for Families</div>';
-        if (groqData && groqData.keyConsiderations && groqData.keyConsiderations.length) {
-            const rows = groqData.keyConsiderations.map(c =>
-                `<tr><td>${c.title}</td><td>${c.body}</td></tr>`
-            ).join('');
-            considerationsHtml += `
-                <table class="efas-resource-table">
-                    <thead><tr><th>Topic</th><th>Guidance</th></tr></thead>
-                    <tbody>${rows}</tbody>
-                </table>`;
-        } else {
-            considerationsHtml += '<p style="color:var(--muted);font-size:12px;padding:8px 0;">Considerations unavailable.</p>';
-        }
-
-        return `<div class="efas-college-section">
-            <div class="efas-college-header">${profile.collegeName}${profile.major ? ' &mdash; ' + profile.major : ''}</div>
-            ${profileTable}
-            ${metricsBanner}
-            ${earningsTable}
-            ${repaymentTable}
-            ${resourcesHtml}
-            ${scholarshipsHtml}
-            ${employmentHtml}
-            ${considerationsHtml}
-        </div>`;
-    }
-
-    // ── Render: shared scholarships section ──────────────────────────────────
-    function renderScholarshipsSection(scholarships) {
-        const scholCols = '<thead><tr><th>Scholarship</th><th>Amount</th><th>Sponsor</th><th>Eligibility</th><th>Deadline</th><th>Apply At</th></tr></thead>';
-
-        function scholRows(arr) {
-            return (arr || []).map(s =>
-                `<tr>
-                    <td><strong>${s.name}</strong></td>
-                    <td>${s.amount}</td>
-                    <td>${s.sponsor}</td>
-                    <td>${s.eligibility}</td>
-                    <td>${s.deadline}</td>
-                    <td><a href="${s.url}" target="_blank" rel="noopener">Apply &rarr;</a></td>
-                </tr>`
-            ).join('');
-        }
-
-        return `<div class="efas-college-section">
-            <div class="efas-college-header">Private &amp; Foundation Scholarships</div>
-            <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">These scholarships are not personalized: they represent widely available national and field-specific awards. Research each carefully for current eligibility and deadlines.</p>
-            <table class="efas-scholarship-table">
-                ${scholCols}
-                <tbody>
-                    <tr class="efas-schol-section-header national"><td colspan="6">National Foundation &amp; Corporate Scholarships</td></tr>
-                    ${scholRows(scholarships.national)}
-                    <tr class="efas-schol-section-header field"><td colspan="6">STEM / Field-Specific Scholarships</td></tr>
-                    ${scholRows(scholarships.fieldSpecific)}
-                    <tr class="efas-schol-section-header community"><td colspan="6">Community, Identity &amp; Faith-Based Scholarships</td></tr>
-                    ${scholRows(scholarships.communityIdentity)}
-                </tbody>
-            </table>
-            <p class="efas-footnote">Deadlines change each cycle. Always verify at the sponsor's official website before applying. This list is for informational purposes only and does not constitute an endorsement.</p>
-        </div>`;
-    }
-
-    // ── AI Summary Formatter (legacy fallback) ────────────────────────────────
-    function formatAdvice(raw) {
-        let text = raw.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-        const meta = [
-            { label: 'Loan Assessment',    color: 'var(--accent)' },
-            { label: 'Key Risks',          color: '#b94040' },
-            { label: 'Compounding Impact', color: 'var(--navy)' },
-            { label: 'Action Step',        color: 'var(--primary-dk)' }
-        ];
-
-        const sections = text.split(/\n(?=\s*\d+[\.\)]\s)/);
-
-        if (sections.length >= 2) {
-            const rows = sections.map((s, i) => {
-                const body = s.replace(/^\s*\d+[\.\)]\s+/, '').trim();
-                const m = meta[i] || { label: 'Note', color: 'var(--navy)' };
-                return `<div style="display:flex;gap:14px;padding:13px 0;border-bottom:1px solid var(--border);">
-                    <div style="width:4px;min-width:4px;border-radius:2px;background:${m.color};margin-top:2px;"></div>
-                    <div>
-                        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:${m.color};margin-bottom:5px;">${m.label}</div>
-                        <div style="font-size:13px;line-height:1.65;color:var(--text);">${body}</div>
-                    </div>
-                </div>`;
-            });
-            return `<div style="margin:0;">${rows.join('')}</div>`;
-        }
-
-        return text.split(/\n\n+/)
-            .map(p => `<p style="margin:0 0 10px;font-size:13px;line-height:1.65;">${p.replace(/\n/g,'<br>')}</p>`)
-            .join('');
-    }
-
-
-    function buildFourYearPlan(yearlyTips, loanData, netPriceOverride, earningsOverride) {
-        const netPrice      = netPriceOverride  != null ? netPriceOverride  : (selectedCollege.netPrice      || 0);
-        const sixYrEarnings = earningsOverride  != null ? earningsOverride  : (selectedCollege.sixYrEarnings || 0);
-        const subLoan       = loanData ? (loanData.subLoan    || 0) : (pf($("#subsidizedLoan").val())    || 0);
-        const unsubLoan     = loanData ? (loanData.unsubLoan  || 0) : (pf($("#unsubsidizedLoan").val())  || 0);
-        const parentPlus    = loanData ? (loanData.parentPlus || 0) : (pf($("#parentPlusLoan").val())    || 0);
-        const yr1Loans      = subLoan + unsubLoan + parentPlus;
-        const fedLimits     = [5500, 6500, 7500, 7500];
-        const useDefaults   = yr1Loans === 0;
-        const safeTotal     = sixYrEarnings > 0 ? sixYrEarnings : null;
-        const d = n => '$' + Math.round(n).toLocaleString();
-
-        let cumDebt = 0;
-        const rows = [1,2,3,4].map(function(y) {
-            const fedCap    = fedLimits[y-1];
-            const yearLoans = useDefaults ? fedCap : Math.min(yr1Loans, fedCap + parentPlus);
-            cumDebt        += yearLoans;
-            const monthly   = cumDebt > 0 ? (cumDebt * (0.0654/12)) / (1 - Math.pow(1 + 0.0654/12, -120)) : 0;
-            const over      = safeTotal && cumDebt > safeTotal;
-            const tip       = yearlyTips[y-1] || ': ';
-            return `<tr>
-                <td style="font-weight:700;color:var(--navy)">Year ${y}</td>
-                <td>${netPrice > 0 ? d(netPrice) : ': '}</td>
-                <td>${d(yearLoans)}${useDefaults ? '*' : ''}</td>
-                <td class="${over ? 'over-limit' : ''}">${d(cumDebt)}${over ? ' !' : ''}</td>
-                <td>${d(monthly)}/mo</td>
-                <td class="tip-cell">${tip}</td>
-            </tr>`;
-        });
-
-        const note    = useDefaults ? `<p style="font-size:11px;color:var(--muted);margin-top:6px;">* Projected using federal dependent student loan limits. Enter your actual aid package above for a personalised projection.</p>` : '';
-        const warning = safeTotal   ? `<p style="font-size:11px;color:var(--muted);margin-top:4px;">Total debt at graduation should not exceed one year's starting salary (${d(sixYrEarnings)}). Rows marked <span style="color:#b94040;font-weight:700">!</span> exceed this threshold.</p>` : '';
-
-        return `<div style="overflow-x:auto;">
-            <table class="plan-table">
-                <thead><tr><th>Year</th><th>Net Cost</th><th>Est. Loans</th><th>Cumulative Debt</th><th>Est. Monthly Pmt</th><th>Reduction Strategy</th></tr></thead>
-                <tbody>${rows.join('')}</tbody>
-            </table></div>${note}${warning}`;
-    }
-
-    function exportReport() { window.print(); }
-
-    function handleUnlock() {
-        const btn = document.querySelector('.btn-unlock');
-        if (btn) { btn.disabled = true; btn.textContent = 'Redirecting…'; }
-        $.ajax({
-            url: '/api/stripe/create-checkout-session',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ baseUrl: window.location.origin }),
-            success: function(resp) {
-                if (resp.url) window.location.href = resp.url;
-            },
-            error: function() {
-                if (btn) { btn.disabled = false; btn.textContent = 'Unlock Premium'; }
-                alert('Could not start checkout. Please try again.');
-            }
-        });
-    }
-
-    // Handle return from Stripe Checkout
-    (function() {
-        const params = new URLSearchParams(window.location.search);
-        const payment = params.get('payment');
-        if (payment === 'success') {
-            history.replaceState(null, '', '/');
-            const toast = $('<div>').css({
-                position:'fixed', bottom:'28px', right:'28px',
-                background:'#166534', color:'white',
-                padding:'12px 22px', borderRadius:'8px',
-                fontSize:'14px', fontWeight:'600', zIndex:9999
-            }).text('Access unlocked! Welcome aboard.');
-            $('body').append(toast);
-            setTimeout(() => toast.fadeOut(400, function(){ $(this).remove(); }), 4000);
-            // Reset paywall for this session
-            searchCount = 0;
-            $("#paywallSection > :not(#searchPaywall)").css({ filter: '', opacity: '', 'pointer-events': '', 'user-select': '' });
-            $("#paywallSection").css("pointer-events", "");
-            $("#searchPaywall").hide();
-        } else if (payment === 'cancelled') {
-            history.replaceState(null, '', '/');
-        }
-    })();
-
-    // On load: confirm session before showing any content
-    $.ajax({
-        url: "/api/auth/me",
-        type: "GET",
-        dataType: "json",
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-        success: function(data) {
-            if (data.loggedIn) {
-                $("body").addClass("auth-ready");
-                $("#authGate").fadeOut(200);
-                const displayName = data.name || data.email || '';
-                $("#hdrUserName").text(displayName).show();
-                $("#hdrLogout").show();
-                searchCount = data.searchCount || 0;
-            } else {
-                window.location.href = "/login.html";
-            }
-        },
-        error: function() {
-            window.location.href = "/login.html";
-        }
-    });
-
-    // Logout
-    $("#hdrLogout").on("click", function(e) {
-        e.preventDefault();
-        $.post("/api/auth/logout", function() {
-            window.location.href = "/login.html";
-        }).fail(function() {
-            window.location.href = "/login.html";
-        });
-    });
-
-    function pf(val) {
-        const f = parseFloat(val);
-        return isNaN(f) ? null : f;
-    }
-
-    // ── Financial Gap Auto-Calculation ────────────────────────────────────────
-    const fafsaFieldIds = ['#pellGrant','#subsidizedLoan','#unsubsidizedLoan',
-                           '#parentPlusLoan','#institutionalGrant','#scholarshipAmount','#workStudy'];
-    fafsaFieldIds.forEach(id => $(id).on('input', recalculateGap));
-
-    function recalculateGap() {
-        if (compareList.length > 0) {
-            renderCompareAccordions();
-        } else {
-            renderSingleGap();
-        }
-    }
-
-    function renderSingleGap() {
-        const totalCost = computeCOA();
-
-        if (!selectedCollege.name || !totalCost) {
-            $("#gapAnalysisContent").html('<p class="gap-placeholder">Search and select a college above to activate gap analysis.</p>');
-            return;
-        }
-
-        const pellGrant     = pf($("#pellGrant").val())          || 0;
-        const subLoan       = pf($("#subsidizedLoan").val())     || 0;
-        const unsubLoan     = pf($("#unsubsidizedLoan").val())   || 0;
-        const familyCont    = pf($("#parentPlusLoan").val())     || 0;
-        const instGrant     = pf($("#institutionalGrant").val()) || 0;
-        const scholarship   = pf($("#scholarshipAmount").val())  || 0;
-        const workStudy     = pf($("#workStudy").val())          || 0;
-
-        const totalGiftAid  = pellGrant + instGrant + scholarship;
-        const netPrice      = totalCost - totalGiftAid;
-        const totalLoans    = subLoan + unsubLoan;
-        const unmetNeed     = netPrice - totalLoans - workStudy - familyCont;
-
-        const d = n => '$' + Math.round(Math.max(0,n)).toLocaleString('en-US');
-        const sub = (n, color) => n > 0 ? `<span class="gap-value" style="color:${color}">−${d(n)}</span>` : `<span class="gap-value" style="color:var(--muted)">N/A</span>`;
-
-        const unmetClass = unmetNeed > 0 ? 'gap-unmet' : 'gap-met';
-
-        const keyNumbers = `
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px;">
-                <div style="background:#fdf8f2;border:1.5px solid var(--primary-lt);border-radius:8px;padding:12px;text-align:center;">
-                    <div style="font-size:11px;font-weight:700;color:var(--primary-dk);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total COA</div>
-                    <div style="font-size:18px;font-weight:800;color:var(--primary-dk)">${d(totalCost)}</div>
-                    <div style="font-size:10px;color:var(--muted);margin-top:2px;">per year</div>
-                </div>
-                <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:8px;padding:12px;text-align:center;">
-                    <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Net Price</div>
-                    <div style="font-size:18px;font-weight:800;color:#276749">${d(netPrice)}</div>
-                    <div style="font-size:10px;color:var(--muted);margin-top:2px;">after free aid</div>
-                </div>
-                <div style="background:${unmetNeed > 0 ? '#fff5f5' : '#f0fdf4'};border:1.5px solid ${unmetNeed > 0 ? '#fed7d7' : '#bbf7d0'};border-radius:8px;padding:12px;text-align:center;">
-                    <div style="font-size:11px;font-weight:700;color:${unmetNeed > 0 ? '#c53030' : 'var(--accent)'};text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Unmet Need</div>
-                    <div style="font-size:18px;font-weight:800;color:${unmetNeed > 0 ? '#c53030' : '#276749'}">${d(unmetNeed)}</div>
-                    <div style="font-size:10px;color:var(--muted);margin-top:2px;">true gap remaining</div>
-                </div>
-            </div>
-            <div style="font-size:10.5px;color:var(--muted);margin-bottom:14px;line-height:1.5;">
-                <strong>Net Price</strong> = COA − free gift aid (Pell + grants + scholarships) &nbsp;·&nbsp;
-                <strong>Unmet Need</strong> = Net Price − loans − work-study − family contribution
-            </div>`;
-
-        $("#gapAnalysisContent").html(`
-            ${keyNumbers}
-            <div class="gap-row gap-cost-row">
-                <span class="gap-label">Total Cost of Attendance / Year</span>
-                <span class="gap-value" style="color:var(--primary-dk);font-size:15px;">${d(totalCost)}</span>
-            </div>
-            <div style="margin:10px 0 4px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Gift Aid: Free Money (No Repayment)</div>
-            <div class="gap-row">
-                <span class="gap-label">Pell Grant</span>
-                ${sub(pellGrant, 'var(--accent)')}
-            </div>
-            <div class="gap-row">
-                <span class="gap-label">Institutional Grant</span>
-                ${sub(instGrant, 'var(--accent)')}
-            </div>
-            <div class="gap-row">
-                <span class="gap-label">Scholarship / Gift Aid</span>
-                ${sub(scholarship, 'var(--accent)')}
-            </div>
-            <div class="gap-row" style="border-top:1px solid var(--border);margin-top:6px;padding-top:8px;font-weight:600;">
-                <span class="gap-label">= Net Price (What You Pay)</span>
-                <span class="gap-value" style="color:#276749;font-size:14px;">${d(netPrice)}</span>
-            </div>
-            <div style="margin:10px 0 4px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Financing Sources (Reduce Unmet Need)</div>
-            <div class="gap-row">
-                <span class="gap-label">Subsidized Loan</span>
-                ${sub(subLoan, 'var(--muted)')}
-            </div>
-            <div class="gap-row">
-                <span class="gap-label">Unsubsidized Loan</span>
-                ${sub(unsubLoan, 'var(--muted)')}
-            </div>
-            <div class="gap-row">
-                <span class="gap-label">Federal Work-Study</span>
-                ${sub(workStudy, 'var(--muted)')}
-            </div>
-            <div class="gap-row">
-                <span class="gap-label">Family Contribution</span>
-                ${sub(familyCont, 'var(--muted)')}
-            </div>
-            <div class="gap-total-row">
-                <span class="${unmetClass}">Unmet Need</span>
-                <span class="gap-value ${unmetClass}" style="font-size:17px;">${d(unmetNeed)}</span>
-            </div>
-            ${unmetNeed > 0
-                ? `<div class="gap-alert alert-red">
-                    <strong>${d(unmetNeed)}/yr · ${d(unmetNeed * 4)} over 4 years</strong> still unaccounted for.
-                    Look for additional scholarships or meet with your financial aid office before taking on more debt.
-                   </div>`
-                : `<div class="gap-alert alert-green">
-                    Your aid package fully covers the cost of attendance: great position to be in!
-                    Any unused loan eligibility you decline now means less debt at graduation.
-                   </div>`
-            }
-        `);
-    }
-</script>
-
-<footer style="text-align:center;padding:24px 20px;font-size:12px;color:#718096;border-top:1px solid #e2e8f0;margin-top:0;">
-  &copy; 2026 Callisto Consulting Group LLC DBA Callisto Tech. All rights reserved.
+  </div>
+</section>
+
+<!-- ── Who It's For ── -->
+<section class="section audience-section" id="audience" aria-labelledby="audience-title">
+  <div class="section-inner">
+    <p class="section-label">Who uses Astra</p>
+    <h2 class="section-title" id="audience-title">Built for everyone in the financial aid conversation</h2>
+    <p class="section-sub">Whether you're a parent filling out FAFSA for the first time, a student comparing schools, or a counselor advising dozens of families, Astra gives you the clarity you need.</p>
+
+    <div class="audience-grid">
+      <div class="audience-card">
+        <div class="audience-emoji" aria-hidden="true">👨‍👩‍👧</div>
+        <h3>Parents</h3>
+        <p>You want to help your child make a smart choice without drowning in debt.</p>
+        <ul>
+          <li>Decode the award letter from each school</li>
+          <li>Understand what you'll actually pay out of pocket</li>
+          <li>Compare net costs across multiple colleges</li>
+          <li>Know the true return on each tuition dollar</li>
+        </ul>
+      </div>
+      <div class="audience-card">
+        <div class="audience-emoji" aria-hidden="true">🎓</div>
+        <h3>Students</h3>
+        <p>You're choosing where to spend the next four years — and six figures of debt.</p>
+        <ul>
+          <li>See what you'll actually earn in your chosen major</li>
+          <li>Find scholarships matched to your background</li>
+          <li>Understand loan repayment before you sign</li>
+          <li>Compare real costs, not just sticker prices</li>
+        </ul>
+      </div>
+      <div class="audience-card">
+        <div class="audience-emoji" aria-hidden="true">🏫</div>
+        <h3>School Counselors</h3>
+        <p>You're guiding dozens of families through the most consequential financial decision of their lives.</p>
+        <ul>
+          <li>Run quick cost analyses for any college in seconds</li>
+          <li>Show students their financial gap visually</li>
+          <li>Generate printable AI financial summaries</li>
+          <li>Surface scholarships specific to each student</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── How It Works ── -->
+<section class="section steps" id="how-it-works" aria-labelledby="how-title">
+  <div class="section-inner">
+    <p class="section-label">How it works</p>
+    <h2 class="section-title" id="how-title">From FAFSA letter to clear decision in 3 steps</h2>
+    <p class="section-sub">No spreadsheets. No financial aid jargon. Just answers.</p>
+
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-number" aria-label="Step 1">1</div>
+        <h3>Search any college</h3>
+        <p>Type a school name and instantly see the full cost of attendance broken down by tuition, room and board, books, and fees — adjusted for your residency and living situation.</p>
+      </div>
+      <div class="step">
+        <div class="step-number" aria-label="Step 2">2</div>
+        <h3>Enter your aid package</h3>
+        <p>Plug in the numbers from your FAFSA award letter — Pell Grants, subsidized loans, institutional grants, work-study — and Astra calculates your exact financial gap.</p>
+      </div>
+      <div class="step">
+        <div class="step-number" aria-label="Step 3">3</div>
+        <h3>Get your AI summary</h3>
+        <p>Click one button and receive a personalized plain-English breakdown of your financial picture, with tailored scholarship suggestions and a 4-year borrowing projection.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FAQ ── -->
+<section class="section" id="faq" aria-labelledby="faq-title" style="background: var(--bg);">
+  <div class="section-inner">
+    <p class="section-label">Common questions</p>
+    <h2 class="section-title" id="faq-title">Frequently asked questions</h2>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <h3>What is FAFSA and why does it matter?</h3>
+        <p>FAFSA (Free Application for Federal Student Aid) is the form families file to qualify for federal grants, subsidized loans, and work-study programs. Most colleges also use your FAFSA data to calculate their own institutional aid offers. Filing it correctly — and understanding what comes back — is the single most important step in paying for college.</p>
+      </div>
+      <div class="faq-item">
+        <h3>What's the difference between a grant and a loan?</h3>
+        <p>A grant is free money you never repay — like the Pell Grant or an institutional scholarship. A loan is borrowed money you must repay with interest after graduation. Many financial aid award letters intentionally mix the two together, which can make an expensive school look more affordable than it really is. Astra separates them clearly.</p>
+      </div>
+      <div class="faq-item">
+        <h3>What is a financial gap?</h3>
+        <p>Your financial gap is the difference between what college costs and what your grants, scholarships, and loans cover. It's the amount your family needs to come up with through savings, income, or additional borrowing — and it's often much larger than families expect.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Do I need to create an account?</h3>
+        <p>You can run your first 3 college searches for free without a subscription. After that, a subscription unlocks unlimited searches, full gap analysis, AI summaries, and scholarship matching.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Is my data private?</h3>
+        <p>Yes. Astra does not sell your personal data or share it with colleges. You can review our <a href="/privacy-policy.html" style="color: var(--primary-dk); text-decoration: underline;">Privacy Policy</a> for full details.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Pricing ── -->
+<section class="section pricing-section" id="pricing" aria-labelledby="pricing-title">
+  <div class="section-inner" style="text-align:center;">
+    <p class="section-label" style="text-align:center;">Simple pricing</p>
+    <h2 class="section-title" id="pricing-title" style="text-align:center;">Start free. Upgrade when you're ready.</h2>
+    <p class="section-sub" style="margin:0 auto 40px;">No complicated tiers. One affordable plan that gives you everything.</p>
+
+    <div class="free-badge">✓ First 3 college searches always free</div>
+
+    <div class="pricing-card">
+      <div class="pricing-header">
+        <p class="pricing-label">Full Access</p>
+        <div class="pricing-amount"><sup>$</sup>29.99</div>
+        <p class="pricing-period">per month · cancel anytime</p>
+      </div>
+      <div class="pricing-body">
+        <div class="pricing-feature"><span class="pricing-check">✓</span> Unlimited college cost searches</div>
+        <div class="pricing-feature"><span class="pricing-check">✓</span> Full financial gap analysis</div>
+        <div class="pricing-feature"><span class="pricing-check">✓</span> Side-by-side college comparison</div>
+        <div class="pricing-feature"><span class="pricing-check">✓</span> Earnings by major (200+ programs)</div>
+        <div class="pricing-feature"><span class="pricing-check">✓</span> AI-powered personalized financial summary</div>
+        <div class="pricing-feature"><span class="pricing-check">✓</span> Scholarship matching based on your profile</div>
+        <div class="pricing-feature"><span class="pricing-check">✓</span> Printable / PDF export of your report</div>
+        <div class="pricing-feature"><span class="pricing-check">✓</span> 4-year borrowing projection</div>
+        <a href="/register.html" class="btn-pricing">Get Started Free</a>
+        <p class="pricing-note">Secure checkout via Stripe. Cancel anytime.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA Banner ── -->
+<section class="cta-banner" aria-label="Call to action">
+  <h2>Make your college decision with confidence.</h2>
+  <p>
+    Thousands of families are decoding their financial aid letters right now.
+    Join them — it takes less than 2 minutes to get started.
+  </p>
+  <a href="/register.html" class="btn-hero">
+    Start for Free
+  </a>
+</section>
+
+<!-- ── Footer ── -->
+<footer role="contentinfo">
+  <p class="footer-brand">Astra</p>
+  <nav class="footer-links" aria-label="Footer navigation">
+    <a href="/privacy-policy.html">Privacy Policy</a>
+    <a href="/login.html">Sign In</a>
+    <a href="/register.html">Register</a>
+  </nav>
+  <p class="footer-copy">© 2026 Astra. AI assistant for FAFSA and college financial aid.</p>
 </footer>
+
 </body>
 </html>

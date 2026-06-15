@@ -65,7 +65,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/", "/index.html", "/landing.html",
+                    "/", "/index.html", "/landing.html", "/app.html",
                     "/login.html", "/register.html", "/privacy-policy.html",
                     "/api/auth/register",
                     "/api/stripe/webhook",
@@ -162,7 +162,7 @@ public class SecurityConfig {
                 log.error("[OAuth2] user persist FAILED email={} error={}", email, e.getMessage(), e);
             }
             log.info("[OAuth2] redirecting to / for email={}", email);
-            response.sendRedirect("/");
+            response.sendRedirect("/app.html");
         };
     }
 }
