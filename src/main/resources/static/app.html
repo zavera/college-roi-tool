@@ -1225,9 +1225,19 @@
 
         <div class="debt-form-row">
             <div class="field-group">
-                <label for="fafsaStudentName">Student Full Name</label>
-                <input type="text" id="fafsaStudentName" placeholder="e.g. Jordan Smith">
+                <label for="fafsaFirstName">First Name</label>
+                <input type="text" id="fafsaFirstName" placeholder="e.g. Jordan">
             </div>
+            <div class="field-group">
+                <label for="fafsaMiddleName">Middle Name <span style="font-weight:400;text-transform:none;font-size:10px;">(optional)</span></label>
+                <input type="text" id="fafsaMiddleName" placeholder="e.g. Lee">
+            </div>
+            <div class="field-group">
+                <label for="fafsaLastName">Last Name</label>
+                <input type="text" id="fafsaLastName" placeholder="e.g. Smith">
+            </div>
+        </div>
+        <div class="debt-form-row">
             <div class="field-group">
                 <label for="fafsaDob">Date of Birth</label>
                 <input type="date" id="fafsaDob">
@@ -1287,6 +1297,9 @@
         </div>
     </div>
 
+    <!-- ══ POST-EXTRACT GATED SECTION ══════════════════════════════════════ -->
+    <div id="fafsaPostExtractSection" style="display:none;">
+
     <!-- ══ ADVANCED STRATEGY TOOLS ══════════════════════════════════════════ -->
     <h2 style="margin:28px 0 4px;font-size:18px;">Advanced Strategy Tools</h2>
     <p class="debt-step-sub" style="margin-bottom:16px;">Deeper, structured tools to help you maximize aid and plan ahead.</p>
@@ -1294,53 +1307,15 @@
     <!-- Dependency Status Calculator -->
     <div class="card" id="fafsaDependencyCard">
         <h2>Dependency Status Calculator</h2>
-        <p class="debt-step-sub">If you answer "yes" to any question below, you're considered an independent student for FAFSA purposes.</p>
+        <p class="debt-step-sub">Select every statement that applies to you. Checked = Yes. Your status updates instantly and is saved to your profile.</p>
         <div id="fafsaDependencyQuestions"></div>
-        <button type="button" class="btn-primary" style="margin-top:10px;" onclick="submitDependencyStatus()">Check My Status</button>
-        <div id="fafsaDependencyResult" style="display:none;margin-top:14px;font-size:13px;line-height:1.6;"></div>
-    </div>
-
-    <!-- Target Schools -->
-    <div class="card" id="fafsaTargetSchoolsCard">
-        <h2>Target Schools</h2>
-        <p class="debt-step-sub">List the schools you're applying to — used for the CSS Profile explainer and filing deadline tools below.</p>
-        <div class="debt-form-row">
-            <div class="field-group">
-                <label for="fafsaSchoolName">School Name</label>
-                <input type="text" id="fafsaSchoolName" placeholder="e.g. Johns Hopkins University">
-            </div>
-            <div class="field-group">
-                <label for="fafsaSchoolState">State</label>
-                <input type="text" id="fafsaSchoolState" placeholder="e.g. MD" maxlength="2" style="text-transform:uppercase;">
-            </div>
-        </div>
-        <button type="button" class="btn-primary" onclick="addTargetSchool()">+ Add School</button>
-        <div id="fafsaTargetSchoolsList" class="credit-options-grid" style="margin-top:14px;"></div>
-        <button type="button" class="btn-primary" style="margin-top:14px;" onclick="saveTargetSchools()">Save Schools</button>
-        <div id="fafsaTargetSchoolsSaved" style="display:none;font-size:12px;color:var(--accent);font-weight:700;margin-top:8px;">✓ Schools saved</div>
-    </div>
-
-    <!-- Multi-year SAI Projector -->
-    <div class="card" id="fafsaSaiCard">
-        <h2>Multi-Year SAI Projector</h2>
-        <p class="debt-step-sub">A simplified, estimated Student Aid Index calculation — not the official Dept. of Education number. Add up to 4 enrollment years.</p>
-        <div id="fafsaSaiYears"></div>
-        <button type="button" class="btn-primary" onclick="addSaiYear()">+ Add Year</button>
-        <div class="field-group" style="margin-top:14px;margin-bottom:0;">
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;font-size:13px;font-weight:600;letter-spacing:0;">
-                <input type="checkbox" id="fafsaSaiCommentaryCheck" style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer;">
-                Include AI strategy commentary
-            </label>
-        </div>
-        <button type="button" class="btn-primary" style="margin-top:14px;" onclick="generateSaiProjection()">Calculate SAI</button>
-        <div id="fafsaSaiSpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:8px;">Calculating…</div>
-        <div id="fafsaSaiResult" style="display:none;margin-top:16px;"></div>
+        <div id="fafsaDependencyResult" style="margin-top:14px;font-size:13px;line-height:1.6;"></div>
     </div>
 
     <!-- Asset Repositioning Advisor -->
     <div class="card" id="fafsaAssetCard">
         <h2>Asset Repositioning Advisor</h2>
-        <p class="debt-step-sub">Reviews your uploaded tax data and flags legal repositioning opportunities before next year's filing.</p>
+        <p class="debt-step-sub">Analyzes your extracted tax data against FAFSA asset assessment rules and flags legal repositioning opportunities before next year's filing.</p>
         <button type="button" class="btn-primary" onclick="generateAssetRepositioning()">Get Asset Repositioning Advice</button>
         <div id="fafsaAssetSpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:8px;">Analyzing your assets…</div>
         <div id="fafsaAssetResult" style="display:none;margin-top:16px;"></div>
@@ -1348,10 +1323,15 @@
 
     <!-- Professional Judgment Screener -->
     <div class="card" id="fafsaPjCard">
-        <h2>Professional Judgment Screener</h2>
-        <p class="debt-step-sub">Check any special circumstances that apply, add details, and Astra drafts an appeal letter for your financial aid office.</p>
+        <h2>Special Circumstance Letter Generator</h2>
+        <p class="debt-step-sub">Check any special circumstances that apply, add details, attach supporting documents, and Astra drafts a professional judgment appeal letter for your financial aid office.</p>
         <div id="fafsaPjCategories"></div>
-        <button type="button" class="btn-primary" style="margin-top:10px;" onclick="generatePjAppeal()">Draft My Appeal Letter</button>
+        <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px;">
+            <label for="fafsaPjFiles">Supporting Documents <span style="font-weight:400;text-transform:none;font-size:10px;color:var(--muted);">(optional — medical bills, termination letters, death certificates, etc.)</span></label>
+            <input type="file" id="fafsaPjFiles" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" style="width:100%;margin-top:6px;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;">
+            <div id="fafsaPjFileList" style="margin-top:8px;font-size:12px;color:var(--muted);"></div>
+        </div>
+        <button type="button" class="btn-primary" style="margin-top:14px;" onclick="generatePjAppeal()">Draft My Appeal Letter</button>
         <div id="fafsaPjSpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:8px;">Drafting your letter…</div>
         <div id="fafsaPjResultWrap" style="display:none;margin-top:16px;">
             <pre id="fafsaPjLetterOutput" style="white-space:pre-wrap;font-family:inherit;font-size:13px;line-height:1.6;background:#fafbfc;border:1.5px solid var(--border);border-radius:6px;padding:14px;"></pre>
@@ -1376,6 +1356,8 @@
         <div id="fafsaDeadlinesSpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:8px;">Searching for deadlines…</div>
         <div id="fafsaDeadlinesResult" style="display:none;margin-top:16px;"></div>
     </div>
+
+    </div><!-- end #fafsaPostExtractSection -->
 
 </div><!-- end .container fafsa -->
 </div><!-- end #tab-fafsa -->
@@ -3363,15 +3345,28 @@
         if (fafsaUsageCount >= FREE_FAFSA_USES && !premiumActive) applyFafsaPaywall();
     }
 
+    let fafsaExtractedKV = {};
+
     function loadFafsaProfile() {
         $.get('/api/fafsa/profile', function(data) {
             if (!data.exists) return;
-            if (data.studentName) $('#fafsaStudentName').val(data.studentName);
+            if (data.firstName)  $('#fafsaFirstName').val(data.firstName);
+            if (data.middleName) $('#fafsaMiddleName').val(data.middleName);
+            if (data.lastName)   $('#fafsaLastName').val(data.lastName);
+            // legacy: populate from combined studentName if split fields not stored yet
+            if (!data.firstName && data.studentName) {
+                const parts = data.studentName.trim().split(/\s+/);
+                $('#fafsaFirstName').val(parts[0] || '');
+                if (parts.length === 3) $('#fafsaMiddleName').val(parts[1]);
+                $('#fafsaLastName').val(parts[parts.length - 1] || '');
+            }
             if (data.dateOfBirth) $('#fafsaDob').val(data.dateOfBirth);
             if (data.planningYear) $('#fafsaPlanningYear').val(data.planningYear);
             if (data.extractedData) {
+                Object.assign(fafsaExtractedKV, data.extractedData);
                 renderFafsaExtractedPreview(data.extractedData);
                 $('#fafsaSummarySection').show();
+                $('#fafsaPostExtractSection').show();
             }
             if (data.readinessSummary) {
                 renderFafsaSummary(data.readinessSummary);
@@ -3380,29 +3375,28 @@
             if (data.roadmap) {
                 renderFafsaRoadmap(data.roadmap);
             }
-            if (data.targetSchools && Array.isArray(data.targetSchools)) {
-                targetSchoolsList = data.targetSchools;
-                renderTargetSchoolsList();
-            }
             if (data.dependencyStatus) {
                 renderDependencyResult({ status: data.dependencyStatus, explanation: data.dependencyStatus === 'independent'
-                    ? "You're currently marked as an independent student."
-                    : "You're currently marked as a dependent student." });
+                    ? "You are currently marked as an independent student."
+                    : "You are currently marked as a dependent student." });
             }
         });
     }
 
     function saveFafsaProfile() {
-        const studentName = $('#fafsaStudentName').val().trim();
-        const dateOfBirth = $('#fafsaDob').val();
+        const firstName  = $('#fafsaFirstName').val().trim();
+        const middleName = $('#fafsaMiddleName').val().trim();
+        const lastName   = $('#fafsaLastName').val().trim();
+        const dateOfBirth  = $('#fafsaDob').val();
         const planningYear = $('#fafsaPlanningYear').val();
-        if (!studentName) { alert('Please enter the student name.'); return; }
+        if (!firstName || !lastName) { alert('Please enter the student first and last name.'); return; }
+        const studentName = [firstName, middleName, lastName].filter(Boolean).join(' ');
 
         $.ajax({
             url: '/api/fafsa/profile',
             method: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ studentName, dateOfBirth, planningYear }),
+            data: JSON.stringify({ firstName, middleName, lastName, studentName, dateOfBirth, planningYear }),
             success: function() {
                 $('#fafsaProfileSaved').show();
                 setTimeout(() => $('#fafsaProfileSaved').fadeOut(), 2500);
@@ -3449,8 +3443,12 @@
             $('#fafsaUploadSpinner').hide();
             $('#fafsaUploadBtn').prop('disabled', false);
             if (results.length > 0) {
+                results.forEach(r => {
+                    if (r.extracted) Object.assign(fafsaExtractedKV, r.extracted);
+                    renderFafsaExtractedPreview({ [r.filename]: r.extracted }, true);
+                });
                 $('#fafsaSummarySection').show();
-                results.forEach(r => renderFafsaExtractedPreview({ [r.filename]: r.extracted }, true));
+                $('#fafsaPostExtractSection').show();
             }
         }).catch(() => {
             $('#fafsaUploadSpinner').hide();
@@ -3580,14 +3578,27 @@
     // ── DEPENDENCY STATUS CALCULATOR ─────────────────────────────────────────
     let dependencyQuestions = [];
 
+    function questionToStatement(label) {
+        let s = label
+            .replace(/^Are you\s+/i,      'I am ')
+            .replace(/^Do you have\s+/i,  'I have ')
+            .replace(/^Do you\s+/i,       'I ')
+            .replace(/^Have you\s+/i,     'I have ')
+            .replace(/^Were you\s+/i,     'I was ')
+            .replace(/^Did you\s+/i,      'I ')
+            .replace(/\s*\?$/, '');
+        return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
     function loadDependencyQuestions() {
         $.get('/api/fafsa/dependency-status/questions', function(data) {
             dependencyQuestions = data.questions || [];
             let html = '';
             dependencyQuestions.forEach(q => {
-                html += `<label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;font-weight:400;margin-bottom:10px;font-size:13px;">
-                    <input type="checkbox" class="fafsa-dependency-check" data-qid="${q.id}" style="margin-top:3px;">
-                    <span>${q.label}</span>
+                const statement = questionToStatement(q.label);
+                html += `<label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-weight:400;margin-bottom:12px;font-size:13px;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;transition:border-color .15s;">
+                    <input type="checkbox" class="fafsa-dependency-check" data-qid="${q.id}" style="margin-top:2px;width:16px;height:16px;accent-color:var(--primary);cursor:pointer;flex-shrink:0;" onchange="submitDependencyStatus()">
+                    <span>${statement}</span>
                 </label>`;
             });
             $('#fafsaDependencyQuestions').html(html);
@@ -3604,178 +3615,95 @@
             method: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ answers }),
-            success: function(data) { renderDependencyResult(data); },
-            error: function() { alert('Could not determine dependency status. Please try again.'); }
+            success: function(data) {
+                renderDependencyResult(data);
+                // persist to profile silently
+                $.ajax({
+                    url: '/api/fafsa/profile',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ dependencyStatus: data.status })
+                });
+            },
+            error: function() { /* silent — result area stays as-is */ }
         });
     }
 
     function renderDependencyResult(data) {
-        const badge = data.status === 'independent' ? '🟢 Independent' : '🔵 Dependent';
-        let html = `<div class="credit-warning" style="background:#eef1f5;border-color:var(--border);">
-            <strong>${badge} Student</strong><br>${data.explanation || ''}</div>`;
+        const isIndependent = data.status === 'independent';
+        const badge = isIndependent
+            ? '<span style="color:var(--accent);font-weight:800;">Independent Student</span>'
+            : '<span style="color:var(--navy);font-weight:800;">Dependent Student</span>';
+        const bg  = isIndependent ? '#f0fdf4' : '#eef1f5';
+        const bdr = isIndependent ? '#bbf7d0' : 'var(--border)';
+        let html = `<div style="background:${bg};border:1.5px solid ${bdr};border-radius:8px;padding:12px 14px;">
+            ${badge}<br><span style="font-size:13px;">${data.explanation || ''}</span></div>`;
         if (data.triggeredReasons && data.triggeredReasons.length) {
-            html += `<p style="margin-top:10px;"><strong>Based on:</strong></p><ul style="padding-left:20px;">`;
+            html += `<p style="margin-top:10px;font-size:13px;"><strong>Based on:</strong></p><ul style="padding-left:20px;font-size:13px;">`;
             data.triggeredReasons.forEach(r => html += `<li>${r}</li>`);
             html += `</ul>`;
         }
-        $('#fafsaDependencyResult').html(html).show();
-    }
-
-    // ── TARGET SCHOOLS ────────────────────────────────────────────────────────
-    let targetSchoolsList = [];
-
-    function addTargetSchool() {
-        const name = $('#fafsaSchoolName').val().trim();
-        const state = $('#fafsaSchoolState').val().trim().toUpperCase();
-        if (!name) { alert('Please enter a school name.'); return; }
-        targetSchoolsList.push({ name, state });
-        $('#fafsaSchoolName').val('');
-        $('#fafsaSchoolState').val('');
-        renderTargetSchoolsList();
-    }
-
-    function removeTargetSchool(idx) {
-        targetSchoolsList.splice(idx, 1);
-        renderTargetSchoolsList();
-    }
-
-    function renderTargetSchoolsList() {
-        let html = '';
-        targetSchoolsList.forEach((s, idx) => {
-            html += `<div class="credit-option-card">
-                <div class="co-name">${s.name}${s.state ? ' (' + s.state + ')' : ''}</div>
-                <a href="#" onclick="removeTargetSchool(${idx});return false;" class="co-apply">Remove</a>
-            </div>`;
-        });
-        $('#fafsaTargetSchoolsList').html(html);
-    }
-
-    function saveTargetSchools() {
-        $.ajax({
-            url: '/api/fafsa/target-schools',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ schools: targetSchoolsList }),
-            success: function() {
-                $('#fafsaTargetSchoolsSaved').show();
-                setTimeout(() => $('#fafsaTargetSchoolsSaved').fadeOut(), 2500);
-            },
-            error: function() { alert('Could not save target schools. Please try again.'); }
-        });
-    }
-
-    // ── MULTI-YEAR SAI PROJECTOR ─────────────────────────────────────────────
-    let saiYears = [];
-
-    function addSaiYear() {
-        if (saiYears.length >= 4) { alert('You can project up to 4 enrollment years.'); return; }
-        const nextYear = (saiYears.length > 0 ? saiYears[saiYears.length - 1].year : new Date().getFullYear()) + 1;
-        saiYears.push({ year: nextYear, parentAgi: 0, parentUntaxedIncome: 0, parentTaxesPaid: 0, parentAssets: 0,
-                         studentAgi: 0, studentUntaxedIncome: 0, studentAssets: 0, familySize: 4 });
-        renderSaiYears();
-    }
-
-    function removeSaiYear(idx) {
-        saiYears.splice(idx, 1);
-        renderSaiYears();
-    }
-
-    function updateSaiYearField(idx, field, value) {
-        saiYears[idx][field] = field === 'year' || field === 'familySize' ? parseInt(value) || 0 : parseFloat(value) || 0;
-    }
-
-    function renderSaiYears() {
-        let html = '';
-        saiYears.forEach((y, idx) => {
-            html += `<div class="card" style="background:#fafbfc;margin-bottom:10px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                    <strong style="font-size:13px;">Year ${idx + 1}</strong>
-                    <a href="#" onclick="removeSaiYear(${idx});return false;" style="font-size:12px;color:var(--muted);">Remove</a>
-                </div>
-                <div class="debt-form-row">
-                    <div class="field-group"><label>Enrollment Year</label><input type="number" value="${y.year}" onchange="updateSaiYearField(${idx},'year',this.value)"></div>
-                    <div class="field-group"><label>Family Size</label><input type="number" value="${y.familySize}" onchange="updateSaiYearField(${idx},'familySize',this.value)"></div>
-                </div>
-                <div class="debt-form-row">
-                    <div class="field-group"><label>Parent AGI ($)</label><input type="number" value="${y.parentAgi}" onchange="updateSaiYearField(${idx},'parentAgi',this.value)"></div>
-                    <div class="field-group"><label>Parent Untaxed Income ($)</label><input type="number" value="${y.parentUntaxedIncome}" onchange="updateSaiYearField(${idx},'parentUntaxedIncome',this.value)"></div>
-                </div>
-                <div class="debt-form-row">
-                    <div class="field-group"><label>Parent Taxes Paid ($)</label><input type="number" value="${y.parentTaxesPaid}" onchange="updateSaiYearField(${idx},'parentTaxesPaid',this.value)"></div>
-                    <div class="field-group"><label>Parent Reportable Assets ($)</label><input type="number" value="${y.parentAssets}" onchange="updateSaiYearField(${idx},'parentAssets',this.value)"></div>
-                </div>
-                <div class="debt-form-row">
-                    <div class="field-group"><label>Student Income ($)</label><input type="number" value="${y.studentAgi}" onchange="updateSaiYearField(${idx},'studentAgi',this.value)"></div>
-                    <div class="field-group"><label>Student Assets ($)</label><input type="number" value="${y.studentAssets}" onchange="updateSaiYearField(${idx},'studentAssets',this.value)"></div>
-                </div>
-            </div>`;
-        });
-        $('#fafsaSaiYears').html(html);
-    }
-
-    function generateSaiProjection() {
-        if (saiYears.length === 0) { alert('Add at least one enrollment year.'); return; }
-        const includeCommentary = $('#fafsaSaiCommentaryCheck').is(':checked');
-        if (includeCommentary && applyFafsaPaywall()) return;
-
-        $('#fafsaSaiSpinner').show();
-        $.ajax({
-            url: '/api/fafsa/sai-projection',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ years: saiYears, includeCommentary }),
-            success: function(data) {
-                $('#fafsaSaiSpinner').hide();
-                if (data.paywalled) applyFafsaPaywall();
-                else if (includeCommentary) noteFafsaUsage();
-                renderSaiResult(data);
-            },
-            error: function() {
-                $('#fafsaSaiSpinner').hide();
-                alert('Could not calculate SAI. Please try again.');
-            }
-        });
-    }
-
-    function renderSaiResult(data) {
-        let html = `<table class="plan-table"><thead><tr><th>Year</th><th>Status</th><th>Estimated SAI</th></tr></thead><tbody>`;
-        (data.projection || []).forEach(p => {
-            html += `<tr><td>${p.year}</td><td>${p.dependencyStatus}</td><td><strong>$${Number(p.sai).toLocaleString()}</strong></td></tr>`;
-        });
-        html += `</tbody></table>`;
-        if (data.commentary) {
-            html += `<p style="font-size:13px;line-height:1.6;margin-top:14px;">${data.commentary.summary || ''}</p>`;
-            if (data.commentary.strategyNotes && data.commentary.strategyNotes.length) {
-                html += `<ul style="padding-left:20px;font-size:13px;">`;
-                data.commentary.strategyNotes.forEach(n => html += `<li>${n}</li>`);
-                html += `</ul>`;
-            }
-        }
-        $('#fafsaSaiResult').html(html).show();
+        $('#fafsaDependencyResult').html(html);
     }
 
     // ── ASSET REPOSITIONING ADVISOR ──────────────────────────────────────────
+    // FAFSA asset assessment rules (hardcoded from 34 C.F.R. Part 668 / FSA Handbook):
+    // - Parent assets assessed at up to 5.64% above the asset protection allowance
+    // - Student assets assessed at 20%
+    // - Excluded: primary home equity, qualified retirement accounts (401k/IRA/pension),
+    //   small business assets (family-owned, <100 employees), annuities, life insurance cash value
+    // - 529 owned by parent: assessed at parent rate (5.64%)
+    // - 529 owned by grandparent: no longer counted on FAFSA (post-2024-25 simplification)
+    // - UGMA/UTMA: counted as student asset (20%)
+    // - Coverdell ESA: counted as parent asset if parent is owner
+    // Source: FSA Handbook Vol. 3, Chapter 2 (https://fsapartners.ed.gov)
+
+    const FAFSA_ASSET_RULES = {
+        parentAssetRate: 0.0564,
+        studentAssetRate: 0.20,
+        excluded: ['primary home equity', '401k', 'IRA', 'pension', 'annuity',
+                   'life insurance cash value', 'family business (<100 employees)'],
+        notes: [
+            'Parent 529 plans are assessed at the parent asset rate (up to 5.64%).',
+            'Grandparent-owned 529 plans are no longer reported on FAFSA after the 2024-25 simplification.',
+            'UGMA/UTMA accounts are student assets assessed at 20%.',
+            'Retirement accounts (401k, IRA, pension) are excluded from FAFSA asset calculations.',
+            'Primary home equity is excluded from FAFSA (but counted on CSS Profile).'
+        ]
+    };
+
     function generateAssetRepositioning() {
         if (applyFafsaPaywall()) return;
+        if (Object.keys(fafsaExtractedKV).length === 0) {
+            alert('Please upload and extract your tax documents first so Astra can analyze your asset picture.');
+            return;
+        }
         $('#fafsaAssetSpinner').show();
-        $.post('/api/fafsa/asset-repositioning', function(data) {
-            $('#fafsaAssetSpinner').hide();
-            if (data.paywalled) { applyFafsaPaywall(); return; }
-            noteFafsaUsage();
-            let html = '';
-            (data.opportunities || []).forEach(o => {
-                html += `<div class="credit-option-card">
-                    <div class="co-name">${o.title || ''}</div>
-                    <div class="co-detail">${o.rationale || ''}</div>
-                    <div class="co-perk">${o.caveat || ''}</div>
-                </div>`;
-            });
-            html = `<div class="credit-options-grid">${html}</div>`;
-            if (data.generalNote) html += `<p style="font-size:12px;color:var(--muted);margin-top:12px;">${data.generalNote}</p>`;
-            $('#fafsaAssetResult').html(html).show();
-        }).fail(function() {
-            $('#fafsaAssetSpinner').hide();
-            alert('Could not generate asset repositioning advice. Please try again.');
+        $.ajax({
+            url: '/api/fafsa/asset-repositioning',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ extractedData: fafsaExtractedKV, fafsaRules: FAFSA_ASSET_RULES }),
+            success: function(data) {
+                $('#fafsaAssetSpinner').hide();
+                if (data.paywalled) { applyFafsaPaywall(); return; }
+                noteFafsaUsage();
+                let html = '';
+                (data.opportunities || []).forEach(o => {
+                    html += `<div class="credit-option-card">
+                        <div class="co-name">${o.title || ''}</div>
+                        <div class="co-detail">${o.rationale || ''}</div>
+                        <div class="co-perk">${o.caveat || ''}</div>
+                    </div>`;
+                });
+                html = `<div class="credit-options-grid">${html}</div>`;
+                if (data.generalNote) html += `<p style="font-size:12px;color:var(--muted);margin-top:12px;">${data.generalNote}</p>`;
+                $('#fafsaAssetResult').html(html).show();
+            },
+            error: function() {
+                $('#fafsaAssetSpinner').hide();
+                alert('Could not generate asset repositioning advice. Please try again.');
+            }
         });
     }
 
@@ -3791,7 +3719,7 @@
         PJ_CATEGORIES.forEach((cat, idx) => {
             html += `<div style="margin-bottom:10px;">
                 <label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;font-weight:400;font-size:13px;">
-                    <input type="checkbox" class="fafsa-pj-check" data-cat="${cat}" id="fafsaPjCheck${idx}" style="margin-top:3px;">
+                    <input type="checkbox" class="fafsa-pj-check" data-cat="${cat}" id="fafsaPjCheck${idx}" style="margin-top:3px;width:16px;height:16px;accent-color:var(--primary);cursor:pointer;flex-shrink:0;">
                     <span>${cat}</span>
                 </label>
                 <textarea class="fafsa-pj-detail" data-cat="${cat}" rows="2" placeholder="Briefly describe the details…" style="width:100%;margin-top:6px;padding:8px 10px;font-size:13px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;resize:vertical;"></textarea>
@@ -3799,6 +3727,15 @@
         });
         $('#fafsaPjCategories').html(html);
     }
+
+    // show selected file names under the upload input
+    $('#fafsaPjFiles').on('change', function() {
+        const files = Array.from(this.files);
+        if (!files.length) { $('#fafsaPjFileList').text(''); return; }
+        $('#fafsaPjFileList').html(files.map(f =>
+            `<span style="display:inline-block;margin:2px 6px 2px 0;padding:2px 8px;background:#f0f1f5;border-radius:4px;">${f.name}</span>`
+        ).join(''));
+    });
 
     function generatePjAppeal() {
         if (applyFafsaPaywall()) return;
@@ -3810,18 +3747,36 @@
         });
         if (circumstances.length === 0) { alert('Check at least one special circumstance.'); return; }
 
+        const formData = new FormData();
+        formData.append('circumstances', JSON.stringify(circumstances));
+        const files = $('#fafsaPjFiles')[0].files;
+        Array.from(files).forEach(f => formData.append('files', f));
+
         $('#fafsaPjSpinner').show();
         $.ajax({
             url: '/api/fafsa/professional-judgment',
             method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ circumstances }),
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function(data) {
                 $('#fafsaPjSpinner').hide();
                 if (data.paywalled) { applyFafsaPaywall(); return; }
                 noteFafsaUsage();
                 $('#fafsaPjLetterOutput').text(data.letter || '');
-                $('#fafsaPjChecklist').html(data.checklist ? '<strong>Supporting Documents:</strong> ' + data.checklist : '');
+                let checklistHtml = '';
+                if (data.checklist) {
+                    checklistHtml = `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;margin-top:10px;">
+                        <strong style="color:#166534;">Supporting Documents to Submit:</strong><br>
+                        <span style="font-size:13px;">${data.checklist}</span>
+                    </div>`;
+                }
+                if (files.length) {
+                    checklistHtml += `<div style="margin-top:8px;font-size:12px;color:var(--muted);">
+                        ${files.length} supporting document${files.length > 1 ? 's' : ''} attached: ${Array.from(files).map(f => f.name).join(', ')}
+                    </div>`;
+                }
+                $('#fafsaPjChecklist').html(checklistHtml);
                 $('#fafsaPjResultWrap').show();
             },
             error: function() {
