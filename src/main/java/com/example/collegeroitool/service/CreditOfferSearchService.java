@@ -1,35 +1,16 @@
 package com.example.collegeroitool.service;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
 @Service
 public class CreditOfferSearchService {
 
-    @Value("${tavily.api.key}")
-    private String apiKey;
+    private final TavilySearchClient tavilySearchClient;
 
-    @Value("${premium.dev.bypass:false}")
-    private boolean devBypass;
-
-    private static final String DEV_STUB_KEY = "TAVILY_API_KEY_NOT_SET";
-    private static final String TAVILY_URL = "https://api.tavily.com/search";
-
-    private final RestTemplate restTemplate;
-
-    public CreditOfferSearchService() {
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(5_000);
-        factory.setReadTimeout(10_000);
-        restTemplate = new RestTemplate(factory);
+    public CreditOfferSearchService(TavilySearchClient tavilySearchClient) {
+        this.tavilySearchClient = tavilySearchClient;
     }
 
     private static final Map<String, Integer> CREDIT_SCORE_MAP = Map.of(
@@ -96,15 +77,17 @@ public class CreditOfferSearchService {
                                                  boolean liveSearchAllowed) {
         Map<String, Object> result = new HashMap<>();
 
-        if (!liveSearchAllowed || (devBypass && DEV_STUB_KEY.equals(apiKey))) {
+        if (!liveSearchAllowed || !tavilySearchClient.isLiveSearchConfigured()) {
             result.put("balanceTransferCards", filterFallbackCards(creditScore, privateBalance));
             result.put("refiLenders", filterFallbackLenders(creditScore));
             result.put("source", liveSearchAllowed ? "fallback" : "fallback-paywalled");
             return result;
         }
 
-        List<Map<String, Object>> btResults = searchLive(buildBalanceTransferQuery(creditScore));
-        List<Map<String, Object>> refiResults = searchLive(buildRefiQuery(creditScore, annualIncome));
+        List<Map<String, Object>> btResults = tavilySearchClient.search(
+            buildBalanceTransferQuery(creditScore), 5, TavilySearchClient.DEFAULT_EXCLUDED_DOMAINS);
+        List<Map<String, Object>> refiResults = tavilySearchClient.search(
+            buildRefiQuery(creditScore, annualIncome), 5, TavilySearchClient.DEFAULT_EXCLUDED_DOMAINS);
 
         if (btResults.isEmpty() && refiResults.isEmpty()) {
             result.put("balanceTransferCards", filterFallbackCards(creditScore, privateBalance));
@@ -130,64 +113,6 @@ public class CreditOfferSearchService {
         String band = creditScore >= 700 ? "excellent credit" : "good credit";
         String incomeNote = annualIncome > 0 ? " income " + (long) annualIncome : "";
         return "student loan refinance rates " + band + incomeNote + " 2026";
-    }
-
-    private static final List<String> EXCLUDED_DOMAINS = List.of(
-        "youtube.com", "reddit.com", "quora.com", "facebook.com", "tiktok.com", "twitter.com", "x.com"
-    );
-
-    private static final int SNIPPET_MAX_LEN = 220;
-
-    @SuppressWarnings("unchecked")
-    private List<Map<String, Object>> searchLive(String query) {
-        try {
-            Map<String, Object> body = new HashMap<>();
-            body.put("api_key", apiKey);
-            body.put("query", query);
-            body.put("max_results", 5);
-            body.put("search_depth", "basic");
-            body.put("exclude_domains", EXCLUDED_DOMAINS);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            ResponseEntity<Map> response = restTemplate.postForEntity(
-                TAVILY_URL, new HttpEntity<>(body, headers), Map.class);
-
-            Map<String, Object> responseBody = response.getBody();
-            if (responseBody == null) return List.of();
-
-            List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
-            if (results == null) return List.of();
-
-            List<Map<String, Object>> parsed = new ArrayList<>();
-            for (Map<String, Object> r : results) {
-                Map<String, Object> offer = new HashMap<>();
-                offer.put("name", r.get("title"));
-                offer.put("snippet", cleanSnippet((String) r.get("content")));
-                offer.put("url", r.get("url"));
-                offer.put("source", "live");
-                parsed.add(offer);
-            }
-            return parsed;
-        } catch (Exception e) {
-            return List.of();
-        }
-    }
-
-    /** Strip markdown artifacts/links and truncate raw search content to a display-friendly snippet. */
-    private static String cleanSnippet(String raw) {
-        if (raw == null) return "";
-        String cleaned = raw
-            .replaceAll("\\[([^\\]]*)\\]\\([^)]*\\)", "$1")  // [text](url) -> text
-            .replaceAll("[#*_`]", "")                          // markdown symbols
-            .replaceAll("https?://\\S+", "")                   // bare URLs
-            .replaceAll("\\s+", " ")
-            .trim();
-        if (cleaned.length() > SNIPPET_MAX_LEN) {
-            cleaned = cleaned.substring(0, SNIPPET_MAX_LEN).trim() + "…";
-        }
-        return cleaned;
     }
 
     private List<Map<String, Object>> filterFallbackCards(int creditScore, double privateBalance) {

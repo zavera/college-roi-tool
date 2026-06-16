@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Astra — AI Financial Aid &amp; Student Loan Assistant</title>
-  <meta name="description" content="Astra helps students and families decode FAFSA award letters, compare college costs, and manage student loan repayment — including federal IDR plans, PSLF eligibility, and debt relief options.">
-  <meta name="keywords" content="FAFSA help, financial aid decoder, college cost calculator, student loan repayment, IDR plans, PSLF eligibility, income-driven repayment, student debt relief, award letter explained, college financial aid, AI college tool">
+  <title>Astra — AI-Integrated Financial Planning for FAFSA &amp; Student Loans</title>
+  <meta name="description" content="Astra is an AI-integrated financial planning assistant: extract your tax documents for FAFSA, get an AI readiness summary and aid projection, find scholarships via live search, optimize student loan repayment, and chat with AI about your own saved profile.">
+  <meta name="keywords" content="AI integrated financial planning, FAFSA help, FAFSA prep, FAFSA document extraction, financial aid decoder, college cost calculator, student loan repayment, IDR plans, PSLF eligibility, income-driven repayment, student debt relief, award letter explained, college financial aid, AI college tool, scholarship finder, financial aid chatbot, AI financial aid assistant, financial aid roadmap">
   <meta name="author" content="Astra">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://astra-ed.org/">
@@ -13,15 +13,15 @@
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://astra-ed.org/">
-  <meta property="og:title" content="Astra — AI Financial Aid &amp; Student Loan Assistant">
-  <meta property="og:description" content="Decode your FAFSA award letter, compare college costs, and get AI-powered guidance on student loan repayment, PSLF, and debt relief. Built for students and families.">
+  <meta property="og:title" content="Astra — AI-Integrated Financial Planning for FAFSA &amp; Student Loans">
+  <meta property="og:description" content="Extract tax documents for FAFSA, get an AI readiness summary and aid projection, find scholarships via live search, optimize student loan repayment, and chat with AI about your own profile. Built for students and families.">
   <meta property="og:image" content="https://astra-ed.org/astra-logo.jpg">
   <meta property="og:site_name" content="Astra">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Astra — AI Financial Aid &amp; Student Loan Assistant">
-  <meta name="twitter:description" content="FAFSA decoder, college cost comparison, and student loan repayment optimizer — all in one AI tool.">
+  <meta name="twitter:title" content="Astra — AI-Integrated Financial Planning for FAFSA &amp; Student Loans">
+  <meta name="twitter:description" content="FAFSA document extraction, AI readiness summary, scholarship finder, loan repayment optimizer, and an AI chatbot for your own profile — all in one tool.">
   <meta name="twitter:image" content="https://astra-ed.org/astra-logo.jpg">
 
   <!-- Structured Data -->
@@ -31,7 +31,7 @@
     "@type": "SoftwareApplication",
     "name": "Astra",
     "url": "https://astra-ed.org",
-    "description": "AI assistant that helps students and families decode FAFSA award letters, compare college costs, calculate financial gap, and optimize student loan repayment using all 8 federal IDR plans, PSLF eligibility checking, and debt relief tools.",
+    "description": "AI-integrated financial planning assistant that extracts tax documents for FAFSA prep, generates AI readiness summaries and aid projections, finds scholarships via live search, decodes FAFSA award letters, compares college costs, optimizes student loan repayment using all 8 federal IDR plans, checks PSLF eligibility, and answers ongoing questions through a personal AI chatbot.",
     "applicationCategory": "EducationApplication",
     "operatingSystem": "Web",
     "offers": {
@@ -46,16 +46,21 @@
       "url": "https://astra-ed.org"
     },
     "featureList": [
+      "FAFSA tax document key-value extraction (AI document intelligence)",
+      "AI-generated FAFSA readiness summary and aid eligibility projection",
+      "Financial aid appeal opportunity identification",
+      "Live scholarship search matched to student profile",
+      "Personalized financial aid roadmap generator with deadlines",
+      "AI chatbot for ongoing questions about your own saved profile",
       "FAFSA financial aid award letter decoder",
       "College cost of attendance calculator",
       "Financial gap analysis",
       "Side-by-side college comparison",
       "AI-powered financial summary",
-      "Scholarship finder",
       "Federal student loan repayment plan optimizer (SAVE, PAYE, IBR, ICR, Standard, Graduated, Extended)",
       "PSLF employer eligibility checker",
       "Hardship letter generator for loan servicers",
-      "Balance transfer and refinancing options by credit score"
+      "Live-searched 0% balance transfer and refinancing offers by credit score"
     ]
   }
   </script>
@@ -224,8 +229,10 @@
       top: 0; left: 0; right: 0;
       height: 3px;
     }
+    .module-card.fafsa::before  { background: var(--navy-lt); }
     .module-card.award::before  { background: var(--primary); }
     .module-card.debt::before   { background: var(--accent); }
+    .module-card.chat::before   { background: var(--primary-dk); }
 
     .module-badge {
       display: inline-block;
@@ -234,8 +241,10 @@
       padding: 3px 10px; border-radius: 20px;
       margin-bottom: 16px;
     }
+    .fafsa .module-badge { background: #dde1ea; color: var(--navy); }
     .award .module-badge { background: var(--primary-lt); color: var(--primary-dk); }
     .debt  .module-badge { background: #d1fae5; color: #065f46; }
+    .chat  .module-badge { background: #f3e8d9; color: var(--primary-dk); }
 
     .module-card h3 {
       font-size: 19px; font-weight: 800;
@@ -362,10 +371,10 @@
 </nav>
 
 <section class="hero" id="main-content" aria-label="Hero">
-  <p class="hero-eyebrow">AI-powered financial aid guidance</p>
-  <h1>From FAFSA to <em>student loan relief</em> — Astra does it all.</h1>
+  <p class="hero-eyebrow">AI Integrated Financial Planning</p>
+  <h1>From FAFSA prep to <em>student loan relief</em> — Astra does it all.</h1>
   <p class="hero-sub">
-    Decode your financial aid award letter, compare college costs, and optimize your federal student loan repayment — including PSLF eligibility and hardship letter generation.
+    Extract your tax documents, get an AI readiness summary and aid projection, find scholarships through live search, decode your award letter, optimize federal loan repayment, and ask Astra anything about your own profile — anytime.
   </p>
   <div class="hero-cta-row">
     <a href="/register.html" class="btn-hero">
@@ -374,15 +383,30 @@
     </a>
     <a href="/login.html" class="btn-ghost">Sign in</a>
   </div>
-  <p class="hero-trust">Free for your first 3 searches &middot; No credit card required &middot; Cancel anytime</p>
+  <p class="hero-trust">Free for your first 3 actions per tool &middot; No credit card required &middot; Cancel anytime</p>
 </section>
 
 <section class="modules" id="features" aria-labelledby="modules-title">
   <div class="modules-inner">
     <p class="section-label">What&rsquo;s inside</p>
-    <h2 class="section-title" id="modules-title">Two tools. Every stage of your education journey.</h2>
+    <h2 class="section-title" id="modules-title">Four tools. Every stage of your financial aid journey.</h2>
 
     <div class="module-grid">
+
+      <div class="module-card fafsa">
+        <span class="module-badge">FAFSA Prep</span>
+        <h3>AI Document Extraction &amp; Aid Readiness</h3>
+        <p>
+          Upload your tax documents and Astra extracts the same data FAFSA would import — then builds your readiness summary, aid projection, and roadmap.
+        </p>
+        <ul class="module-features">
+          <li>Tax document upload with AI key-value extraction</li>
+          <li>AI readiness summary &amp; aid eligibility projection</li>
+          <li>Appeal opportunities to help maximize your aid</li>
+          <li>Live scholarship search matched to your profile</li>
+          <li>Deadlines, timeline &amp; a personalized action roadmap</li>
+        </ul>
+      </div>
 
       <div class="module-card award">
         <span class="module-badge">Award Assist</span>
@@ -411,8 +435,22 @@
           <li>PSLF employer eligibility checker (IRS 501c3 verified)</li>
           <li>AI-recommended plan with rationale</li>
           <li>Hardship letter generator for your loan servicer</li>
-          <li>0% balance transfer options from credit unions</li>
-          <li>Private loan refinancing matched to your credit score</li>
+          <li>Live-searched 0% balance transfer offers by credit score</li>
+          <li>Real-time private loan refinancing rate comparison</li>
+        </ul>
+      </div>
+
+      <div class="module-card chat">
+        <span class="module-badge">Ask Astra</span>
+        <h3>Your Personal AI Financial Aid Assistant</h3>
+        <p>
+          Chat with Astra about your own saved profile — grounded entirely in your data, never anyone else&rsquo;s.
+        </p>
+        <ul class="module-features">
+          <li>Ask questions about your FAFSA Prep profile anytime</li>
+          <li>Answers grounded only in your own saved data</li>
+          <li>Remembers your readiness summary &amp; roadmap</li>
+          <li>Available across every stage of your journey</li>
         </ul>
       </div>
 
@@ -434,13 +472,16 @@
         <p class="pricing-period">per month &middot; cancel anytime</p>
       </div>
       <div class="pricing-body">
+        <div class="pricing-feature"><span class="pricing-check">&#10003;</span> AI tax document extraction &amp; FAFSA readiness summary</div>
+        <div class="pricing-feature"><span class="pricing-check">&#10003;</span> Live scholarship search &amp; personalized roadmap</div>
         <div class="pricing-feature"><span class="pricing-check">&#10003;</span> Unlimited college searches &amp; comparisons</div>
         <div class="pricing-feature"><span class="pricing-check">&#10003;</span> Full financial gap analysis</div>
         <div class="pricing-feature"><span class="pricing-check">&#10003;</span> AI financial summary &amp; scholarship matching</div>
         <div class="pricing-feature"><span class="pricing-check">&#10003;</span> Federal loan repayment plan optimizer (all 8 plans)</div>
         <div class="pricing-feature"><span class="pricing-check">&#10003;</span> PSLF employer eligibility checker</div>
         <div class="pricing-feature"><span class="pricing-check">&#10003;</span> AI hardship letter generator</div>
-        <div class="pricing-feature"><span class="pricing-check">&#10003;</span> Balance transfer &amp; refinancing options</div>
+        <div class="pricing-feature"><span class="pricing-check">&#10003;</span> Live balance transfer &amp; refinancing search</div>
+        <div class="pricing-feature"><span class="pricing-check">&#10003;</span> 24/7 AI chatbot for your own profile</div>
         <a href="/register.html" class="btn-pricing">Get Started Free</a>
         <p class="pricing-note">Secure checkout via Stripe. Cancel anytime.</p>
       </div>
@@ -455,7 +496,7 @@
     <a href="/login.html">Sign In</a>
     <a href="/register.html">Register</a>
   </nav>
-  <p class="footer-copy">&copy; 2026 Astra &mdash; AI assistant for FAFSA and student loan repayment.</p>
+  <p class="footer-copy">&copy; 2026 Astra &mdash; AI-integrated financial planning for FAFSA, college costs, and student loan repayment.</p>
 </footer>
 
 </body>

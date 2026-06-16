@@ -41,6 +41,9 @@ public class GroqService {
     private String counselorPromptTemplate;
     private String repaymentPromptTemplate;
     private String hardshipPromptTemplate;
+    private String fafsaReadinessPromptTemplate;
+    private String fafsaRoadmapPromptTemplate;
+    private String fafsaChatPromptTemplate;
 
     private final RestTemplate restTemplate;
 
@@ -79,6 +82,15 @@ public class GroqService {
             StandardCharsets.UTF_8);
         hardshipPromptTemplate = new String(
             new ClassPathResource("prompts/hardship-prompt.txt").getInputStream().readAllBytes(),
+            StandardCharsets.UTF_8);
+        fafsaReadinessPromptTemplate = new String(
+            new ClassPathResource("prompts/fafsa-readiness-prompt.txt").getInputStream().readAllBytes(),
+            StandardCharsets.UTF_8);
+        fafsaRoadmapPromptTemplate = new String(
+            new ClassPathResource("prompts/fafsa-roadmap-prompt.txt").getInputStream().readAllBytes(),
+            StandardCharsets.UTF_8);
+        fafsaChatPromptTemplate = new String(
+            new ClassPathResource("prompts/fafsa-chat-prompt.txt").getInputStream().readAllBytes(),
             StandardCharsets.UTF_8);
     }
 
@@ -449,6 +461,60 @@ public class GroqService {
             .replace("{{hardshipType}}", req.getHardshipType() != null ? req.getHardshipType() : "general")
             .replace("{{hardshipDetails}}", req.getHardshipDetails() != null ? req.getHardshipDetails() : "not provided");
         return callGroq(prompt, 1200, 0.3);
+    }
+
+    // ── FAFSA Prep ─────────────────────────────────────────────────────────────
+
+    public String getFafsaReadinessSummary(com.example.collegeroitool.model.FafsaProfile profile) {
+        if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
+            return "{\"readinessSummary\":\"Your tax documentation looks complete for a standard FAFSA filing — wages and federal withholding are both present.\",\"aidProjection\":\"Based on the income shown, you're likely in range for partial need-based aid plus full federal loan eligibility. This is an estimate, not an award letter.\",\"appealOpportunities\":[{\"title\":\"Professional judgment review\",\"detail\":\"If your family's income has changed since this tax year, ask the financial aid office for a professional judgment review using current income instead.\"}],\"scholarshipQueries\":[\"first-generation college student scholarships 2026\",\"need-based scholarships for incoming freshmen 2026\"],\"deadlines\":[{\"name\":\"FAFSA opens\",\"timing\":\"October 1 each year\",\"note\":\"File as early as possible — some state and institutional aid is first-come, first-served.\"}]}";
+        }
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            String extractedDataJson = profile.getExtractedDataJson() != null ? profile.getExtractedDataJson() : "{}";
+            String prompt = fafsaReadinessPromptTemplate
+                .replace("{{studentName}}", profile.getStudentName() != null ? profile.getStudentName() : "not provided")
+                .replace("{{dateOfBirth}}", profile.getDateOfBirth() != null ? profile.getDateOfBirth().toString() : "not provided")
+                .replace("{{planningYear}}", profile.getPlanningYear() != null ? String.valueOf(profile.getPlanningYear()) : "not provided")
+                .replace("{{extractedDataJson}}", extractedDataJson);
+            return callGroq(prompt, 1200, 0.3);
+        } catch (Exception e) {
+            return "{\"error\":\"Could not generate readiness summary: " + e.getMessage() + "\"}";
+        }
+    }
+
+    public String getFafsaRoadmap(com.example.collegeroitool.model.FafsaProfile profile,
+                                   String deadlinesJson, String selectedOptionsJson) {
+        if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
+            return "{\"roadmapSteps\":[{\"order\":1,\"title\":\"File the FAFSA\",\"targetDate\":\"By October 1\",\"detail\":\"Submit as early as possible to maximize first-come, first-served state and institutional aid.\"},{\"order\":2,\"title\":\"Apply to selected scholarships\",\"targetDate\":\"Within 2 weeks of FAFSA filing\",\"detail\":\"Complete applications for the scholarships you selected while your financial documents are still organized.\"}],\"summary\":\"This plan front-loads your FAFSA filing, then layers in scholarship applications while your paperwork is fresh.\"}";
+        }
+        try {
+            String prompt = fafsaRoadmapPromptTemplate
+                .replace("{{studentName}}", profile.getStudentName() != null ? profile.getStudentName() : "not provided")
+                .replace("{{planningYear}}", profile.getPlanningYear() != null ? String.valueOf(profile.getPlanningYear()) : "not provided")
+                .replace("{{deadlinesJson}}", deadlinesJson != null ? deadlinesJson : "[]")
+                .replace("{{selectedOptionsJson}}", selectedOptionsJson != null ? selectedOptionsJson : "[]");
+            return callGroq(prompt, 900, 0.3);
+        } catch (Exception e) {
+            return "{\"error\":\"Could not generate roadmap: " + e.getMessage() + "\"}";
+        }
+    }
+
+    public String getFafsaChatResponse(com.example.collegeroitool.model.FafsaProfile profile,
+                                        String conversationHistory, String question) {
+        if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
+            return "[Demo mode] Live chat requires a Groq API key. In production, Astra answers questions using only your saved FAFSA Prep profile.";
+        }
+        String prompt = fafsaChatPromptTemplate
+            .replace("{{studentName}}", profile.getStudentName() != null ? profile.getStudentName() : "not provided")
+            .replace("{{dateOfBirth}}", profile.getDateOfBirth() != null ? profile.getDateOfBirth().toString() : "not provided")
+            .replace("{{planningYear}}", profile.getPlanningYear() != null ? String.valueOf(profile.getPlanningYear()) : "not provided")
+            .replace("{{extractedDataJson}}", profile.getExtractedDataJson() != null ? profile.getExtractedDataJson() : "{}")
+            .replace("{{readinessSummaryJson}}", profile.getReadinessSummaryJson() != null ? profile.getReadinessSummaryJson() : "not generated yet")
+            .replace("{{roadmapJson}}", profile.getRoadmapJson() != null ? profile.getRoadmapJson() : "not generated yet")
+            .replace("{{conversationHistory}}", conversationHistory != null ? conversationHistory : "(no prior messages)")
+            .replace("{{question}}", question);
+        return callGroq(prompt, 600, 0.3);
     }
 
     // ── Shared Groq caller ────────────────────────────────────────────────────

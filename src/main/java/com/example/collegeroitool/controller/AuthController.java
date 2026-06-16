@@ -99,6 +99,7 @@ public class AuthController {
         boolean subscribed = user != null && user.isSubscriptionActive();
         int searchCount = user != null ? user.getSearchCount() : 0;
         int debtSearchCount = user != null ? user.getDebtSearchCount() : 0;
+        int fafsaUsageCount = user != null ? user.getFafsaUsageCount() : 0;
         if (user != null && user.getName() != null) name = user.getName();
 
         return ResponseEntity.ok(Map.of(
@@ -107,7 +108,8 @@ public class AuthController {
             "name",                name != null ? name : email,
             "subscriptionActive",  subscribed,
             "searchCount",         searchCount,
-            "debtSearchCount",     debtSearchCount
+            "debtSearchCount",     debtSearchCount,
+            "fafsaUsageCount",     fafsaUsageCount
         ));
     }
 

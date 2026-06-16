@@ -28,6 +28,8 @@ public class AppUser {
 
     private int debtSearchCount = 0;
 
+    private int fafsaUsageCount = 0;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     // ── Getters / Setters ─────────────────────────────────────────────────────
@@ -47,5 +49,7 @@ public class AppUser {
     public void setSearchCount(int n)          { this.searchCount = n; }
     public int  getDebtSearchCount()           { return debtSearchCount; }
     public void setDebtSearchCount(int n)      { this.debtSearchCount = n; }
+    public int  getFafsaUsageCount()           { return fafsaUsageCount; }
+    public void setFafsaUsageCount(int n)      { this.fafsaUsageCount = n; }
     public LocalDateTime getCreatedAt()        { return createdAt; }
 }

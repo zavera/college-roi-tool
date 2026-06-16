@@ -68,6 +68,19 @@ public class UserService implements UserDetailsService {
         return userRepository.findByEmail(email.toLowerCase());
     }
 
+    /** Local-dev-only helper — synthesizes a persistable "dev@local" account so FAFSA Prep
+     *  data can be saved when premium.dev.bypass is on and there's no real session. */
+    public AppUser findOrCreateDevUser() {
+        return userRepository.findByEmail("dev@local").orElseGet(() -> {
+            AppUser u = new AppUser();
+            u.setEmail("dev@local");
+            u.setName("Dev User");
+            u.setProvider("local");
+            u.setSubscriptionActive(true);
+            return userRepository.save(u);
+        });
+    }
+
     /** Deactivate subscription — called when Stripe subscription is cancelled */
     public boolean deactivateSubscription(String email) {
         return userRepository.findByEmail(email.toLowerCase()).map(u -> {
@@ -101,6 +114,15 @@ public class UserService implements UserDetailsService {
             u.setDebtSearchCount(u.getDebtSearchCount() + 1);
             userRepository.save(u);
             return u.getDebtSearchCount();
+        }).orElse(-1);
+    }
+
+    /** Increment FAFSA Prep module usage count; returns new count, or -1 if user not found */
+    public int incrementFafsaUsageCount(String email) {
+        return userRepository.findByEmail(email.toLowerCase()).map(u -> {
+            u.setFafsaUsageCount(u.getFafsaUsageCount() + 1);
+            userRepository.save(u);
+            return u.getFafsaUsageCount();
         }).orElse(-1);
     }
 

@@ -949,8 +949,10 @@
             .mod-tab { padding: 11px 14px; font-size: 12px; }
         }
 
+        /* ── Module tabs — FAFSA Prep is the default-visible tab ── */
+        #tab-award, #tab-postgrad, #tab-chat { display: none; }
+
         /* ── Post-Grad Debt Module ── */
-        #tab-postgrad { display: none; }
         .debt-section-title {
             font-size: 11px;
             font-weight: 700;
@@ -1190,11 +1192,103 @@
 </header>
 
 <div class="module-tab-bar" role="tablist" aria-label="Module navigation">
-    <button class="mod-tab active" role="tab" aria-selected="true"  aria-controls="tab-award"   id="tab-btn-award"   onclick="switchModuleTab('award')">Award Assist</button>
+    <button class="mod-tab active" role="tab" aria-selected="true"  aria-controls="tab-fafsa"    id="tab-btn-fafsa"    onclick="switchModuleTab('fafsa')">FAFSA Prep</button>
+    <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-award"    id="tab-btn-award"    onclick="switchModuleTab('award')">Award Assist</button>
     <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-postgrad" id="tab-btn-postgrad" onclick="switchModuleTab('postgrad')">Post-Grad Debt Relief</button>
+    <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-chat"      id="tab-btn-chat"     onclick="switchModuleTab('chat')">Ask Astra</button>
 </div>
 
 <main id="main-content">
+
+<!-- ══ FAFSA PREP TAB ═══════════════════════════════════════════════════════ -->
+<div id="tab-fafsa" style="position:relative;">
+
+<!-- ── FAFSA Prep paywall overlay ── -->
+<div id="fafsaPaywall" style="display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(255,255,255,0.84);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
+    <div style="text-align:center;max-width:360px;">
+        <div style="font-size:36px;margin-bottom:12px;">🎓</div>
+        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your 3 free FAFSA Prep actions</h3>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock unlimited document extraction, readiness summaries, scholarship search, and roadmap generation.</p>
+        <a href="/api/stripe/create-checkout-session" class="btn-primary" style="display:inline-block;text-decoration:none;padding:13px 28px;font-size:15px;">
+            Unlock for <strong>$29.99/mo</strong>
+        </a>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px;">Includes Award Assist + Post-Grad Debt Relief + FAFSA Prep · Cancel anytime</div>
+    </div>
+</div>
+
+<div class="container" style="max-width:760px;">
+
+    <!-- Step 1: Demographics + document upload -->
+    <div class="card" id="fafsaIntakeCard">
+        <h2>Your FAFSA Prep Profile</h2>
+        <p class="debt-step-sub">Enter your basic info and upload your tax documents — Astra extracts the same data FAFSA would import.</p>
+
+        <div class="debt-form-row">
+            <div class="field-group">
+                <label for="fafsaStudentName">Student Full Name</label>
+                <input type="text" id="fafsaStudentName" placeholder="e.g. Jordan Smith">
+            </div>
+            <div class="field-group">
+                <label for="fafsaDob">Date of Birth</label>
+                <input type="date" id="fafsaDob">
+            </div>
+            <div class="field-group">
+                <label for="fafsaPlanningYear">Year Planning to Be in College</label>
+                <input type="number" id="fafsaPlanningYear" placeholder="e.g. 2027" min="2024" max="2035" step="1">
+            </div>
+        </div>
+
+        <button type="button" id="fafsaSaveProfileBtn" class="btn-primary" onclick="saveFafsaProfile()">Save Profile</button>
+        <div id="fafsaProfileSaved" style="display:none;font-size:12px;color:var(--accent);font-weight:700;margin-top:8px;">✓ Profile saved</div>
+
+        <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px;">
+            <label for="fafsaFileInput">Upload Tax Documents (W-2, 1040, 1099, etc.)</label>
+            <input type="file" id="fafsaFileInput" multiple accept=".pdf,.png,.jpg,.jpeg" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;">
+            <button type="button" id="fafsaUploadBtn" class="btn-primary" style="margin-top:10px;" onclick="uploadFafsaDocs()">Extract &amp; Save</button>
+            <div id="fafsaUploadSpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:8px;">Extracting document data…</div>
+        </div>
+
+        <div id="fafsaExtractedPreview" style="margin-top:16px;"></div>
+    </div>
+
+    <!-- Step 2: Readiness summary -->
+    <div class="card" id="fafsaSummarySection" style="display:none;">
+        <h2>Readiness Summary</h2>
+        <button type="button" id="fafsaSummaryBtn" class="btn-primary" onclick="generateFafsaSummary()">Generate Readiness Summary</button>
+        <div id="fafsaSummarySpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:8px;">Analyzing your profile and searching for scholarships…</div>
+
+        <div id="fafsaSummaryCard" style="display:none;margin-top:18px;">
+            <p class="debt-section-title">Readiness Summary</p>
+            <p id="fafsaReadinessText" style="font-size:13px;line-height:1.6;margin-bottom:16px;"></p>
+
+            <p class="debt-section-title">Aid Projection</p>
+            <p id="fafsaAidProjectionText" style="font-size:13px;line-height:1.6;margin-bottom:16px;"></p>
+
+            <p class="debt-section-title">Appeal Opportunities <span style="font-weight:400;text-transform:none;color:var(--muted);">(check the ones to include in your roadmap)</span></p>
+            <ul id="fafsaAppealList" class="credit-build-tips" style="list-style:none;padding-left:0;margin-bottom:16px;"></ul>
+
+            <p class="debt-section-title">Scholarship Matches <span style="font-weight:400;text-transform:none;color:var(--muted);">(live search results — check the ones to include)</span></p>
+            <div id="fafsaScholarshipGrid" class="credit-options-grid" style="margin-bottom:16px;"></div>
+
+            <p class="debt-section-title">Deadlines &amp; Timeline</p>
+            <ul id="fafsaDeadlinesList" style="font-size:13px;line-height:1.6;margin-bottom:8px;"></ul>
+        </div>
+    </div>
+
+    <!-- Step 3: Roadmap -->
+    <div class="card" id="fafsaRoadmapSection" style="display:none;">
+        <h2>Your Roadmap</h2>
+        <button type="button" id="fafsaRoadmapBtn" class="btn-primary" onclick="generateFafsaRoadmap()">Generate My Roadmap</button>
+        <div id="fafsaRoadmapSpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:8px;">Building your roadmap…</div>
+
+        <div id="fafsaRoadmapCard" style="display:none;margin-top:18px;">
+            <p id="fafsaRoadmapSummary" style="font-size:13px;line-height:1.6;margin-bottom:14px;"></p>
+            <ol id="fafsaRoadmapList" style="font-size:13px;line-height:1.7;padding-left:20px;"></ol>
+        </div>
+    </div>
+
+</div><!-- end .container fafsa -->
+</div><!-- end #tab-fafsa -->
 
 <!-- ══ AWARD LEVEL TAB ══════════════════════════════════════════════════════ -->
 <div id="tab-award">
@@ -1645,14 +1739,47 @@
 </div><!-- end .container postgrad -->
 </div><!-- end #tab-postgrad -->
 
+<!-- ══ ASK ASTRA (CHATBOT) TAB ══════════════════════════════════════════════ -->
+<div id="tab-chat" style="position:relative;">
+
+<div id="chatPaywall" style="display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(255,255,255,0.84);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
+    <div style="text-align:center;max-width:360px;">
+        <div style="font-size:36px;margin-bottom:12px;">💬</div>
+        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your 3 free FAFSA Prep actions</h3>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock unlimited chat with Astra about your saved profile.</p>
+        <a href="/api/stripe/create-checkout-session" class="btn-primary" style="display:inline-block;text-decoration:none;padding:13px 28px;font-size:15px;">
+            Unlock for <strong>$29.99/mo</strong>
+        </a>
+    </div>
+</div>
+
+<div class="container" style="max-width:760px;">
+    <div class="card">
+        <h2>Ask Astra About Your Profile</h2>
+        <p class="debt-step-sub">Astra answers using only your own saved FAFSA Prep profile — build your profile in the FAFSA Prep tab first.</p>
+
+        <div id="chatMessages" style="height:360px;overflow-y:auto;border:1.5px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px;background:#fafbfc;font-size:13px;line-height:1.6;"></div>
+
+        <div style="display:flex;gap:8px;">
+            <input type="text" id="chatInput" placeholder="e.g. What deadlines should I prioritize?" style="flex:1;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;" onkeydown="if(event.key==='Enter'){sendChatMessage();}">
+            <button type="button" class="btn-primary" style="padding:10px 20px;" onclick="sendChatMessage()">Send</button>
+        </div>
+        <div id="chatSpinner" style="display:none;font-size:12px;color:var(--muted);margin-top:8px;">Astra is thinking…</div>
+    </div>
+</div>
+</div><!-- end #tab-chat -->
+
 </main>
 
 <script>
     // ── STATE ──────────────────────────────────────────────────────────────────
-    let searchCount     = 0;
-    let debtSearchCount = 0;
-    let premiumActive   = false;
-    const FREE_SEARCHES = 3;
+    let searchCount      = 0;
+    let debtSearchCount  = 0;
+    let fafsaUsageCount  = 0;
+    let premiumActive    = false;
+    const FREE_SEARCHES     = 3;
+    const FREE_FAFSA_USES   = 3;
+    let chatHistory = [];
 
     function applyPaywall() {
         if (searchCount >= FREE_SEARCHES) {
@@ -2936,6 +3063,9 @@
             $("#tab-postgrad > .container").css({ filter: '', opacity: '', 'pointer-events': '', 'user-select': '' });
             $("#debtPaywall").hide();
             $('#debtAnalyzeBtn').text('Analyze My Loans');
+            fafsaUsageCount = 0;
+            $("#tab-fafsa > .container, #tab-chat > .container").css({ filter: '', opacity: '', 'pointer-events': '', 'user-select': '' });
+            $("#fafsaPaywall, #chatPaywall").hide();
         } else if (payment === 'cancelled') {
             history.replaceState(null, '', '/');
         }
@@ -2956,10 +3086,15 @@
                 $("#hdrLogout").show();
                 searchCount     = data.searchCount     || 0;
                 debtSearchCount = data.debtSearchCount || 0;
+                fafsaUsageCount = data.fafsaUsageCount  || 0;
                 premiumActive   = data.subscriptionActive || false;
                 if (debtSearchCount >= FREE_SEARCHES && !premiumActive) {
                     applyDebtPaywall();
                 }
+                if (fafsaUsageCount >= FREE_FAFSA_USES && !premiumActive) {
+                    applyFafsaPaywall();
+                }
+                loadFafsaProfile();
             } else {
                 window.location.href = "/login.html";
             }
@@ -3105,8 +3240,10 @@
 
     // ── MODULE TAB SWITCHING ──────────────────────────────────────────────────
     function switchModuleTab(tab) {
-        document.getElementById('tab-award').style.display    = tab === 'award'   ? 'block' : 'none';
+        document.getElementById('tab-fafsa').style.display    = tab === 'fafsa'    ? 'block' : 'none';
+        document.getElementById('tab-award').style.display    = tab === 'award'    ? 'block' : 'none';
         document.getElementById('tab-postgrad').style.display = tab === 'postgrad' ? 'block' : 'none';
+        document.getElementById('tab-chat').style.display     = tab === 'chat'     ? 'block' : 'none';
         document.querySelectorAll('.mod-tab').forEach(btn => btn.classList.remove('active'));
         document.getElementById('tab-btn-' + tab).classList.add('active');
     }
@@ -3117,6 +3254,272 @@
             $("#tab-postgrad > .container").css({ filter: "blur(5px)", opacity: "0.35", "user-select": "none", "pointer-events": "none" });
             $("#debtPaywall").css("display", "flex");
         }
+    }
+
+    // ── FAFSA PREP ───────────────────────────────────────────────────────────
+    function applyFafsaPaywall() {
+        if (fafsaUsageCount >= FREE_FAFSA_USES && !premiumActive) {
+            $("#tab-fafsa > .container, #tab-chat > .container").css({ filter: "blur(5px)", opacity: "0.35", "user-select": "none", "pointer-events": "none" });
+            $("#fafsaPaywall, #chatPaywall").css("display", "flex");
+            return true;
+        }
+        return false;
+    }
+
+    function noteFafsaUsage() {
+        fafsaUsageCount++;
+        if (fafsaUsageCount >= FREE_FAFSA_USES && !premiumActive) applyFafsaPaywall();
+    }
+
+    function loadFafsaProfile() {
+        $.get('/api/fafsa/profile', function(data) {
+            if (!data.exists) return;
+            if (data.studentName) $('#fafsaStudentName').val(data.studentName);
+            if (data.dateOfBirth) $('#fafsaDob').val(data.dateOfBirth);
+            if (data.planningYear) $('#fafsaPlanningYear').val(data.planningYear);
+            if (data.extractedData) {
+                renderFafsaExtractedPreview(data.extractedData);
+                $('#fafsaSummarySection').show();
+            }
+            if (data.readinessSummary) {
+                renderFafsaSummary(data.readinessSummary);
+                $('#fafsaRoadmapSection').show();
+            }
+            if (data.roadmap) {
+                renderFafsaRoadmap(data.roadmap);
+            }
+        });
+    }
+
+    function saveFafsaProfile() {
+        const studentName = $('#fafsaStudentName').val().trim();
+        const dateOfBirth = $('#fafsaDob').val();
+        const planningYear = $('#fafsaPlanningYear').val();
+        if (!studentName) { alert('Please enter the student name.'); return; }
+
+        $.ajax({
+            url: '/api/fafsa/profile',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ studentName, dateOfBirth, planningYear }),
+            success: function() {
+                $('#fafsaProfileSaved').show();
+                setTimeout(() => $('#fafsaProfileSaved').fadeOut(), 2500);
+            },
+            error: function() { alert('Could not save your profile. Please try again.'); }
+        });
+    }
+
+    function uploadFafsaDocs() {
+        if (applyFafsaPaywall()) return;
+        const files = $('#fafsaFileInput')[0].files;
+        if (!files || files.length === 0) { alert('Please choose at least one file to upload.'); return; }
+
+        $('#fafsaUploadSpinner').show();
+        $('#fafsaUploadBtn').prop('disabled', true);
+
+        const uploadOne = (file) => {
+            const formData = new FormData();
+            formData.append('file', file);
+            return $.ajax({
+                url: '/api/fafsa/upload-tax-doc',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false
+            });
+        };
+
+        // Upload sequentially so the paywall check applies per-file
+        let chain = Promise.resolve();
+        const results = [];
+        Array.from(files).forEach(file => {
+            chain = chain.then(() => uploadOne(file).then(resp => {
+                if (resp.paywalled) {
+                    applyFafsaPaywall();
+                    return;
+                }
+                results.push(resp);
+                noteFafsaUsage();
+            }));
+        });
+
+        chain.then(() => {
+            $('#fafsaUploadSpinner').hide();
+            $('#fafsaUploadBtn').prop('disabled', false);
+            if (results.length > 0) {
+                $('#fafsaSummarySection').show();
+                results.forEach(r => renderFafsaExtractedPreview({ [r.filename]: r.extracted }, true));
+            }
+        }).catch(() => {
+            $('#fafsaUploadSpinner').hide();
+            $('#fafsaUploadBtn').prop('disabled', false);
+            alert('Could not extract one or more documents. Please try again.');
+        });
+    }
+
+    function renderFafsaExtractedPreview(extractedByFile, append) {
+        let html = '';
+        Object.keys(extractedByFile).forEach(filename => {
+            const kv = extractedByFile[filename] || {};
+            html += `<div class="credit-option-card" style="margin-bottom:10px;">
+                <div class="co-name">${filename}</div>`;
+            Object.keys(kv).forEach(key => {
+                html += `<div class="co-detail"><strong>${key}:</strong> ${kv[key]}</div>`;
+            });
+            html += `</div>`;
+        });
+        if (append) {
+            $('#fafsaExtractedPreview').append(html);
+        } else {
+            $('#fafsaExtractedPreview').html(html);
+        }
+    }
+
+    function generateFafsaSummary() {
+        if (applyFafsaPaywall()) return;
+        $('#fafsaSummarySpinner').show();
+        $('#fafsaSummaryBtn').prop('disabled', true);
+
+        $.post('/api/fafsa/readiness-summary', function(data) {
+            $('#fafsaSummarySpinner').hide();
+            $('#fafsaSummaryBtn').prop('disabled', false);
+            if (data.paywalled) { applyFafsaPaywall(); return; }
+            noteFafsaUsage();
+            renderFafsaSummary(data);
+            $('#fafsaRoadmapSection').show();
+        }).fail(function() {
+            $('#fafsaSummarySpinner').hide();
+            $('#fafsaSummaryBtn').prop('disabled', false);
+            alert('Could not generate your readiness summary. Please try again.');
+        });
+    }
+
+    function renderFafsaSummary(data) {
+        $('#fafsaReadinessText').text(data.readinessSummary || '');
+        $('#fafsaAidProjectionText').text(data.aidProjection || '');
+
+        let appealHtml = '';
+        (data.appealOpportunities || []).forEach((a, i) => {
+            appealHtml += `<li style="margin-bottom:8px;"><label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;font-weight:400;">
+                <input type="checkbox" class="fafsa-appeal-check" value="${(a.title || '').replace(/"/g,'&quot;')}" style="margin-top:3px;">
+                <span><strong>${a.title || ''}</strong> — ${a.detail || ''}</span>
+            </label></li>`;
+        });
+        $('#fafsaAppealList').html(appealHtml);
+
+        let scholarshipHtml = '';
+        (data.liveScholarships || []).forEach(s => {
+            scholarshipHtml += `<div class="credit-option-card bank-card">
+                <label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;">
+                    <input type="checkbox" class="fafsa-scholarship-check" value="${(s.name || '').replace(/"/g,'&quot;')}" style="margin-top:3px;">
+                    <span>
+                        <span class="co-name">${s.name || ''}</span>
+                        <div class="co-detail">${s.snippet || ''}</div>
+                        <a href="${s.url}" target="_blank" rel="noopener" class="co-apply">View →</a>
+                    </span>
+                </label>
+            </div>`;
+        });
+        $('#fafsaScholarshipGrid').html(scholarshipHtml);
+
+        let deadlinesHtml = '';
+        (data.deadlines || []).forEach(d => {
+            deadlinesHtml += `<li><strong>${d.name || ''}</strong> — ${d.timing || ''}. ${d.note || ''}</li>`;
+        });
+        $('#fafsaDeadlinesList').html(deadlinesHtml);
+
+        $('#fafsaSummaryCard').show();
+    }
+
+    function generateFafsaRoadmap() {
+        if (applyFafsaPaywall()) return;
+        const selectedOptions = [];
+        $('.fafsa-appeal-check:checked, .fafsa-scholarship-check:checked').each(function() {
+            selectedOptions.push($(this).val());
+        });
+        if (selectedOptions.length === 0) {
+            alert('Check at least one appeal opportunity or scholarship above to build your roadmap.');
+            return;
+        }
+
+        $('#fafsaRoadmapSpinner').show();
+        $('#fafsaRoadmapBtn').prop('disabled', true);
+
+        $.ajax({
+            url: '/api/fafsa/roadmap',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ selectedOptions }),
+            success: function(data) {
+                $('#fafsaRoadmapSpinner').hide();
+                $('#fafsaRoadmapBtn').prop('disabled', false);
+                if (data.paywalled) { applyFafsaPaywall(); return; }
+                noteFafsaUsage();
+                renderFafsaRoadmap(data);
+            },
+            error: function() {
+                $('#fafsaRoadmapSpinner').hide();
+                $('#fafsaRoadmapBtn').prop('disabled', false);
+                alert('Could not generate your roadmap. Please try again.');
+            }
+        });
+    }
+
+    function renderFafsaRoadmap(data) {
+        $('#fafsaRoadmapSummary').text(data.summary || '');
+        let stepsHtml = '';
+        (data.roadmapSteps || []).forEach(s => {
+            stepsHtml += `<li style="margin-bottom:10px;"><strong>${s.title || ''}</strong> <span style="color:var(--muted);">(${s.targetDate || ''})</span><br>${s.detail || ''}</li>`;
+        });
+        $('#fafsaRoadmapList').html(stepsHtml);
+        $('#fafsaRoadmapCard').show();
+    }
+
+    // ── ASK ASTRA (CHATBOT) ─────────────────────────────────────────────────
+    function appendChatBubble(role, text) {
+        const align = role === 'user' ? 'right' : 'left';
+        const bg = role === 'user' ? 'var(--primary)' : '#eef1f5';
+        const color = role === 'user' ? '#fff' : 'var(--text)';
+        $('#chatMessages').append(
+            `<div style="text-align:${align};margin-bottom:10px;">
+                <span style="display:inline-block;max-width:80%;padding:8px 12px;border-radius:10px;background:${bg};color:${color};">${text}</span>
+            </div>`
+        );
+        $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+    }
+
+    function sendChatMessage() {
+        if (applyFafsaPaywall()) return;
+        const input = $('#chatInput');
+        const message = input.val().trim();
+        if (!message) return;
+
+        appendChatBubble('user', message);
+        input.val('');
+        $('#chatSpinner').show();
+
+        $.ajax({
+            url: '/api/fafsa/chat',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ message, history: chatHistory }),
+            success: function(data) {
+                $('#chatSpinner').hide();
+                if (data.paywalled) { applyFafsaPaywall(); return; }
+                noteFafsaUsage();
+                chatHistory.push({ role: 'user', content: message });
+                chatHistory.push({ role: 'assistant', content: data.answer });
+                appendChatBubble('assistant', data.answer);
+            },
+            error: function(xhr) {
+                $('#chatSpinner').hide();
+                const err = xhr.responseJSON && xhr.responseJSON.error
+                    ? xhr.responseJSON.error
+                    : 'Could not get a response. Please try again.';
+                appendChatBubble('assistant', err);
+            }
+        });
     }
 
     function analyzeDebt() {
