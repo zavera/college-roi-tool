@@ -920,6 +920,149 @@
             border-top: 1px solid var(--border);
         }
 
+        /* ── Module Tab Bar ── */
+        .module-tab-bar {
+            background: var(--navy);
+            display: flex;
+            gap: 4px;
+            padding: 0 32px;
+            border-bottom: 3px solid var(--primary);
+        }
+        .mod-tab {
+            padding: 13px 22px;
+            font-size: 13px;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -3px;
+            transition: color .15s, border-color .15s;
+            letter-spacing: 0.3px;
+            font-family: inherit;
+        }
+        .mod-tab:hover { color: rgba(255,255,255,0.85); }
+        .mod-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+        @media(max-width:640px) {
+            .module-tab-bar { padding: 0 10px; gap: 0; }
+            .mod-tab { padding: 11px 14px; font-size: 12px; }
+        }
+
+        /* ── Post-Grad Debt Module ── */
+        #tab-postgrad { display: none; }
+        .debt-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--primary-dk);
+            margin-bottom: 8px;
+        }
+        .debt-step {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.05);
+        }
+        .debt-step h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .debt-step-sub {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 18px;
+        }
+        .debt-form-row {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .debt-form-row .field-group { flex: 1; min-width: 180px; margin-bottom: 0; }
+
+        /* Plan table */
+        .plan-comparison-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 16px; }
+        .plan-comparison-table th {
+            background: var(--navy); color: var(--primary);
+            padding: 9px 12px; text-align: left; font-size: 11px;
+            text-transform: uppercase; letter-spacing: .5px;
+        }
+        .plan-comparison-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+        .plan-comparison-table tr:last-child td { border-bottom: none; }
+        .plan-comparison-table tr.plan-recommended { background: #fdf8f2; }
+        .plan-recommended-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: var(--navy);
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+
+        /* AI advice box for debt */
+        .debt-ai-box {
+            background: #fdf8f2;
+            border: 1px solid var(--primary-lt);
+            border-radius: 8px;
+            padding: 16px 18px;
+            font-size: 13px;
+            line-height: 1.7;
+            margin-top: 16px;
+        }
+        .debt-ai-box h3 { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+
+        /* PSLF result */
+        .pslf-result {
+            border-radius: 8px;
+            padding: 14px 16px;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-top: 0;
+        }
+        .pslf-result.eligible   { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+        .pslf-result.ineligible { background: #fff5f5; border: 1px solid #fed7d7; color: #991b1b; }
+        .pslf-result.unknown    { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+
+        /* Hardship letter output */
+        #hardshipLetterOutput {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12.5px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            margin-top: 16px;
+            color: var(--text);
+        }
+        #hardshipChecklist {
+            margin-top: 14px;
+            padding: 14px 16px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+        #hardshipChecklist strong { color: #166534; display: block; margin-bottom: 6px; }
+        .btn-copy {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: transparent; border: 1.5px solid var(--primary);
+            color: var(--primary-dk); font-size: 12px; font-weight: 700;
+            padding: 6px 14px; border-radius: 6px; cursor: pointer;
+            transition: background .15s; margin-top: 10px; font-family: inherit;
+        }
+        .btn-copy:hover { background: var(--primary-lt); }
+
         @media print {
             header .hdr-badge, #searchCard, .card:not(#gapAnalysisCard),
             #gapAnalysisCard .accordion-toggle,
@@ -982,7 +1125,15 @@
     </div>
 </header>
 
+<div class="module-tab-bar" role="tablist" aria-label="Module navigation">
+    <button class="mod-tab active" role="tab" aria-selected="true"  aria-controls="tab-award"   id="tab-btn-award"   onclick="switchModuleTab('award')">Award Level</button>
+    <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-postgrad" id="tab-btn-postgrad" onclick="switchModuleTab('postgrad')">Post-Grad Debt</button>
+</div>
+
 <main id="main-content">
+
+<!-- ══ AWARD LEVEL TAB ══════════════════════════════════════════════════════ -->
+<div id="tab-award">
 <div class="container">
 
     <!-- ── College Search ── -->
@@ -1212,7 +1363,202 @@
 
     </div><!-- end #paywallSection -->
 
-</div>
+</div><!-- end .container -->
+</div><!-- end #tab-award -->
+
+<!-- ══ POST-GRAD DEBT TAB ════════════════════════════════════════════════════ -->
+<div id="tab-postgrad">
+<div class="container" style="max-width:760px;">
+
+    <!-- Step 1: Intake -->
+    <div class="debt-step" id="debtIntakeCard">
+        <h2>Your Loan Situation</h2>
+        <p class="debt-step-sub">Enter your loan details to see all repayment options ranked for your situation.</p>
+
+        <div class="debt-form-row">
+            <div class="field-group">
+                <label for="dFederalBalance">Federal Loan Balance ($)</label>
+                <input type="number" id="dFederalBalance" placeholder="e.g. 35000" min="0" step="100">
+            </div>
+            <div class="field-group">
+                <label for="dPrivateBalance">Private Loan Balance ($)</label>
+                <input type="number" id="dPrivateBalance" placeholder="e.g. 10000" min="0" step="100">
+            </div>
+        </div>
+
+        <div class="debt-form-row">
+            <div class="field-group">
+                <label for="dServicer">Loan Servicer</label>
+                <select id="dServicer" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
+                    <option value="">Select servicer…</option>
+                    <option>MOHELA</option>
+                    <option>Aidvantage</option>
+                    <option>Nelnet</option>
+                    <option>ECSI</option>
+                    <option>EdFinancial</option>
+                    <option>OSLA Servicing</option>
+                    <option>Default Resolution Group</option>
+                    <option>Other / Private Lender</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label for="dInterestRate">Federal Interest Rate (%) <span style="font-weight:400;color:var(--muted)">optional</span></label>
+                <input type="number" id="dInterestRate" placeholder="e.g. 6.53" min="0" max="20" step="0.01">
+            </div>
+        </div>
+
+        <div class="debt-form-row">
+            <div class="field-group">
+                <label for="dIncome">Annual Gross Income ($)</label>
+                <input type="number" id="dIncome" placeholder="e.g. 48000" min="0" step="1000">
+            </div>
+            <div class="field-group">
+                <label for="dHousehold">Household Size</label>
+                <input type="number" id="dHousehold" placeholder="e.g. 1" min="1" max="20" step="1">
+            </div>
+        </div>
+
+        <div class="debt-form-row">
+            <div class="field-group">
+                <label for="dEmploymentStatus">Employment Status</label>
+                <select id="dEmploymentStatus" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
+                    <option value="">Select…</option>
+                    <option value="employed-full">Employed Full-Time</option>
+                    <option value="employed-part">Employed Part-Time</option>
+                    <option value="unemployed">Unemployed</option>
+                    <option value="self-employed">Self-Employed</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label for="dMaritalStatus">Marital Status</label>
+                <select id="dMaritalStatus" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
+                    <option value="">Select…</option>
+                    <option value="single">Single</option>
+                    <option value="married-joint">Married — Filing Jointly</option>
+                    <option value="married-separate">Married — Filing Separately</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="debt-form-row">
+            <div class="field-group" style="flex:2;min-width:200px;">
+                <label for="dEmployer">Employer Name <span style="font-weight:400;color:var(--muted)">for PSLF check</span></label>
+                <input type="text" id="dEmployer" placeholder="e.g. Boston Public Schools, MOHELA, Dept. of Veterans Affairs">
+            </div>
+            <div class="field-group">
+                <label for="dCreditBand">Credit Score Range</label>
+                <select id="dCreditBand" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
+                    <option value="">Select…</option>
+                    <option value="below-580">Below 580</option>
+                    <option value="580-619">580 – 619</option>
+                    <option value="620-659">620 – 659</option>
+                    <option value="660-699">660 – 699</option>
+                    <option value="700-739">700 – 739</option>
+                    <option value="740+">740 +</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="debt-form-row">
+            <div class="field-group">
+                <label for="dGracePeriod">Grace Period End Date <span style="font-weight:400;color:var(--muted)">optional</span></label>
+                <input type="date" id="dGracePeriod" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
+            </div>
+            <div class="field-group">
+                <label for="dSchool">School Attended <span style="font-weight:400;color:var(--muted)">optional</span></label>
+                <input type="text" id="dSchool" placeholder="e.g. University of Michigan">
+            </div>
+        </div>
+
+        <button type="button" class="btn-primary" onclick="analyzeDebt()" id="debtAnalyzeBtn" style="margin-top:8px;">
+            Analyze My Loans
+        </button>
+        <div id="debtSpinner" style="display:none;font-size:13px;color:var(--muted);font-style:italic;padding:12px 0;">
+            Calculating repayment options…
+        </div>
+    </div>
+
+    <!-- Step 2: Repayment Plan Results (hidden until analysis runs) -->
+    <div id="debtResultsCard" style="display:none;">
+
+        <!-- AI Recommendation -->
+        <div class="debt-step">
+            <p class="debt-section-title">AI Recommendation</p>
+            <div id="debtAiAdvice" class="debt-ai-box" aria-live="polite"></div>
+        </div>
+
+        <!-- Repayment Plans Table -->
+        <div class="debt-step">
+            <p class="debt-section-title">All Federal Repayment Plans</p>
+            <p style="font-size:12px;color:var(--muted);margin-bottom:4px;">Sorted by total amount paid. Forgiveness amounts may be taxable after 2025.</p>
+            <div style="overflow-x:auto;">
+                <table class="plan-comparison-table" id="planTable">
+                    <thead>
+                        <tr>
+                            <th>Plan</th>
+                            <th>Monthly Payment</th>
+                            <th>Total Paid</th>
+                            <th>Forgiveness</th>
+                            <th>Term</th>
+                        </tr>
+                    </thead>
+                    <tbody id="planTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PSLF Result -->
+        <div class="debt-step" id="pslfCard" style="display:none;">
+            <p class="debt-section-title">PSLF Eligibility Check</p>
+            <div id="pslfResult" class="pslf-result unknown" aria-live="polite"></div>
+            <p style="font-size:11px;color:var(--muted);margin-top:10px;">
+                Public Service Loan Forgiveness cancels remaining federal loan balance after 120 qualifying payments while working full-time for a qualifying employer.
+                <a href="https://studentaid.gov/manage-loans/forgiveness-cancellation/public-service" target="_blank" rel="noopener" style="color:var(--primary-dk);">Learn more at studentaid.gov →</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Step 3: Hardship Letter Generator -->
+    <div class="debt-step" id="hardshipCard">
+        <p class="debt-section-title">Hardship Letter Generator</p>
+        <h2>Struggling to Make Payments?</h2>
+        <p class="debt-step-sub">Astra generates a complete, servicer-ready hardship letter with the applicable federal regulation. Complete the intake above first, then select your hardship type.</p>
+
+        <div class="field-group">
+            <label for="dHardshipType">Hardship Type</label>
+            <select id="dHardshipType" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
+                <option value="">Select hardship type…</option>
+                <option value="economic">Economic Hardship Deferment (income below 150% poverty line)</option>
+                <option value="unemployment">Unemployment Deferment (actively seeking work)</option>
+                <option value="medical">Medical / Cancer Treatment Deferment</option>
+                <option value="general">General Forbearance (financial difficulty)</option>
+            </select>
+        </div>
+        <div class="field-group" style="margin-bottom:0;">
+            <label for="dHardshipDetails">Brief Description of Your Situation</label>
+            <textarea id="dHardshipDetails" rows="3" placeholder="e.g. Lost my job in March, currently collecting unemployment while searching for work in my field. Monthly expenses exceed income." style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;resize:vertical;"></textarea>
+        </div>
+
+        <button type="button" class="btn-ai" onclick="generateHardshipLetter()" id="hardshipBtn" style="margin-top:16px;">
+            Generate Hardship Letter
+        </button>
+        <div id="hardshipSpinner" style="display:none;font-size:13px;color:var(--muted);font-style:italic;padding:12px 0;">
+            Generating your hardship letter…
+        </div>
+
+        <div id="hardshipLetterWrap" style="display:none;">
+            <pre id="hardshipLetterOutput"></pre>
+            <button type="button" class="btn-copy" onclick="copyHardshipLetter()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy Letter
+            </button>
+            <div id="hardshipChecklist"></div>
+        </div>
+    </div>
+
+</div><!-- end .container postgrad -->
+</div><!-- end #tab-postgrad -->
+
 </main>
 
 <script>
@@ -2659,6 +3005,159 @@
             }
         `);
     }
+
+    // ── MODULE TAB SWITCHING ──────────────────────────────────────────────────
+    function switchModuleTab(tab) {
+        document.getElementById('tab-award').style.display    = tab === 'award'   ? '' : 'none';
+        document.getElementById('tab-postgrad').style.display = tab === 'postgrad' ? '' : 'none';
+        document.querySelectorAll('.mod-tab').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('tab-btn-' + tab).classList.add('active');
+    }
+
+    // ── DEBT ANALYSIS ─────────────────────────────────────────────────────────
+    function analyzeDebt() {
+        const federalBalance = parseFloat($('#dFederalBalance').val()) || 0;
+        if (federalBalance <= 0) {
+            alert('Please enter your federal loan balance to calculate repayment plans.');
+            return;
+        }
+        const income = parseFloat($('#dIncome').val()) || 0;
+        if (income <= 0) {
+            alert('Please enter your annual gross income.');
+            return;
+        }
+
+        $('#debtSpinner').show();
+        $('#debtAnalyzeBtn').prop('disabled', true);
+        $('#debtResultsCard').hide();
+
+        const payload = {
+            federalLoanBalance: federalBalance,
+            privateLoanBalance: parseFloat($('#dPrivateBalance').val()) || 0,
+            loanServicer:       $('#dServicer').val(),
+            interestRate:       parseFloat($('#dInterestRate').val()) || null,
+            gracePeriodEndDate: $('#dGracePeriod').val() || null,
+            employmentStatus:   $('#dEmploymentStatus').val(),
+            employerName:       $('#dEmployer').val().trim(),
+            annualGrossIncome:  income,
+            householdSize:      parseInt($('#dHousehold').val()) || 1,
+            maritalStatus:      $('#dMaritalStatus').val(),
+            creditScoreBand:    $('#dCreditBand').val(),
+            schoolAttended:     $('#dSchool').val().trim()
+        };
+
+        $.ajax({
+            url: '/api/debt/repayment-plans',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            success: function(resp) {
+                renderDebtResults(resp);
+                $('#debtResultsCard').show();
+                $('#debtSpinner').hide();
+                $('#debtAnalyzeBtn').prop('disabled', false);
+                document.getElementById('debtResultsCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            },
+            error: function() {
+                $('#debtSpinner').hide();
+                $('#debtAnalyzeBtn').prop('disabled', false);
+                alert('Could not calculate repayment plans. Please try again.');
+            }
+        });
+    }
+
+    function renderDebtResults(resp) {
+        const plans  = resp.plans    || [];
+        const pslf   = resp.pslf     || {};
+        const advice = resp.aiAdvice || {};
+
+        const recommended = advice.recommendedPlan || '';
+        let aiHtml = '';
+        if (recommended) aiHtml += `<h3>Recommended: ${recommended}</h3>`;
+        if (advice.rationale)   aiHtml += `<p>${advice.rationale}</p>`;
+        if (advice.keyInsight)  aiHtml += `<p style="margin-top:8px;"><strong>Key Insight:</strong> ${advice.keyInsight}</p>`;
+        if (advice.pslfNote)    aiHtml += `<p style="margin-top:8px;color:var(--accent);"><strong>PSLF Strategy:</strong> ${advice.pslfNote}</p>`;
+        if (advice.warningFlag) aiHtml += `<p style="margin-top:8px;color:#c53030;"><strong>Warning:</strong> ${advice.warningFlag}</p>`;
+        if (!aiHtml)            aiHtml  = '<p>Analysis complete. Review your repayment options below.</p>';
+        $('#debtAiAdvice').html(aiHtml);
+
+        const fmt = n => '$' + Number(n).toLocaleString();
+        let rows = '';
+        plans.forEach(p => {
+            const isRec = p.planName === recommended;
+            rows += `<tr class="${isRec ? 'plan-recommended' : ''}">
+                <td><strong>${p.planName}</strong>${isRec ? '<span class="plan-recommended-badge">Best for you</span>' : ''}<br>
+                    <span style="font-size:11px;color:var(--muted);">${p.bestFor}</span></td>
+                <td style="font-weight:700;">${fmt(p.monthlyPayment)}/mo</td>
+                <td>${fmt(p.totalPaid)}</td>
+                <td>${p.forgiveness > 0 ? fmt(p.forgiveness) + ' after ' + p.years + ' yrs' : '—'}</td>
+                <td>${p.years} yrs</td>
+            </tr>`;
+        });
+        $('#planTableBody').html(rows);
+
+        if (pslf && pslf.message) {
+            const cls  = pslf.pslfEligible === true  ? 'eligible'
+                       : pslf.pslfEligible === false ? 'ineligible' : 'unknown';
+            const icon = pslf.pslfEligible === true  ? '✓ '
+                       : pslf.pslfEligible === false ? '✗ ' : '⚠ ';
+            $('#pslfResult').attr('class', 'pslf-result ' + cls).html(icon + pslf.message);
+            $('#pslfCard').show();
+        }
+    }
+
+    // ── HARDSHIP LETTER ───────────────────────────────────────────────────────
+    function generateHardshipLetter() {
+        const hardshipType = $('#dHardshipType').val();
+        if (!hardshipType) { alert('Please select a hardship type.'); return; }
+
+        $('#hardshipSpinner').show();
+        $('#hardshipBtn').prop('disabled', true);
+        $('#hardshipLetterWrap').hide();
+
+        const payload = {
+            federalLoanBalance: parseFloat($('#dFederalBalance').val()) || 0,
+            loanServicer:       $('#dServicer').val() || 'Your Loan Servicer',
+            annualGrossIncome:  parseFloat($('#dIncome').val()) || 0,
+            householdSize:      parseInt($('#dHousehold').val()) || 1,
+            employmentStatus:   $('#dEmploymentStatus').val(),
+            hardshipType:       hardshipType,
+            hardshipDetails:    $('#dHardshipDetails').val().trim()
+        };
+
+        $.ajax({
+            url: '/api/debt/hardship-letter',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            success: function(resp) {
+                $('#hardshipLetterOutput').text(resp.letter || '');
+                if (resp.checklist) {
+                    $('#hardshipChecklist').html('<strong>Supporting Documents to Attach:</strong>' + resp.checklist);
+                }
+                $('#hardshipLetterWrap').show();
+                $('#hardshipSpinner').hide();
+                $('#hardshipBtn').prop('disabled', false);
+                document.getElementById('hardshipLetterWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            },
+            error: function() {
+                $('#hardshipSpinner').hide();
+                $('#hardshipBtn').prop('disabled', false);
+                alert('Could not generate the hardship letter. Please try again.');
+            }
+        });
+    }
+
+    function copyHardshipLetter() {
+        const text = $('#hardshipLetterOutput').text();
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector('.btn-copy');
+            const orig = btn.innerHTML;
+            btn.innerHTML = '✓ Copied!';
+            setTimeout(() => { btn.innerHTML = orig; }, 2000);
+        });
+    }
+
 </script>
 
 <footer style="text-align:center;padding:24px 20px;font-size:12px;color:#718096;border-top:1px solid #e2e8f0;margin-top:0;">

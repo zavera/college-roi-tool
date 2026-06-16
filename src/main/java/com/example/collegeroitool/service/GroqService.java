@@ -39,6 +39,8 @@ public class GroqService {
     private String costplanPromptTemplate;
     private String campusPromptTemplate;
     private String counselorPromptTemplate;
+    private String repaymentPromptTemplate;
+    private String hardshipPromptTemplate;
 
     private final RestTemplate restTemplate;
 
@@ -71,6 +73,12 @@ public class GroqService {
             StandardCharsets.UTF_8);
         counselorPromptTemplate = new String(
             new ClassPathResource("prompts/counselor-prompt.txt").getInputStream().readAllBytes(),
+            StandardCharsets.UTF_8);
+        repaymentPromptTemplate = new String(
+            new ClassPathResource("prompts/repayment-prompt.txt").getInputStream().readAllBytes(),
+            StandardCharsets.UTF_8);
+        hardshipPromptTemplate = new String(
+            new ClassPathResource("prompts/hardship-prompt.txt").getInputStream().readAllBytes(),
             StandardCharsets.UTF_8);
     }
 
@@ -396,6 +404,51 @@ public class GroqService {
                     }
                     """.formatted(major, major, major, major);
         }
+    }
+
+    // ── Post-Grad Debt Management ─────────────────────────────────────────────
+
+    public String getRepaymentRecommendation(com.example.collegeroitool.dto.DebtIntakeRequest req,
+                                              java.util.List<java.util.Map<String, Object>> plans,
+                                              java.util.Map<String, Object> pslfResult) {
+        if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
+            return "{\"recommendedPlan\":\"SAVE (formerly REPAYE)\",\"rationale\":\"Given your income relative to your loan balance, SAVE provides the lowest monthly payment and caps unpaid interest from growing your principal. This protects you if your income stays flat in the near term.\",\"keyInsight\":\"Your debt-to-income ratio is high — income-driven repayment is essential to avoid default.\",\"pslfNote\":null,\"warningFlag\":null}";
+        }
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            String plansJson = mapper.writeValueAsString(plans);
+            Boolean pslfEligible = pslfResult != null ? (Boolean) pslfResult.get("pslfEligible") : null;
+            String prompt = repaymentPromptTemplate
+                .replace("{{federalBalance}}", fmt(req.getFederalLoanBalance() != null ? req.getFederalLoanBalance() : 0))
+                .replace("{{privateBalance}}", fmt(req.getPrivateLoanBalance() != null ? req.getPrivateLoanBalance() : 0))
+                .replace("{{income}}", fmt(req.getAnnualGrossIncome() != null ? req.getAnnualGrossIncome() : 0))
+                .replace("{{householdSize}}", String.valueOf(req.getHouseholdSize() != null ? req.getHouseholdSize() : 1))
+                .replace("{{maritalStatus}}", req.getMaritalStatus() != null ? req.getMaritalStatus() : "not provided")
+                .replace("{{employmentStatus}}", req.getEmploymentStatus() != null ? req.getEmploymentStatus() : "not provided")
+                .replace("{{employerName}}", req.getEmployerName() != null ? req.getEmployerName() : "not provided")
+                .replace("{{creditBand}}", req.getCreditScoreBand() != null ? req.getCreditScoreBand() : "not provided")
+                .replace("{{servicer}}", req.getLoanServicer() != null ? req.getLoanServicer() : "not provided")
+                .replace("{{pslfEligible}}", pslfEligible != null ? String.valueOf(pslfEligible) : "unknown")
+                .replace("{{plansJson}}", plansJson);
+            return callGroq(prompt, 600, 0.2);
+        } catch (Exception e) {
+            return "{\"error\":\"Could not generate recommendation: " + e.getMessage() + "\"}";
+        }
+    }
+
+    public String getHardshipLetter(com.example.collegeroitool.dto.DebtIntakeRequest req) {
+        if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
+            return "[Demo mode] Hardship letter generation requires a live Groq API key. In production, Astra generates a complete, servicer-ready letter with your specific financial details and the applicable federal regulation citation.";
+        }
+        String prompt = hardshipPromptTemplate
+            .replace("{{servicer}}", req.getLoanServicer() != null ? req.getLoanServicer() : "Your Loan Servicer")
+            .replace("{{federalBalance}}", fmt(req.getFederalLoanBalance() != null ? req.getFederalLoanBalance() : 0))
+            .replace("{{income}}", fmt(req.getAnnualGrossIncome() != null ? req.getAnnualGrossIncome() : 0))
+            .replace("{{householdSize}}", String.valueOf(req.getHouseholdSize() != null ? req.getHouseholdSize() : 1))
+            .replace("{{employmentStatus}}", req.getEmploymentStatus() != null ? req.getEmploymentStatus() : "not provided")
+            .replace("{{hardshipType}}", req.getHardshipType() != null ? req.getHardshipType() : "general")
+            .replace("{{hardshipDetails}}", req.getHardshipDetails() != null ? req.getHardshipDetails() : "not provided");
+        return callGroq(prompt, 1200, 0.3);
     }
 
     // ── Shared Groq caller ────────────────────────────────────────────────────
