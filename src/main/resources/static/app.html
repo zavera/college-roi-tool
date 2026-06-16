@@ -3167,15 +3167,8 @@
                 $('#debtSpinner').hide();
                 $('#debtAnalyzeBtn').prop('disabled', false);
                 document.getElementById('debtResultsCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                // Credit options — isolated so any error here never blocks the results
-                try {
-                    const creditBand     = $('#dCreditBand').val();
-                    const privateBalance = parseFloat($('#dPrivateBalance').val()) || 0;
-                    renderCreditOptions(creditBand, privateBalance);
-                    $('#creditOptionsCard').show();
-                } catch(e) {
-                    console.error('renderCreditOptions error:', e);
-                }
+                // Credit options — live search, isolated so any error here never blocks the results
+                fetchCreditOptions(payload);
                 // Increment counter; show paywall on next attempt if limit reached
                 $.post('/api/auth/debt-search/increment', function(res) {
                     debtSearchCount = res.debtSearchCount || (debtSearchCount + 1);
@@ -3275,114 +3268,80 @@
         });
     }
 
-    // ── CURATED CREDIT OPTIONS DATA (updated June 2026) ──────────────────────
+    // ── CREDIT OPTIONS — live web search via backend, with curated fallback ──
 
-    const BALANCE_TRANSFER_CARDS = [
-        { name: "KeyPoint Credit Union Visa Classic", issuer: "KeyPoint Credit Union", type: "cu",
-          introPeriod: 16, introAPR: "0%", transferFee: "None", annualFee: "$0",
-          minCredit: 660, maxBalance: 15000,
-          membership: "Open to all — join via Financial Fitness Association",
-          perk: "Longest 0% period with zero fees among credit unions",
-          url: "https://www.kpcu.com/credit-cards" },
-        { name: "Fairwinds Cash Back Visa", issuer: "Fairwinds Credit Union", type: "cu",
-          introPeriod: 12, introAPR: "0%", transferFee: "None", annualFee: "$0",
-          minCredit: 660, maxBalance: 15000,
-          membership: "Open to all — join via partner charity donation",
-          perk: "No fees of any kind — truly free balance transfer",
-          url: "https://www.fairwinds.org/personal/credit-cards" },
-        { name: "Skyla Visa Platinum", issuer: "Skyla Credit Union", type: "cu",
-          introPeriod: 12, introAPR: "0%", transferFee: "None", annualFee: "$0",
-          minCredit: 660, maxBalance: 15000,
-          membership: "Charlotte, NC area + select employers nationwide",
-          perk: "Zero fees; competitive ongoing APR after intro period",
-          url: "https://www.skylacreditunion.com/personal/credit-cards" },
-        { name: "Navy Federal Platinum", issuer: "Navy Federal Credit Union", type: "cu",
-          introPeriod: 12, introAPR: "0.99%", transferFee: "None", annualFee: "$0",
-          minCredit: 660, maxBalance: 15000,
-          membership: "Military members, veterans, DoD employees & family",
-          perk: "No transfer fee; low ongoing APR; strong member protections",
-          url: "https://www.navyfederal.org/loans-cards/credit-cards/platinum" },
-        { name: "Wells Fargo Reflect® Card", issuer: "Wells Fargo", type: "bank",
-          introPeriod: 21, introAPR: "0%", transferFee: "5% (min $5)", annualFee: "$0",
-          minCredit: 670, maxBalance: 15000,
-          membership: null,
-          perk: "Longest 0% intro period available — 21 months",
-          url: "https://www.wellsfargo.com/credit-cards/reflect-card/" },
-        { name: "Citi Simplicity® Card", issuer: "Citi", type: "bank",
-          introPeriod: 21, introAPR: "0%", transferFee: "5% (min $5)", annualFee: "$0",
-          minCredit: 670, maxBalance: 15000,
-          membership: null,
-          perk: "No late fees ever; 21-month 0% window",
-          url: "https://www.citi.com/credit-cards/citi-simplicity-credit-card" },
-        { name: "Discover it® Balance Transfer", issuer: "Discover", type: "bank",
-          introPeriod: 18, introAPR: "0%", transferFee: "3% (first year)", annualFee: "$0",
-          minCredit: 670, maxBalance: 15000,
-          membership: null,
-          perk: "Cashback match at end of year 1; lower transfer fee",
-          url: "https://www.discover.com/credit-cards/balance-transfer/" },
-    ];
+    function fetchCreditOptions(payload) {
+        const creditBand     = payload.creditScoreBand;
+        const privateBalance = payload.privateLoanBalance || 0;
+        const score          = ({ "below-580": 540, "580-619": 599, "620-659": 639,
+                                   "660-699": 679, "700-739": 719, "740+": 780 })[creditBand] || 0;
 
-    const REFI_LENDERS = [
-        { name: "SoFi", fixedFrom: "3.99%", fixedTo: "15.99%", varFrom: "4.39%", varTo: "15.99%",
-          terms: "5, 7, 10, 15, 20 yr", minLoan: 5000, minCredit: 650,
-          perk: "No fees · unemployment protection · career coaching",
-          url: "https://www.sofi.com/refinance-student-loan/" },
-        { name: "Earnest", fixedFrom: "3.95%", fixedTo: "15.99%", varFrom: "4.49%", varTo: "15.99%",
-          terms: "5–20 yr (custom to the month)", minLoan: 5000, minCredit: 650,
-          perk: "Skip one payment/year · fully flexible term length",
-          url: "https://www.earnest.com/student-loan-refinancing" },
-        { name: "Splash Financial", fixedFrom: "4.99%", fixedTo: "10.99%", varFrom: "4.99%", varTo: "10.99%",
-          terms: "5–25 yr", minLoan: 5000, minCredit: 640,
-          perk: "Marketplace — compares rates across multiple lenders at once",
-          url: "https://www.splashfinancial.com/" },
-        { name: "Laurel Road", fixedFrom: "4.24%", fixedTo: "12.99%", varFrom: "4.74%", varTo: "12.99%",
-          terms: "5, 7, 10, 15, 20 yr", minLoan: 5000, minCredit: 660,
-          perk: "Bonus rate discounts for healthcare & nursing professionals",
-          url: "https://www.laurelroad.com/refinance-student-loans/" },
-        { name: "ELFI", fixedFrom: "4.86%", fixedTo: "8.49%", varFrom: "4.98%", varTo: "8.26%",
-          terms: "5, 7, 10, 15, 20 yr", minLoan: 10000, minCredit: 680,
-          perk: "Dedicated personal loan advisor assigned to your account",
-          url: "https://www.elfi.com/student-loan-refinancing/" },
-    ];
+        // Score too low — credit building tips only, no search needed
+        if (score > 0 && score < 620) {
+            renderCreditBuildTips();
+            $('#creditOptionsCard').show();
+            return;
+        }
 
-    const CREDIT_SCORE_MAP = { "below-580": 540, "580-619": 599, "620-659": 639,
-                                "660-699": 679, "700-739": 719, "740+": 780 };
+        $.ajax({
+            url: '/api/debt/credit-offers',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            success: function(resp) {
+                renderCreditOptions(resp, score, privateBalance);
+                $('#creditOptionsCard').show();
+            },
+            error: function(e) {
+                console.error('fetchCreditOptions error:', e);
+            }
+        });
+    }
 
-    function renderCreditOptions(creditBand, privateLoanBalance) {
-        const score          = CREDIT_SCORE_MAP[creditBand] || 0;
-        const privateBalance = privateLoanBalance || 0;
-        const hasPrivate     = privateBalance > 0;
+    function renderCreditBuildTips() {
+        const html = `<div class="credit-warning">
+                <strong>⚠ Never refinance federal loans into a private loan.</strong>
+                Doing so permanently eliminates IDR plans, PSLF, and all federal forgiveness eligibility.
+                The options below apply to <strong>private loan balances only</strong>.
+            </div>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">
+                With a credit score below 620, balance transfer cards and refinancing are not recommended right now.
+                Focus on these steps to improve eligibility in 6–12 months:</p>
+            <ul class="credit-build-tips">
+                <li>✓ Make all payments on time — payment history is 35% of your score</li>
+                <li>✓ Keep credit card utilization below 30% of each card's limit</li>
+                <li>✓ Dispute errors at <a href="https://www.annualcreditreport.com" target="_blank" style="color:var(--primary-dk)">annualcreditreport.com</a></li>
+                <li>✓ Avoid opening new accounts until your score is above 660</li>
+                <li>✓ Consider a secured credit card to rebuild history</li>
+            </ul>`;
+        $('#creditOptionsContent').html(html);
+    }
+
+    function renderCreditOptions(resp, score, privateBalance) {
+        const hasPrivate = privateBalance > 0;
+        const btCards    = resp.balanceTransferCards || [];
+        const refiLenders = resp.refiLenders || [];
+        const isLive      = resp.source === 'live';
+        const isPaywalled = resp.source === 'fallback-paywalled';
         let html = '';
 
-        // Federal loan warning always first
         html += `<div class="credit-warning">
             <strong>⚠ Never refinance federal loans into a private loan.</strong>
             Doing so permanently eliminates IDR plans, PSLF, and all federal forgiveness eligibility.
             The options below apply to <strong>private loan balances only</strong>.
         </div>`;
 
-        // Score too low — credit building tips only
-        if (score > 0 && score < 620) {
-            html += `<p style="font-size:13px;color:var(--muted);margin-bottom:12px;">
-                With a credit score below 620, balance transfer cards and refinancing are not recommended right now.
-                Focus on these steps to improve eligibility in 6–12 months:</p>
-                <ul class="credit-build-tips">
-                    <li>✓ Make all payments on time — payment history is 35% of your score</li>
-                    <li>✓ Keep credit card utilization below 30% of each card's limit</li>
-                    <li>✓ Dispute errors at <a href="https://www.annualcreditreport.com" target="_blank" style="color:var(--primary-dk)">annualcreditreport.com</a></li>
-                    <li>✓ Avoid opening new accounts until your score is above 660</li>
-                    <li>✓ Consider a secured credit card to rebuild history</li>
-                </ul>`;
-            $('#creditOptionsCard').show();
-            $('#creditOptionsContent').html(html);
-            return;
+        if (isLive) {
+            html += `<p style="font-size:11px;color:var(--muted);margin-bottom:14px;font-style:italic;">
+                Results pulled from a live web search and may include sponsored or affiliate links — always verify rates directly with the lender before applying.</p>`;
+        } else if (isPaywalled) {
+            html += `<div class="credit-warning" style="background:#fff8e6;border-color:#f0c869;">
+                <strong>🔒 Live offer search used up.</strong> You've used your 3 free live searches for this tool.
+                Showing our curated list below instead — <a href="#" onclick="$('#debtPaywall').css('display','flex');return false;" style="color:var(--primary-dk);font-weight:700;">upgrade to premium</a> for unlimited live searches.
+            </div>`;
         }
 
         // ── 0% Balance Transfer Cards ─────────────────────────────────────────
-        const btEligible = score === 0
-            ? BALANCE_TRANSFER_CARDS                                   // no score selected — show all
-            : BALANCE_TRANSFER_CARDS.filter(c => score >= c.minCredit);
-
         if (privateBalance > 15000) {
             html += `<p style="font-size:13px;color:var(--muted);margin-bottom:16px;">
                 Your private balance of <strong>$${Number(privateBalance).toLocaleString()}</strong> exceeds the $15,000 typical limit for balance transfers —
@@ -3393,52 +3352,79 @@
                 : `If you have private loans or credit card debt, these cards let you transfer the balance and pay <strong>zero interest</strong> for up to 21 months. Credit union options charge <strong>no transfer fee</strong>.`;
 
             html += `<p class="debt-section-title" style="margin-bottom:8px;">0% Balance Transfer Cards</p>
-                <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">${btIntro}</p>
-                <div class="credit-options-grid">`;
-            btEligible.forEach(c => {
-                const feeNote = c.transferFee === 'None'
-                    ? '<span style="color:var(--accent);font-weight:700;">No transfer fee</span>'
-                    : `Transfer fee: ${c.transferFee}`;
-                html += `<div class="credit-option-card ${c.type === 'cu' ? 'cu-card' : 'bank-card'}">
-                    <span class="co-badge ${c.type === 'cu' ? 'cu' : 'bank'}">${c.type === 'cu' ? 'Credit Union' : 'Bank'}</span>
-                    <div class="co-name">${c.name}</div>
-                    <div class="co-rate">${c.introAPR} for ${c.introPeriod} months</div>
-                    <div class="co-detail">${feeNote} · Annual fee: ${c.annualFee}</div>
-                    <div class="co-perk">${c.perk}</div>
-                    ${c.membership ? `<div class="co-membership">Membership: ${c.membership}</div>` : ''}
-                    <a href="${c.url}" target="_blank" rel="noopener" class="co-apply">Apply at ${c.issuer} →</a>
-                </div>`;
-            });
-            html += `</div>`;
+                <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">${btIntro}</p>`;
+
+            if (btCards.length === 0) {
+                html += `<p style="font-size:13px;color:var(--muted);margin-bottom:16px;">
+                    No live offers found for your credit range right now — try refinancing below, or check back later.</p>`;
+            } else {
+                html += `<div class="credit-options-grid">`;
+                btCards.forEach(c => html += renderBalanceTransferCard(c));
+                html += `</div>`;
+            }
         }
 
         // ── Private Loan Refinancing ──────────────────────────────────────────
-        const refiEligible = score === 0
-            ? REFI_LENDERS                                             // no score selected — show all
-            : REFI_LENDERS.filter(l => score >= l.minCredit);
-
         const refiIntro = hasPrivate
             ? `Refinancing your $${Number(privateBalance).toLocaleString()} private balance at a lower rate reduces total interest paid. Rates shown are APR ranges — your actual rate depends on credit and income.`
             : `If you have private loans, refinancing at a lower rate can significantly reduce total interest. Rates below are APR ranges — your actual rate depends on credit history and income.`;
 
         html += `<p class="debt-section-title" style="margin-top:24px;margin-bottom:8px;">Private Loan Refinancing</p>
-            <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">${refiIntro}</p>
-            <div class="credit-options-grid">`;
-        refiEligible.forEach(l => {
-            html += `<div class="credit-option-card refi-card">
-                <span class="co-badge refi">Refinancing</span>
-                <div class="co-name">${l.name}</div>
-                <div class="co-rate refi-rate">Fixed: ${l.fixedFrom} – ${l.fixedTo}</div>
-                <div class="co-detail">Variable: ${l.varFrom} – ${l.varTo} · Terms: ${l.terms}</div>
-                <div class="co-detail">Min loan: $${Number(l.minLoan).toLocaleString()}</div>
-                <div class="co-perk">${l.perk}</div>
-                <a href="${l.url}" target="_blank" rel="noopener" class="co-apply">Check your rate at ${l.name} →</a>
-            </div>`;
-        });
-        html += `</div>`;
+            <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">${refiIntro}</p>`;
 
-        $('#creditOptionsCard').show();
+        if (refiLenders.length === 0) {
+            html += `<p style="font-size:13px;color:var(--muted);margin-bottom:16px;">No live refinancing offers found for your credit range right now.</p>`;
+        } else {
+            html += `<div class="credit-options-grid">`;
+            refiLenders.forEach(l => html += renderRefiCard(l));
+            html += `</div>`;
+        }
+
         $('#creditOptionsContent').html(html);
+    }
+
+    function renderBalanceTransferCard(c) {
+        // Live search results only have name/snippet/url; curated fallback cards have full structured fields.
+        if (c.source === 'live') {
+            return `<div class="credit-option-card bank-card">
+                <span class="co-badge bank">Live result</span>
+                <div class="co-name">${c.name || ''}</div>
+                <div class="co-detail">${c.snippet || ''}</div>
+                <a href="${c.url}" target="_blank" rel="noopener" class="co-apply">View offer →</a>
+            </div>`;
+        }
+        const feeNote = c.transferFee === 'None'
+            ? '<span style="color:var(--accent);font-weight:700;">No transfer fee</span>'
+            : `Transfer fee: ${c.transferFee}`;
+        return `<div class="credit-option-card ${c.type === 'cu' ? 'cu-card' : 'bank-card'}">
+            <span class="co-badge ${c.type === 'cu' ? 'cu' : 'bank'}">${c.type === 'cu' ? 'Credit Union' : 'Bank'}</span>
+            <div class="co-name">${c.name}</div>
+            <div class="co-rate">${c.introAPR} for ${c.introPeriod} months</div>
+            <div class="co-detail">${feeNote} · Annual fee: ${c.annualFee}</div>
+            <div class="co-perk">${c.perk}</div>
+            ${c.membership ? `<div class="co-membership">Membership: ${c.membership}</div>` : ''}
+            <a href="${c.url}" target="_blank" rel="noopener" class="co-apply">Apply at ${c.issuer} →</a>
+        </div>`;
+    }
+
+    function renderRefiCard(l) {
+        if (l.source === 'live') {
+            return `<div class="credit-option-card refi-card">
+                <span class="co-badge refi">Live result</span>
+                <div class="co-name">${l.name || ''}</div>
+                <div class="co-detail">${l.snippet || ''}</div>
+                <a href="${l.url}" target="_blank" rel="noopener" class="co-apply">View offer →</a>
+            </div>`;
+        }
+        return `<div class="credit-option-card refi-card">
+            <span class="co-badge refi">Refinancing</span>
+            <div class="co-name">${l.name}</div>
+            <div class="co-rate refi-rate">Fixed: ${l.fixedFrom} – ${l.fixedTo}</div>
+            <div class="co-detail">Variable: ${l.varFrom} – ${l.varTo} · Terms: ${l.terms}</div>
+            <div class="co-detail">Min loan: $${Number(l.minLoan).toLocaleString()}</div>
+            <div class="co-perk">${l.perk}</div>
+            <a href="${l.url}" target="_blank" rel="noopener" class="co-apply">Check your rate at ${l.name} →</a>
+        </div>`;
     }
 
     function copyHardshipLetter() {
