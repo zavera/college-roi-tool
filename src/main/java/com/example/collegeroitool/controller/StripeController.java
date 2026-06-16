@@ -4,6 +4,8 @@ import com.example.collegeroitool.service.UserService;
 import com.stripe.Stripe;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
+import com.stripe.model.Customer;
+import com.stripe.model.Subscription;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.stripe.param.checkout.SessionCreateParams;
@@ -101,16 +103,32 @@ public class StripeController {
             return ResponseEntity.badRequest().body("Invalid signature");
         }
 
-        if ("checkout.session.completed".equals(event.getType())) {
-            Session session = (Session) event.getDataObjectDeserializer()
-                .getObject().orElse(null);
-            if (session != null) {
-                String email = session.getCustomerEmail();
-                if (email == null && session.getMetadata() != null) {
-                    email = session.getMetadata().get("email");
+        switch (event.getType()) {
+            case "checkout.session.completed" -> {
+                Session session = (Session) event.getDataObjectDeserializer()
+                    .getObject().orElse(null);
+                if (session != null) {
+                    String email = session.getCustomerEmail();
+                    if (email == null && session.getMetadata() != null) {
+                        email = session.getMetadata().get("email");
+                    }
+                    if (email != null) {
+                        userService.activateSubscription(email);
+                    }
                 }
-                if (email != null) {
-                    userService.activateSubscription(email);
+            }
+            case "customer.subscription.deleted", "customer.subscription.updated" -> {
+                Subscription sub = (Subscription) event.getDataObjectDeserializer()
+                    .getObject().orElse(null);
+                if (sub != null && "canceled".equals(sub.getStatus())) {
+                    try {
+                        Customer customer = Customer.retrieve(sub.getCustomer());
+                        if (customer.getEmail() != null) {
+                            userService.deactivateSubscription(customer.getEmail());
+                        }
+                    } catch (Exception e) {
+                        // log and continue — webhook must return 200
+                    }
                 }
             }
         }
