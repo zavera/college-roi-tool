@@ -26,6 +26,8 @@ public class AppUser {
 
     private int searchCount = 0;
 
+    private int debtSearchCount = 0;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     // ── Getters / Setters ─────────────────────────────────────────────────────
@@ -43,5 +45,7 @@ public class AppUser {
     public void    setSubscriptionActive(boolean b) { this.subscriptionActive = b; }
     public int  getSearchCount()               { return searchCount; }
     public void setSearchCount(int n)          { this.searchCount = n; }
+    public int  getDebtSearchCount()           { return debtSearchCount; }
+    public void setDebtSearchCount(int n)      { this.debtSearchCount = n; }
     public LocalDateTime getCreatedAt()        { return createdAt; }
 }

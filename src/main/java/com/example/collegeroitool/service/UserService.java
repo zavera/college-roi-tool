@@ -68,6 +68,15 @@ public class UserService implements UserDetailsService {
         return userRepository.findByEmail(email.toLowerCase());
     }
 
+    /** Deactivate subscription — called when Stripe subscription is cancelled */
+    public boolean deactivateSubscription(String email) {
+        return userRepository.findByEmail(email.toLowerCase()).map(u -> {
+            u.setSubscriptionActive(false);
+            userRepository.save(u);
+            return true;
+        }).orElse(false);
+    }
+
     /** Admin helper — activate a subscription by email */
     public boolean activateSubscription(String email) {
         return userRepository.findByEmail(email.toLowerCase()).map(u -> {
@@ -83,6 +92,15 @@ public class UserService implements UserDetailsService {
             u.setSearchCount(u.getSearchCount() + 1);
             userRepository.save(u);
             return u.getSearchCount();
+        }).orElse(-1);
+    }
+
+    /** Increment debt search count; returns new count, or -1 if user not found */
+    public int incrementDebtSearchCount(String email) {
+        return userRepository.findByEmail(email.toLowerCase()).map(u -> {
+            u.setDebtSearchCount(u.getDebtSearchCount() + 1);
+            userRepository.save(u);
+            return u.getDebtSearchCount();
         }).orElse(-1);
     }
 

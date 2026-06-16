@@ -98,6 +98,7 @@ public class AuthController {
         AppUser user = userService.findByEmail(email).orElse(null);
         boolean subscribed = user != null && user.isSubscriptionActive();
         int searchCount = user != null ? user.getSearchCount() : 0;
+        int debtSearchCount = user != null ? user.getDebtSearchCount() : 0;
         if (user != null && user.getName() != null) name = user.getName();
 
         return ResponseEntity.ok(Map.of(
@@ -105,11 +106,12 @@ public class AuthController {
             "email",               email,
             "name",                name != null ? name : email,
             "subscriptionActive",  subscribed,
-            "searchCount",         searchCount
+            "searchCount",         searchCount,
+            "debtSearchCount",     debtSearchCount
         ));
     }
 
-    /** Increment search count for the calling user and return new count */
+    /** Increment award-assist search count for the calling user and return new count */
     @PostMapping("/search/increment")
     public ResponseEntity<?> incrementSearch(Principal principal) {
         if (devBypass && principal == null) {
@@ -126,6 +128,25 @@ public class AuthController {
 
         int count = userService.incrementSearchCount(email);
         return ResponseEntity.ok(Map.of("searchCount", count));
+    }
+
+    /** Increment debt-relief search count for the calling user and return new count */
+    @PostMapping("/debt-search/increment")
+    public ResponseEntity<?> incrementDebtSearch(Principal principal) {
+        if (devBypass && principal == null) {
+            return ResponseEntity.ok(Map.of("debtSearchCount", 0));
+        }
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        }
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = (auth.getPrincipal() instanceof OAuth2User oAuth2User)
+            ? oAuth2User.<String>getAttribute("email")
+            : principal.getName();
+
+        int count = userService.incrementDebtSearchCount(email);
+        return ResponseEntity.ok(Map.of("debtSearchCount", count));
     }
 
     /** Toggle the calling user's subscription on/off */

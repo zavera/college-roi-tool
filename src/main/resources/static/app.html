@@ -1054,6 +1054,70 @@
             line-height: 1.7;
         }
         #hardshipChecklist strong { color: #166534; display: block; margin-bottom: 6px; }
+        /* ── Credit Options Cards ── */
+        .credit-warning {
+            background: #fff8ec;
+            border: 1.5px solid #f6ad55;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #744210;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        .credit-warning strong { display: block; margin-bottom: 3px; font-size: 13px; }
+        .credit-options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 14px;
+            margin-top: 4px;
+        }
+        .credit-option-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .credit-option-card.cu-card { border-top: 3px solid var(--accent); }
+        .credit-option-card.bank-card { border-top: 3px solid var(--navy); }
+        .credit-option-card.refi-card { border-top: 3px solid var(--primary-dk); }
+        .co-badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 2px;
+        }
+        .co-badge.cu   { background: #d1fae5; color: #065f46; }
+        .co-badge.bank { background: #dbeafe; color: #1e40af; }
+        .co-badge.refi { background: #ede9fe; color: #5b21b6; }
+        .co-name { font-size: 14px; font-weight: 700; color: var(--navy); }
+        .co-rate { font-size: 22px; font-weight: 800; color: var(--accent); line-height: 1.1; }
+        .co-rate.refi-rate { color: var(--primary-dk); font-size: 16px; }
+        .co-detail { font-size: 12px; color: var(--muted); line-height: 1.5; }
+        .co-perk { font-size: 11px; color: var(--navy); font-weight: 600; margin-top: 2px; }
+        .co-membership { font-size: 11px; color: var(--muted); font-style: italic; margin-top: 2px; }
+        .co-apply {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary-dk);
+            text-decoration: none;
+            border-bottom: 1px solid var(--primary-lt);
+            align-self: flex-start;
+        }
+        .co-apply:hover { color: var(--primary); }
+        .no-options-msg { font-size: 13px; color: var(--muted); font-style: italic; padding: 8px 0; }
+        .credit-build-tips { margin-top: 8px; }
+        .credit-build-tips li { font-size: 13px; color: var(--text); padding: 4px 0; line-height: 1.5; }
+
         .btn-copy {
             display: inline-flex; align-items: center; gap: 6px;
             background: transparent; border: 1.5px solid var(--primary);
@@ -1126,8 +1190,8 @@
 </header>
 
 <div class="module-tab-bar" role="tablist" aria-label="Module navigation">
-    <button class="mod-tab active" role="tab" aria-selected="true"  aria-controls="tab-award"   id="tab-btn-award"   onclick="switchModuleTab('award')">Award Level</button>
-    <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-postgrad" id="tab-btn-postgrad" onclick="switchModuleTab('postgrad')">Post-Grad Debt</button>
+    <button class="mod-tab active" role="tab" aria-selected="true"  aria-controls="tab-award"   id="tab-btn-award"   onclick="switchModuleTab('award')">Award Assist</button>
+    <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-postgrad" id="tab-btn-postgrad" onclick="switchModuleTab('postgrad')">Post-Grad Debt Relief</button>
 </div>
 
 <main id="main-content">
@@ -1367,7 +1431,21 @@
 </div><!-- end #tab-award -->
 
 <!-- ══ POST-GRAD DEBT TAB ════════════════════════════════════════════════════ -->
-<div id="tab-postgrad">
+<div id="tab-postgrad" style="position:relative;">
+
+<!-- ── Debt tab paywall overlay ── -->
+<div id="debtPaywall" style="display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(255,255,255,0.84);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
+    <div style="text-align:center;max-width:360px;">
+        <div style="font-size:36px;margin-bottom:12px;">🎓</div>
+        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your 3 free analyses</h3>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock unlimited student loan repayment analyses, PSLF checks, and hardship letter generation.</p>
+        <a href="/api/stripe/create-checkout-session" class="btn-primary" style="display:inline-block;text-decoration:none;padding:13px 28px;font-size:15px;">
+            Unlock for <strong>$29.99/mo</strong>
+        </a>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px;">Includes Award Assist + Post-Grad Debt Relief · Cancel anytime</div>
+    </div>
+</div>
+
 <div class="container" style="max-width:760px;">
 
     <!-- Step 1: Intake -->
@@ -1518,6 +1596,14 @@
         </div>
     </div>
 
+    <!-- Credit Options: Balance Transfer + Refinancing — always visible -->
+    <div class="debt-step" id="creditOptionsCard">
+        <p class="debt-section-title">Balance Transfer &amp; Refinancing Options</p>
+        <div id="creditOptionsContent">
+            <p style="font-size:13px;color:var(--muted);font-style:italic;">Complete your loan analysis above to see 0% balance transfer cards and private loan refinancing options matched to your credit score.</p>
+        </div>
+    </div>
+
     <!-- Step 3: Hardship Letter Generator -->
     <div class="debt-step" id="hardshipCard">
         <p class="debt-section-title">Hardship Letter Generator</p>
@@ -1563,7 +1649,9 @@
 
 <script>
     // ── STATE ──────────────────────────────────────────────────────────────────
-    let searchCount = 0;
+    let searchCount     = 0;
+    let debtSearchCount = 0;
+    let premiumActive   = false;
     const FREE_SEARCHES = 3;
 
     function applyPaywall() {
@@ -2839,11 +2927,15 @@
             }).text('Access unlocked! Welcome aboard.');
             $('body').append(toast);
             setTimeout(() => toast.fadeOut(400, function(){ $(this).remove(); }), 4000);
-            // Reset paywall for this session
+            // Reset both paywalls for this session
             searchCount = 0;
             $("#paywallSection > :not(#searchPaywall)").css({ filter: '', opacity: '', 'pointer-events': '', 'user-select': '' });
             $("#paywallSection").css("pointer-events", "");
             $("#searchPaywall").hide();
+            debtSearchCount = 0;
+            $("#tab-postgrad > .container").css({ filter: '', opacity: '', 'pointer-events': '', 'user-select': '' });
+            $("#debtPaywall").hide();
+            $('#debtAnalyzeBtn').text('Analyze My Loans');
         } else if (payment === 'cancelled') {
             history.replaceState(null, '', '/');
         }
@@ -2862,7 +2954,12 @@
                 const displayName = data.name || data.email || '';
                 $("#hdrUserName").text(displayName).show();
                 $("#hdrLogout").show();
-                searchCount = data.searchCount || 0;
+                searchCount     = data.searchCount     || 0;
+                debtSearchCount = data.debtSearchCount || 0;
+                premiumActive   = data.subscriptionActive || false;
+                if (debtSearchCount >= FREE_SEARCHES && !premiumActive) {
+                    applyDebtPaywall();
+                }
             } else {
                 window.location.href = "/login.html";
             }
@@ -3008,14 +3105,27 @@
 
     // ── MODULE TAB SWITCHING ──────────────────────────────────────────────────
     function switchModuleTab(tab) {
-        document.getElementById('tab-award').style.display    = tab === 'award'   ? '' : 'none';
-        document.getElementById('tab-postgrad').style.display = tab === 'postgrad' ? '' : 'none';
+        document.getElementById('tab-award').style.display    = tab === 'award'   ? 'block' : 'none';
+        document.getElementById('tab-postgrad').style.display = tab === 'postgrad' ? 'block' : 'none';
         document.querySelectorAll('.mod-tab').forEach(btn => btn.classList.remove('active'));
         document.getElementById('tab-btn-' + tab).classList.add('active');
     }
 
     // ── DEBT ANALYSIS ─────────────────────────────────────────────────────────
+    function applyDebtPaywall() {
+        if (debtSearchCount >= FREE_SEARCHES) {
+            $("#tab-postgrad > .container").css({ filter: "blur(5px)", opacity: "0.35", "user-select": "none", "pointer-events": "none" });
+            $("#debtPaywall").css("display", "flex");
+        }
+    }
+
     function analyzeDebt() {
+        // Gate on free debt search limit
+        if (debtSearchCount >= FREE_SEARCHES && !premiumActive) {
+            applyDebtPaywall();
+            return;
+        }
+
         const federalBalance = parseFloat($('#dFederalBalance').val()) || 0;
         if (federalBalance <= 0) {
             alert('Please enter your federal loan balance to calculate repayment plans.');
@@ -3057,6 +3167,22 @@
                 $('#debtSpinner').hide();
                 $('#debtAnalyzeBtn').prop('disabled', false);
                 document.getElementById('debtResultsCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Credit options — isolated so any error here never blocks the results
+                try {
+                    const creditBand     = $('#dCreditBand').val();
+                    const privateBalance = parseFloat($('#dPrivateBalance').val()) || 0;
+                    renderCreditOptions(creditBand, privateBalance);
+                    $('#creditOptionsCard').show();
+                } catch(e) {
+                    console.error('renderCreditOptions error:', e);
+                }
+                // Increment counter; show paywall on next attempt if limit reached
+                $.post('/api/auth/debt-search/increment', function(res) {
+                    debtSearchCount = res.debtSearchCount || (debtSearchCount + 1);
+                    if (debtSearchCount >= FREE_SEARCHES && !premiumActive) {
+                        $('#debtAnalyzeBtn').text('Upgrade to Run More Analyses');
+                    }
+                });
             },
             error: function() {
                 $('#debtSpinner').hide();
@@ -3104,6 +3230,7 @@
             $('#pslfResult').attr('class', 'pslf-result ' + cls).html(icon + pslf.message);
             $('#pslfCard').show();
         }
+
     }
 
     // ── HARDSHIP LETTER ───────────────────────────────────────────────────────
@@ -3146,6 +3273,172 @@
                 alert('Could not generate the hardship letter. Please try again.');
             }
         });
+    }
+
+    // ── CURATED CREDIT OPTIONS DATA (updated June 2026) ──────────────────────
+
+    const BALANCE_TRANSFER_CARDS = [
+        { name: "KeyPoint Credit Union Visa Classic", issuer: "KeyPoint Credit Union", type: "cu",
+          introPeriod: 16, introAPR: "0%", transferFee: "None", annualFee: "$0",
+          minCredit: 660, maxBalance: 15000,
+          membership: "Open to all — join via Financial Fitness Association",
+          perk: "Longest 0% period with zero fees among credit unions",
+          url: "https://www.kpcu.com/credit-cards" },
+        { name: "Fairwinds Cash Back Visa", issuer: "Fairwinds Credit Union", type: "cu",
+          introPeriod: 12, introAPR: "0%", transferFee: "None", annualFee: "$0",
+          minCredit: 660, maxBalance: 15000,
+          membership: "Open to all — join via partner charity donation",
+          perk: "No fees of any kind — truly free balance transfer",
+          url: "https://www.fairwinds.org/personal/credit-cards" },
+        { name: "Skyla Visa Platinum", issuer: "Skyla Credit Union", type: "cu",
+          introPeriod: 12, introAPR: "0%", transferFee: "None", annualFee: "$0",
+          minCredit: 660, maxBalance: 15000,
+          membership: "Charlotte, NC area + select employers nationwide",
+          perk: "Zero fees; competitive ongoing APR after intro period",
+          url: "https://www.skylacreditunion.com/personal/credit-cards" },
+        { name: "Navy Federal Platinum", issuer: "Navy Federal Credit Union", type: "cu",
+          introPeriod: 12, introAPR: "0.99%", transferFee: "None", annualFee: "$0",
+          minCredit: 660, maxBalance: 15000,
+          membership: "Military members, veterans, DoD employees & family",
+          perk: "No transfer fee; low ongoing APR; strong member protections",
+          url: "https://www.navyfederal.org/loans-cards/credit-cards/platinum" },
+        { name: "Wells Fargo Reflect® Card", issuer: "Wells Fargo", type: "bank",
+          introPeriod: 21, introAPR: "0%", transferFee: "5% (min $5)", annualFee: "$0",
+          minCredit: 670, maxBalance: 15000,
+          membership: null,
+          perk: "Longest 0% intro period available — 21 months",
+          url: "https://www.wellsfargo.com/credit-cards/reflect-card/" },
+        { name: "Citi Simplicity® Card", issuer: "Citi", type: "bank",
+          introPeriod: 21, introAPR: "0%", transferFee: "5% (min $5)", annualFee: "$0",
+          minCredit: 670, maxBalance: 15000,
+          membership: null,
+          perk: "No late fees ever; 21-month 0% window",
+          url: "https://www.citi.com/credit-cards/citi-simplicity-credit-card" },
+        { name: "Discover it® Balance Transfer", issuer: "Discover", type: "bank",
+          introPeriod: 18, introAPR: "0%", transferFee: "3% (first year)", annualFee: "$0",
+          minCredit: 670, maxBalance: 15000,
+          membership: null,
+          perk: "Cashback match at end of year 1; lower transfer fee",
+          url: "https://www.discover.com/credit-cards/balance-transfer/" },
+    ];
+
+    const REFI_LENDERS = [
+        { name: "SoFi", fixedFrom: "3.99%", fixedTo: "15.99%", varFrom: "4.39%", varTo: "15.99%",
+          terms: "5, 7, 10, 15, 20 yr", minLoan: 5000, minCredit: 650,
+          perk: "No fees · unemployment protection · career coaching",
+          url: "https://www.sofi.com/refinance-student-loan/" },
+        { name: "Earnest", fixedFrom: "3.95%", fixedTo: "15.99%", varFrom: "4.49%", varTo: "15.99%",
+          terms: "5–20 yr (custom to the month)", minLoan: 5000, minCredit: 650,
+          perk: "Skip one payment/year · fully flexible term length",
+          url: "https://www.earnest.com/student-loan-refinancing" },
+        { name: "Splash Financial", fixedFrom: "4.99%", fixedTo: "10.99%", varFrom: "4.99%", varTo: "10.99%",
+          terms: "5–25 yr", minLoan: 5000, minCredit: 640,
+          perk: "Marketplace — compares rates across multiple lenders at once",
+          url: "https://www.splashfinancial.com/" },
+        { name: "Laurel Road", fixedFrom: "4.24%", fixedTo: "12.99%", varFrom: "4.74%", varTo: "12.99%",
+          terms: "5, 7, 10, 15, 20 yr", minLoan: 5000, minCredit: 660,
+          perk: "Bonus rate discounts for healthcare & nursing professionals",
+          url: "https://www.laurelroad.com/refinance-student-loans/" },
+        { name: "ELFI", fixedFrom: "4.86%", fixedTo: "8.49%", varFrom: "4.98%", varTo: "8.26%",
+          terms: "5, 7, 10, 15, 20 yr", minLoan: 10000, minCredit: 680,
+          perk: "Dedicated personal loan advisor assigned to your account",
+          url: "https://www.elfi.com/student-loan-refinancing/" },
+    ];
+
+    const CREDIT_SCORE_MAP = { "below-580": 540, "580-619": 599, "620-659": 639,
+                                "660-699": 679, "700-739": 719, "740+": 780 };
+
+    function renderCreditOptions(creditBand, privateLoanBalance) {
+        const score          = CREDIT_SCORE_MAP[creditBand] || 0;
+        const privateBalance = privateLoanBalance || 0;
+        const hasPrivate     = privateBalance > 0;
+        let html = '';
+
+        // Federal loan warning always first
+        html += `<div class="credit-warning">
+            <strong>⚠ Never refinance federal loans into a private loan.</strong>
+            Doing so permanently eliminates IDR plans, PSLF, and all federal forgiveness eligibility.
+            The options below apply to <strong>private loan balances only</strong>.
+        </div>`;
+
+        // Score too low — credit building tips only
+        if (score > 0 && score < 620) {
+            html += `<p style="font-size:13px;color:var(--muted);margin-bottom:12px;">
+                With a credit score below 620, balance transfer cards and refinancing are not recommended right now.
+                Focus on these steps to improve eligibility in 6–12 months:</p>
+                <ul class="credit-build-tips">
+                    <li>✓ Make all payments on time — payment history is 35% of your score</li>
+                    <li>✓ Keep credit card utilization below 30% of each card's limit</li>
+                    <li>✓ Dispute errors at <a href="https://www.annualcreditreport.com" target="_blank" style="color:var(--primary-dk)">annualcreditreport.com</a></li>
+                    <li>✓ Avoid opening new accounts until your score is above 660</li>
+                    <li>✓ Consider a secured credit card to rebuild history</li>
+                </ul>`;
+            $('#creditOptionsCard').show();
+            $('#creditOptionsContent').html(html);
+            return;
+        }
+
+        // ── 0% Balance Transfer Cards ─────────────────────────────────────────
+        const btEligible = score === 0
+            ? BALANCE_TRANSFER_CARDS                                   // no score selected — show all
+            : BALANCE_TRANSFER_CARDS.filter(c => score >= c.minCredit);
+
+        if (privateBalance > 15000) {
+            html += `<p style="font-size:13px;color:var(--muted);margin-bottom:16px;">
+                Your private balance of <strong>$${Number(privateBalance).toLocaleString()}</strong> exceeds the $15,000 typical limit for balance transfers —
+                refinancing below is a better fit.</p>`;
+        } else {
+            const btIntro = hasPrivate
+                ? `Transfer your $${Number(privateBalance).toLocaleString()} private balance to a 0% card and pay zero interest during the intro period. Credit union cards have <strong>no transfer fee</strong>.`
+                : `If you have private loans or credit card debt, these cards let you transfer the balance and pay <strong>zero interest</strong> for up to 21 months. Credit union options charge <strong>no transfer fee</strong>.`;
+
+            html += `<p class="debt-section-title" style="margin-bottom:8px;">0% Balance Transfer Cards</p>
+                <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">${btIntro}</p>
+                <div class="credit-options-grid">`;
+            btEligible.forEach(c => {
+                const feeNote = c.transferFee === 'None'
+                    ? '<span style="color:var(--accent);font-weight:700;">No transfer fee</span>'
+                    : `Transfer fee: ${c.transferFee}`;
+                html += `<div class="credit-option-card ${c.type === 'cu' ? 'cu-card' : 'bank-card'}">
+                    <span class="co-badge ${c.type === 'cu' ? 'cu' : 'bank'}">${c.type === 'cu' ? 'Credit Union' : 'Bank'}</span>
+                    <div class="co-name">${c.name}</div>
+                    <div class="co-rate">${c.introAPR} for ${c.introPeriod} months</div>
+                    <div class="co-detail">${feeNote} · Annual fee: ${c.annualFee}</div>
+                    <div class="co-perk">${c.perk}</div>
+                    ${c.membership ? `<div class="co-membership">Membership: ${c.membership}</div>` : ''}
+                    <a href="${c.url}" target="_blank" rel="noopener" class="co-apply">Apply at ${c.issuer} →</a>
+                </div>`;
+            });
+            html += `</div>`;
+        }
+
+        // ── Private Loan Refinancing ──────────────────────────────────────────
+        const refiEligible = score === 0
+            ? REFI_LENDERS                                             // no score selected — show all
+            : REFI_LENDERS.filter(l => score >= l.minCredit);
+
+        const refiIntro = hasPrivate
+            ? `Refinancing your $${Number(privateBalance).toLocaleString()} private balance at a lower rate reduces total interest paid. Rates shown are APR ranges — your actual rate depends on credit and income.`
+            : `If you have private loans, refinancing at a lower rate can significantly reduce total interest. Rates below are APR ranges — your actual rate depends on credit history and income.`;
+
+        html += `<p class="debt-section-title" style="margin-top:24px;margin-bottom:8px;">Private Loan Refinancing</p>
+            <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">${refiIntro}</p>
+            <div class="credit-options-grid">`;
+        refiEligible.forEach(l => {
+            html += `<div class="credit-option-card refi-card">
+                <span class="co-badge refi">Refinancing</span>
+                <div class="co-name">${l.name}</div>
+                <div class="co-rate refi-rate">Fixed: ${l.fixedFrom} – ${l.fixedTo}</div>
+                <div class="co-detail">Variable: ${l.varFrom} – ${l.varTo} · Terms: ${l.terms}</div>
+                <div class="co-detail">Min loan: $${Number(l.minLoan).toLocaleString()}</div>
+                <div class="co-perk">${l.perk}</div>
+                <a href="${l.url}" target="_blank" rel="noopener" class="co-apply">Check your rate at ${l.name} →</a>
+            </div>`;
+        });
+        html += `</div>`;
+
+        $('#creditOptionsCard').show();
+        $('#creditOptionsContent').html(html);
     }
 
     function copyHardshipLetter() {
