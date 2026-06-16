@@ -44,6 +44,10 @@ public class GroqService {
     private String fafsaReadinessPromptTemplate;
     private String fafsaRoadmapPromptTemplate;
     private String fafsaChatPromptTemplate;
+    private String fafsaAssetRepositioningPromptTemplate;
+    private String fafsaPjAppealPromptTemplate;
+    private String fafsaSaiCommentaryPromptTemplate;
+    private String fafsaCssExplainerPromptTemplate;
 
     private final RestTemplate restTemplate;
 
@@ -91,6 +95,18 @@ public class GroqService {
             StandardCharsets.UTF_8);
         fafsaChatPromptTemplate = new String(
             new ClassPathResource("prompts/fafsa-chat-prompt.txt").getInputStream().readAllBytes(),
+            StandardCharsets.UTF_8);
+        fafsaAssetRepositioningPromptTemplate = new String(
+            new ClassPathResource("prompts/fafsa-asset-repositioning-prompt.txt").getInputStream().readAllBytes(),
+            StandardCharsets.UTF_8);
+        fafsaPjAppealPromptTemplate = new String(
+            new ClassPathResource("prompts/fafsa-pj-appeal-prompt.txt").getInputStream().readAllBytes(),
+            StandardCharsets.UTF_8);
+        fafsaSaiCommentaryPromptTemplate = new String(
+            new ClassPathResource("prompts/fafsa-sai-commentary-prompt.txt").getInputStream().readAllBytes(),
+            StandardCharsets.UTF_8);
+        fafsaCssExplainerPromptTemplate = new String(
+            new ClassPathResource("prompts/fafsa-css-explainer-prompt.txt").getInputStream().readAllBytes(),
             StandardCharsets.UTF_8);
     }
 
@@ -515,6 +531,45 @@ public class GroqService {
             .replace("{{conversationHistory}}", conversationHistory != null ? conversationHistory : "(no prior messages)")
             .replace("{{question}}", question);
         return callGroq(prompt, 600, 0.3);
+    }
+
+    public String getAssetRepositioningAdvice(com.example.collegeroitool.model.FafsaProfile profile) {
+        if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
+            return "{\"opportunities\":[{\"title\":\"Shift non-retirement savings into a retirement account\",\"rationale\":\"Retirement accounts (401k, IRA) are not counted as assets on the FAFSA, while regular savings and brokerage accounts are.\",\"caveat\":\"Confirm contribution limits and any early-withdrawal restrictions with a financial advisor before moving funds.\"}],\"generalNote\":\"Retirement accounts and primary home equity are excluded from FAFSA assets, but some CSS Profile schools do count home equity.\"}";
+        }
+        String prompt = fafsaAssetRepositioningPromptTemplate
+            .replace("{{dependencyStatus}}", profile.getDependencyStatus() != null ? profile.getDependencyStatus() : "not yet determined")
+            .replace("{{extractedDataJson}}", profile.getExtractedDataJson() != null ? profile.getExtractedDataJson() : "{}");
+        return callGroq(prompt, 900, 0.3);
+    }
+
+    public String getProfessionalJudgmentAppeal(String studentName, String circumstancesJson) {
+        if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
+            return "[Demo mode] Professional judgment appeal letter generation requires a live Groq API key. In production, Astra drafts a complete letter referencing your specific selected circumstances.\n---CHECKLIST---\n- Documentation requires a live Groq API key to generate in demo mode.";
+        }
+        String prompt = fafsaPjAppealPromptTemplate
+            .replace("{{studentName}}", studentName != null ? studentName : "the student")
+            .replace("{{circumstancesJson}}", circumstancesJson != null ? circumstancesJson : "[]");
+        return callGroq(prompt, 1200, 0.3);
+    }
+
+    public String getSaiStrategyCommentary(String projectionJson) {
+        if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
+            return "{\"summary\":\"Your projected SAI stays relatively stable across years based on the inputs provided, with small changes tracking your projected income and asset changes.\",\"strategyNotes\":[\"Consider timing large one-time income events (bonuses, capital gains) in years that matter less for aid, if possible.\"]}";
+        }
+        String prompt = fafsaSaiCommentaryPromptTemplate
+            .replace("{{projectionJson}}", projectionJson != null ? projectionJson : "[]");
+        return callGroq(prompt, 700, 0.3);
+    }
+
+    public String getCssFafsaExplainer(String extractedDataJson, String targetSchoolsJson) {
+        if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
+            return "{\"keyDifferences\":[{\"topic\":\"Home equity\",\"fafsaTreatment\":\"Not counted as an asset.\",\"cssTreatment\":\"Often counted, sometimes capped as a multiple of income.\",\"relevanceToStudent\":\"If your family owns a home with significant equity, CSS Profile schools may calculate a higher expected contribution than FAFSA-only schools.\"},{\"topic\":\"Non-custodial parent income\",\"fafsaTreatment\":\"Not required.\",\"cssTreatment\":\"Often required, even after divorce.\",\"relevanceToStudent\":\"If parents are divorced or separated, CSS Profile schools may still expect financial information from both parents.\"}],\"overallNote\":\"CSS Profile schools may calculate a meaningfully different (often higher) expected contribution than FAFSA-only schools, depending on home equity and family structure.\"}";
+        }
+        String prompt = fafsaCssExplainerPromptTemplate
+            .replace("{{extractedDataJson}}", extractedDataJson != null ? extractedDataJson : "{}")
+            .replace("{{targetSchoolsJson}}", targetSchoolsJson != null ? targetSchoolsJson : "[]");
+        return callGroq(prompt, 900, 0.3);
     }
 
     // ── Shared Groq caller ────────────────────────────────────────────────────

@@ -1,0 +1,9 @@
+ALTER TABLE fafsa_profiles ADD COLUMN IF NOT EXISTS dependency_status VARCHAR(255);
+ALTER TABLE fafsa_profiles ADD COLUMN IF NOT EXISTS dependency_answers_json TEXT;
+ALTER TABLE fafsa_profiles ADD COLUMN IF NOT EXISTS asset_repositioning_json TEXT;
+ALTER TABLE fafsa_profiles ADD COLUMN IF NOT EXISTS pj_screener_json TEXT;
+ALTER TABLE fafsa_profiles ADD COLUMN IF NOT EXISTS pj_appeal_letter TEXT;
+ALTER TABLE fafsa_profiles ADD COLUMN IF NOT EXISTS target_schools_json TEXT;
+ALTER TABLE fafsa_profiles ADD COLUMN IF NOT EXISTS css_explainer_json TEXT;
+ALTER TABLE fafsa_profiles ADD COLUMN IF NOT EXISTS filing_deadlines_json TEXT;
+ALTER TABLE fafsa_profiles ADD COLUMN IF NOT EXISTS sai_projection_json TEXT;

@@ -43,6 +43,49 @@ public class FafsaProfile {
     @Column(columnDefinition = "TEXT")
     private String roadmapJson;
 
+    /** "dependent" or "independent" — from the Dependency Status Calculator */
+    private String dependencyStatus;
+
+    /** Answers given to the dependency status questionnaire */
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String dependencyAnswersJson;
+
+    /** AI-generated legal asset repositioning opportunities */
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String assetRepositioningJson;
+
+    /** Professional judgment screener answers (special circumstance categories + details) */
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String pjScreenerJson;
+
+    /** AI-drafted professional judgment appeal letter */
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String pjAppealLetter;
+
+    /** Schools the student is applying to: [{name, state}] */
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String targetSchoolsJson;
+
+    /** AI explainer of CSS Profile vs. FAFSA methodology differences for this student */
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String cssExplainerJson;
+
+    /** Live-searched filing deadlines per target school, merged with the federal FAFSA deadline */
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String filingDeadlinesJson;
+
+    /** Multi-year SAI projection results + optional AI strategy commentary */
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String saiProjectionJson;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime updatedAt = LocalDateTime.now();
@@ -66,6 +109,24 @@ public class FafsaProfile {
     public void setSelectedOptionsJson(String v)           { this.selectedOptionsJson = v; }
     public String getRoadmapJson()                        { return roadmapJson; }
     public void setRoadmapJson(String v)                  { this.roadmapJson = v; }
+    public String getDependencyStatus()                   { return dependencyStatus; }
+    public void setDependencyStatus(String v)              { this.dependencyStatus = v; }
+    public String getDependencyAnswersJson()               { return dependencyAnswersJson; }
+    public void setDependencyAnswersJson(String v)          { this.dependencyAnswersJson = v; }
+    public String getAssetRepositioningJson()              { return assetRepositioningJson; }
+    public void setAssetRepositioningJson(String v)         { this.assetRepositioningJson = v; }
+    public String getPjScreenerJson()                      { return pjScreenerJson; }
+    public void setPjScreenerJson(String v)                 { this.pjScreenerJson = v; }
+    public String getPjAppealLetter()                      { return pjAppealLetter; }
+    public void setPjAppealLetter(String v)                 { this.pjAppealLetter = v; }
+    public String getTargetSchoolsJson()                   { return targetSchoolsJson; }
+    public void setTargetSchoolsJson(String v)              { this.targetSchoolsJson = v; }
+    public String getCssExplainerJson()                    { return cssExplainerJson; }
+    public void setCssExplainerJson(String v)               { this.cssExplainerJson = v; }
+    public String getFilingDeadlinesJson()                 { return filingDeadlinesJson; }
+    public void setFilingDeadlinesJson(String v)            { this.filingDeadlinesJson = v; }
+    public String getSaiProjectionJson()                   { return saiProjectionJson; }
+    public void setSaiProjectionJson(String v)              { this.saiProjectionJson = v; }
     public LocalDateTime getCreatedAt()                   { return createdAt; }
     public LocalDateTime getUpdatedAt()                   { return updatedAt; }
     public void setUpdatedAt(LocalDateTime v)              { this.updatedAt = v; }
