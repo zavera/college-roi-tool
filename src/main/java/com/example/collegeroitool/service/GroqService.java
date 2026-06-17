@@ -572,6 +572,35 @@ public class GroqService {
         return callGroq(prompt, 900, 0.3);
     }
 
+    // ── SCHOLARSHIP ──────────────────────────────────────────────────────────
+
+    public String getScholarshipRecommendations(String studentContext, String searchResults, boolean schoolSpecific) {
+        String scope = schoolSpecific
+            ? "school-specific institutional scholarships and grants from the student's target schools"
+            : "external national, state, and private scholarships";
+        String prompt = "You are a scholarship advisor. Search results from credible scholarship sources are provided below.\n\n"
+            + "Student profile:\n" + studentContext + "\n"
+            + "Live search results (JSON):\n" + searchResults + "\n\n"
+            + "From these results, identify the best matching " + scope + " for this student.\n"
+            + "Return ONLY a JSON array (no markdown, no explanation). Each element must have:\n"
+            + "  name (string), amount (string or null), deadline (string or null),\n"
+            + "  eligibility (1-2 sentence summary), link (real URL from search results), source (domain).\n"
+            + "Include 5-10 scholarships the student is realistically eligible for. Order by match quality.";
+        return callGroq(prompt, 1800, 0.2);
+    }
+
+    public String getScholarshipTimeline(String selectedScholarshipsJson, String studentName) {
+        String prompt = "You are a college financial aid advisor. Generate a detailed action timeline for a student applying to these scholarships:\n\n"
+            + selectedScholarshipsJson + "\n\n"
+            + "Return ONLY a JSON array (no markdown). Each element represents one action item with:\n"
+            + "  week (string, e.g. 'Week of June 23'), action (clear task description),\n"
+            + "  relatedScholarship (scholarship name or 'All'), dueDate (ISO date or null),\n"
+            + "  category (one of: Prepare, Write, Request, Submit, Follow-up, Award Notification).\n"
+            + "Order chronologically. Include: gathering materials, writing essays, requesting transcripts/letters,\n"
+            + "submission deadlines, and expected award announcement dates. Be specific with dates where available.";
+        return callGroq(prompt, 1500, 0.3);
+    }
+
     // ── Shared Groq caller ────────────────────────────────────────────────────
 
     private String callGroq(String prompt, int maxTokens, double temperature) {
