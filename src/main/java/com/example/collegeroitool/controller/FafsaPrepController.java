@@ -64,6 +64,33 @@ public class FafsaPrepController {
     // ── STUDENT LOOKUP + DOCUMENT UPLOAD ────────────────────────────────────
 
     /**
+     * Searches for a student by name+DOB without creating one.
+     * Returns {found:true, ...studentData} or {found:false}.
+     */
+    @PostMapping("/student/search")
+    public ResponseEntity<?> searchStudent(@RequestBody Map<String, String> body, Principal principal) {
+        AppUser user = resolveCurrentUser(principal).orElse(null);
+        if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        try {
+            String firstName = body.get("firstName");
+            String lastName = body.get("lastName");
+            String dob = body.get("dateOfBirth");
+            if (firstName == null || lastName == null || dob == null)
+                return ResponseEntity.badRequest().body(Map.of("error", "firstName, lastName, and dateOfBirth are required"));
+            Optional<Map<String, Object>> result = studentDocumentService.searchStudent(
+                user.getId(), firstName, lastName, java.time.LocalDate.parse(dob));
+            if (result.isPresent()) {
+                Map<String, Object> resp = new LinkedHashMap<>(result.get());
+                resp.put("found", true);
+                return ResponseEntity.ok(resp);
+            }
+            return ResponseEntity.ok(Map.of("found", false));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
      * Finds or creates a student by name+DOB, returns the student record with all
      * active documents and their KV extracts. Documents with an empty KV extract
      * will have re-extraction attempted automatically.

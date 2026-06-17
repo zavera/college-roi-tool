@@ -25,8 +25,9 @@ public class AzureDocumentIntelligenceService {
     private boolean devBypass;
 
     private static final String DEV_STUB_KEY = "AZURE_DOCINTEL_KEY_NOT_SET";
-    private static final String API_VERSION = "2024-11-30";
-    private static final String MODEL_ID = "prebuilt-tax.us";
+    // formrecognizer path (prebuilt-document lives here, not under documentintelligence/)
+    private static final String API_VERSION = "2022-08-31";
+    private static final String MODEL_ID = "prebuilt-document";
     private static final long POLL_TIMEOUT_MS = 90_000;
     private static final long POLL_INTERVAL_MS = 2_500;
 
@@ -73,7 +74,7 @@ public class AzureDocumentIntelligenceService {
 
     private String submitAnalyze(HttpEntity<?> request) {
         String analyzeUrl = endpoint.replaceAll("/$", "")
-            + "/documentintelligence/documentModels/" + MODEL_ID + ":analyze?api-version=" + API_VERSION;
+            + "/formrecognizer/documentModels/" + MODEL_ID + ":analyze?api-version=" + API_VERSION;
         ResponseEntity<Void> response = restTemplate.exchange(analyzeUrl, HttpMethod.POST, request, Void.class);
         String location = response.getHeaders().getFirst("Operation-Location");
         if (location == null) throw new IllegalStateException(
@@ -107,38 +108,39 @@ public class AzureDocumentIntelligenceService {
         Map<String, Object> analyzeResult = (Map<String, Object>) result.get("analyzeResult");
         if (analyzeResult == null) return parsed;
 
-        // Primary path: structured fields from tax-specific models (prebuilt-tax.us etc.)
-        List<Map<String, Object>> documents = (List<Map<String, Object>>) analyzeResult.get("documents");
-        if (documents != null) {
-            for (Map<String, Object> doc : documents) {
-                String docType = (String) doc.get("docType");
-                if (docType != null) parsed.put("FormType", docType);
-                Map<String, Object> fields = (Map<String, Object>) doc.get("fields");
-                if (fields == null) continue;
-                for (Map.Entry<String, Object> entry : fields.entrySet()) {
-                    String key = entry.getKey();
-                    Map<String, Object> fieldObj = (Map<String, Object>) entry.getValue();
-                    String value = extractFieldValue(fieldObj);
-                    if (value == null || value.isBlank()) continue;
-                    if (isCheckboxNoise(value)) continue;
-                    if (isSsnField(key, value)) continue;
-                    parsed.put(key.trim(), value.trim());
-                }
+        // Primary path: prebuilt-document returns human-readable keyValuePairs
+        List<Map<String, Object>> keyValuePairs = (List<Map<String, Object>>) analyzeResult.get("keyValuePairs");
+        if (keyValuePairs != null) {
+            for (Map<String, Object> kv : keyValuePairs) {
+                Map<String, Object> keyObj = (Map<String, Object>) kv.get("key");
+                Map<String, Object> valueObj = (Map<String, Object>) kv.get("value");
+                String key = keyObj != null ? (String) keyObj.get("content") : null;
+                String value = valueObj != null ? (String) valueObj.get("content") : null;
+                if (key == null || value == null || value.isBlank()) continue;
+                if (isCheckboxNoise(value)) continue;
+                if (isSsnField(key, value)) continue;
+                parsed.put(key.trim(), value.trim());
             }
         }
 
-        // Fallback: generic KV pairs (prebuilt-layout etc.)
+        // Fallback: structured fields from typed models (prebuilt-tax.us etc.)
         if (parsed.isEmpty()) {
-            List<Map<String, Object>> keyValuePairs = (List<Map<String, Object>>) analyzeResult.get("keyValuePairs");
-            if (keyValuePairs != null) {
-                for (Map<String, Object> kv : keyValuePairs) {
-                    Map<String, Object> keyObj = (Map<String, Object>) kv.get("key");
-                    Map<String, Object> valueObj = (Map<String, Object>) kv.get("value");
-                    String key = keyObj != null ? (String) keyObj.get("content") : null;
-                    String value = valueObj != null ? (String) valueObj.get("content") : null;
-                    if (key == null || value == null) continue;
-                    if (isSsnField(key, value)) continue;
-                    parsed.put(key.trim(), value.trim());
+            List<Map<String, Object>> documents = (List<Map<String, Object>>) analyzeResult.get("documents");
+            if (documents != null) {
+                for (Map<String, Object> doc : documents) {
+                    String docType = (String) doc.get("docType");
+                    if (docType != null) parsed.put("FormType", docType);
+                    Map<String, Object> fields = (Map<String, Object>) doc.get("fields");
+                    if (fields == null) continue;
+                    for (Map.Entry<String, Object> entry : fields.entrySet()) {
+                        String key = entry.getKey();
+                        Map<String, Object> fieldObj = (Map<String, Object>) entry.getValue();
+                        String value = extractFieldValue(fieldObj);
+                        if (value == null || value.isBlank()) continue;
+                        if (isCheckboxNoise(value)) continue;
+                        if (isSsnField(key, value)) continue;
+                        parsed.put(key.trim(), value.trim());
+                    }
                 }
             }
         }

@@ -38,6 +38,28 @@ public class StudentDocumentService {
     }
 
     /**
+     * Looks up a student by identity without creating one.
+     * Returns student + docs if found, or an empty Optional.
+     */
+    public Optional<Map<String, Object>> searchStudent(Long userId, String firstName, String lastName,
+                                                        LocalDate dateOfBirth) throws Exception {
+        Optional<Student> found = studentRepository
+            .findByUserIdAndFirstNameIgnoreCaseAndLastNameIgnoreCaseAndDateOfBirth(
+                userId, firstName, lastName, dateOfBirth);
+        if (found.isEmpty()) return Optional.empty();
+        Student student = found.get();
+        List<Map<String, Object>> docDtos = buildDocDtos(student.getId());
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("studentId", student.getId());
+        result.put("firstName", student.getFirstName());
+        result.put("middleName", student.getMiddleName());
+        result.put("lastName", student.getLastName());
+        result.put("dateOfBirth", student.getDateOfBirth().toString());
+        result.put("documents", docDtos);
+        return Optional.of(result);
+    }
+
+    /**
      * Finds an existing student by identity, or creates one if not found.
      * Then loads all active documents. Any with an empty or missing KV extract
      * will have re-extraction attempted immediately.

@@ -347,6 +347,21 @@
         }
         .btn-primary:hover { filter: brightness(1.14); }
 
+        .btn-secondary {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 700;
+            background: transparent;
+            color: var(--navy);
+            border: 1.5px solid var(--navy);
+            border-radius: 6px;
+            cursor: pointer;
+            letter-spacing: 0.3px;
+            transition: background .15s, color .15s;
+        }
+        .btn-secondary:hover { background: var(--navy); color: #fff; }
+
         .btn-ai {
             display: block;
             width: 100%;
@@ -1219,50 +1234,97 @@
 
 <div class="container" style="max-width:760px;">
 
-    <!-- Step 1: Demographics + document upload -->
+    <!-- Step 1: Student Search / Profile -->
     <div class="card" id="fafsaIntakeCard">
-        <h2>Your FAFSA Prep Profile</h2>
-        <p class="debt-step-sub">Enter your basic info and upload your tax documents — Astra extracts the same data FAFSA would import.</p>
+        <h2>Student Profile</h2>
 
-        <div class="debt-form-row">
-            <div class="field-group">
-                <label for="fafsaFirstName">First Name</label>
-                <input type="text" id="fafsaFirstName" placeholder="e.g. Jordan">
+        <!-- ── Search panel (default) ── -->
+        <div id="fafsaSearchPanel">
+            <p class="debt-step-sub">Search by name and date of birth to load an existing profile, or create a new one.</p>
+            <div class="debt-form-row">
+                <div class="field-group">
+                    <label for="fafsaSearchFirst">First Name <span style="color:var(--accent);font-weight:700;">*</span></label>
+                    <input type="text" id="fafsaSearchFirst" placeholder="e.g. Jordan">
+                </div>
+                <div class="field-group">
+                    <label for="fafsaSearchLast">Last Name <span style="color:var(--accent);font-weight:700;">*</span></label>
+                    <input type="text" id="fafsaSearchLast" placeholder="e.g. Smith">
+                </div>
+                <div class="field-group">
+                    <label for="fafsaSearchDob">Date of Birth <span style="color:var(--accent);font-weight:700;">*</span></label>
+                    <input type="date" id="fafsaSearchDob">
+                </div>
             </div>
-            <div class="field-group">
-                <label for="fafsaMiddleName">Middle Name <span style="font-weight:400;text-transform:none;font-size:10px;">(optional)</span></label>
-                <input type="text" id="fafsaMiddleName" placeholder="e.g. Lee">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <button type="button" class="btn-primary" onclick="fafsaSearchStudent()">Search Student</button>
+                <button type="button" class="btn-secondary" style="font-size:13px;padding:8px 16px;" onclick="fafsaShowCreateForm()">+ New Student</button>
             </div>
-            <div class="field-group">
-                <label for="fafsaLastName">Last Name</label>
-                <input type="text" id="fafsaLastName" placeholder="e.g. Smith">
+            <div id="fafsaSearchSpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:8px;">Searching…</div>
+            <div id="fafsaSearchNotFound" style="display:none;margin-top:10px;background:#fef3f2;border:1px solid #f5c6c2;border-radius:7px;padding:9px 14px;font-size:13px;color:#7a1e1e;">
+                No student found with those details. Click <strong>+ New Student</strong> to create a profile.
             </div>
         </div>
-        <div class="debt-form-row">
-            <div class="field-group">
-                <label for="fafsaDob">Date of Birth</label>
-                <input type="date" id="fafsaDob">
+
+        <!-- ── Found state ── -->
+        <div id="fafsaFoundPanel" style="display:none;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+                <span style="background:var(--accent);color:#fff;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700;">Student</span>
+                <strong id="fafsaFoundLabel" style="font-size:15px;"></strong>
+                <span id="fafsaFoundDob" style="font-size:12px;color:var(--muted);"></span>
+                <button type="button" onclick="fafsaResetSearch()" style="margin-left:auto;font-size:12px;padding:4px 12px;background:none;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;color:var(--muted);">Change Student</button>
             </div>
-            <div class="field-group">
-                <label for="fafsaPlanningYear">Year Planning to Be in College</label>
-                <input type="number" id="fafsaPlanningYear" placeholder="e.g. 2027" min="2024" max="2035" step="1">
+
+            <!-- Existing documents list -->
+            <div id="fafsaDocList" style="margin-bottom:16px;"></div>
+
+            <!-- Upload section -->
+            <div style="border-top:1px solid var(--border);padding-top:14px;">
+                <div style="background:#fef9ee;border:1px solid #f0d88a;border-radius:8px;padding:9px 14px;margin-bottom:12px;font-size:12px;color:#7a5c00;">
+                    Extract &amp; Save documents below to unlock the Advanced Strategy Tools.
+                </div>
+                <label for="fafsaFileInput">Upload Tax Documents (W-2, 1040, 1099, etc.)</label>
+                <input type="file" id="fafsaFileInput" multiple accept=".pdf,.png,.jpg,.jpeg" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;">
+                <button type="button" id="fafsaUploadBtn" class="btn-primary" style="margin-top:10px;" onclick="uploadFafsaDocs()">Extract &amp; Save</button>
+                <div id="fafsaUploadSpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:8px;">Extracting document data — this may take up to 30 seconds per file…</div>
             </div>
+            <div id="fafsaExtractedPreview" style="margin-top:16px;"></div>
         </div>
 
-        <button type="button" id="fafsaSaveProfileBtn" class="btn-primary" onclick="saveFafsaProfile()">Save Profile</button>
-        <div id="fafsaProfileSaved" style="display:none;font-size:12px;color:var(--accent);font-weight:700;margin-top:8px;">✓ Profile saved</div>
-
-        <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px;">
-            <div style="background:#fef9ee;border:1px solid #f0d88a;border-radius:8px;padding:9px 14px;margin-bottom:12px;font-size:12px;color:#7a5c00;letter-spacing:.01em;">
-              Extract &amp; Save your documents below to unlock the Advanced Strategy Tools.
+        <!-- ── Create new profile state ── -->
+        <div id="fafsaCreatePanel" style="display:none;">
+            <div style="background:#f0f7ff;border:1px solid #b8d4f0;border-radius:7px;padding:9px 14px;margin-bottom:14px;font-size:13px;color:#1a3a5c;">
+                Creating a new student profile. Fields marked <span style="color:var(--accent);font-weight:700;">*</span> are required.
             </div>
-            <label for="fafsaFileInput">Upload Tax Documents (W-2, 1040, 1099, etc.)</label>
-            <input type="file" id="fafsaFileInput" multiple accept=".pdf,.png,.jpg,.jpeg" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;">
-            <button type="button" id="fafsaUploadBtn" class="btn-primary" style="margin-top:10px;" onclick="uploadFafsaDocs()">Extract &amp; Save</button>
-            <div id="fafsaUploadSpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:8px;">Extracting document data…</div>
+            <div class="debt-form-row">
+                <div class="field-group">
+                    <label for="fafsaFirstName">First Name <span style="color:var(--accent);font-weight:700;">*</span></label>
+                    <input type="text" id="fafsaFirstName" placeholder="e.g. Jordan">
+                </div>
+                <div class="field-group">
+                    <label for="fafsaMiddleName">Middle Name <span style="font-weight:400;text-transform:none;font-size:10px;">(optional)</span></label>
+                    <input type="text" id="fafsaMiddleName" placeholder="e.g. Lee">
+                </div>
+                <div class="field-group">
+                    <label for="fafsaLastName">Last Name <span style="color:var(--accent);font-weight:700;">*</span></label>
+                    <input type="text" id="fafsaLastName" placeholder="e.g. Smith">
+                </div>
+            </div>
+            <div class="debt-form-row">
+                <div class="field-group">
+                    <label for="fafsaDob">Date of Birth <span style="color:var(--accent);font-weight:700;">*</span></label>
+                    <input type="date" id="fafsaDob">
+                </div>
+                <div class="field-group">
+                    <label for="fafsaPlanningYear">Year Planning to Be in College</label>
+                    <input type="number" id="fafsaPlanningYear" placeholder="e.g. 2027" min="2024" max="2035" step="1">
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <button type="button" id="fafsaSaveProfileBtn" class="btn-primary" onclick="saveFafsaProfile()">Save Profile &amp; Continue</button>
+                <button type="button" onclick="fafsaResetSearch()" style="font-size:13px;padding:8px 16px;background:none;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;color:var(--muted);">Back to Search</button>
+            </div>
+            <div id="fafsaProfileSaved" style="display:none;font-size:12px;color:var(--accent);font-weight:700;margin-top:8px;">✓ Profile saved</div>
         </div>
-
-        <div id="fafsaExtractedPreview" style="margin-top:16px;"></div>
     </div>
 
     <!-- Step 2: Readiness summary -->
@@ -1972,6 +2034,7 @@
     const FREE_SEARCHES     = 3;
     const FREE_FAFSA_USES   = 3;
     let chatHistory = [];
+    let fafsaCurrentStudentId = null;
 
     function applyPaywall() {
         if (searchCount >= FREE_SEARCHES) {
@@ -3506,15 +3569,115 @@
         });
     }
 
+    // ── FAFSA SEARCH-FIRST FLOW ───────────────────────────────────────────────
+
+    function fafsaResetSearch() {
+        fafsaCurrentStudentId = null;
+        $('#fafsaSearchFirst,#fafsaSearchLast,#fafsaSearchDob').val('');
+        $('#fafsaSearchNotFound').hide();
+        $('#fafsaFoundPanel,#fafsaCreatePanel').hide();
+        $('#fafsaSearchPanel').show();
+    }
+
+    function fafsaShowCreateForm() {
+        // Pre-fill name fields from search inputs if available
+        const sf = $('#fafsaSearchFirst').val().trim();
+        const sl = $('#fafsaSearchLast').val().trim();
+        const sd = $('#fafsaSearchDob').val();
+        if (sf) $('#fafsaFirstName').val(sf);
+        if (sl) $('#fafsaLastName').val(sl);
+        if (sd) $('#fafsaDob').val(sd);
+        $('#fafsaSearchPanel').hide();
+        $('#fafsaFoundPanel').hide();
+        $('#fafsaCreatePanel').show();
+    }
+
+    function fafsaSearchStudent() {
+        const firstName   = $('#fafsaSearchFirst').val().trim();
+        const lastName    = $('#fafsaSearchLast').val().trim();
+        const dateOfBirth = $('#fafsaSearchDob').val();
+        if (!firstName || !lastName || !dateOfBirth) {
+            alert('First name, last name, and date of birth are all required to search.');
+            return;
+        }
+        $('#fafsaSearchNotFound').hide();
+        $('#fafsaSearchSpinner').show();
+        $.ajax({
+            url: '/api/fafsa/student/search',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ firstName, lastName, dateOfBirth }),
+            success: function(data) {
+                $('#fafsaSearchSpinner').hide();
+                if (data.found) {
+                    fafsaLoadStudentData(data);
+                } else {
+                    $('#fafsaSearchNotFound').show();
+                }
+            },
+            error: function() {
+                $('#fafsaSearchSpinner').hide();
+                alert('Search failed. Please try again.');
+            }
+        });
+    }
+
+    function fafsaLoadStudentData(data) {
+        fafsaCurrentStudentId = data.studentId;
+        // Also sync legacy profile inputs for downstream tools
+        $('#fafsaFirstName').val(data.firstName || '');
+        $('#fafsaMiddleName').val(data.middleName || '');
+        $('#fafsaLastName').val(data.lastName || '');
+        $('#fafsaDob').val(data.dateOfBirth || '');
+
+        const fullName = [data.firstName, data.middleName, data.lastName].filter(Boolean).join(' ');
+        $('#fafsaFoundLabel').text(fullName);
+        $('#fafsaFoundDob').text('DOB: ' + (data.dateOfBirth || ''));
+
+        // Render existing documents
+        const docs = data.documents || [];
+        if (docs.length > 0) {
+            let html = '<p class="debt-section-title" style="margin-bottom:8px;">Previously Uploaded Documents</p>';
+            docs.forEach(doc => {
+                const kvCount = doc.extracted ? Object.keys(doc.extracted).length : 0;
+                html += `<div class="credit-option-card" style="margin-bottom:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;">
+                    <span style="font-size:18px;">📄</span>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${doc.filename}</div>
+                        <div style="font-size:11px;color:var(--muted);">${kvCount} fields extracted · ${doc.uploadedAt ? doc.uploadedAt.split('T')[0] : ''}</div>
+                    </div>
+                    ${kvCount > 0 ? '<span style="color:var(--accent);font-size:11px;font-weight:700;">✓ Extracted</span>' : '<span style="color:#c0392b;font-size:11px;">⚠ Not extracted</span>'}
+                </div>`;
+                if (doc.extracted && Object.keys(doc.extracted).length > 0) {
+                    Object.assign(fafsaExtractedKV, doc.extracted);
+                }
+            });
+            $('#fafsaDocList').html(html);
+            $('#fafsaSummarySection').show();
+            $('#fafsaPostExtractSection').css({opacity:'1','pointer-events':'auto','user-select':'auto'});
+        } else {
+            $('#fafsaDocList').html('<p style="font-size:13px;color:var(--muted);margin-bottom:8px;">No documents uploaded yet. Upload tax documents below to unlock strategy tools.</p>');
+        }
+
+        $('#fafsaSearchPanel').hide();
+        $('#fafsaCreatePanel').hide();
+        $('#fafsaFoundPanel').show();
+    }
+
     function saveFafsaProfile() {
-        const firstName  = $('#fafsaFirstName').val().trim();
-        const middleName = $('#fafsaMiddleName').val().trim();
-        const lastName   = $('#fafsaLastName').val().trim();
-        const dateOfBirth  = $('#fafsaDob').val();
+        const firstName   = $('#fafsaFirstName').val().trim();
+        const middleName  = $('#fafsaMiddleName').val().trim();
+        const lastName    = $('#fafsaLastName').val().trim();
+        const dateOfBirth = $('#fafsaDob').val();
         const planningYear = $('#fafsaPlanningYear').val();
-        if (!firstName || !lastName) { alert('Please enter the student first and last name.'); return; }
+
+        if (!firstName) { alert('First name is required.'); $('#fafsaFirstName').focus(); return; }
+        if (!lastName)  { alert('Last name is required.');  $('#fafsaLastName').focus();  return; }
+        if (!dateOfBirth) { alert('Date of birth is required.'); $('#fafsaDob').focus(); return; }
+
         const studentName = [firstName, middleName, lastName].filter(Boolean).join(' ');
 
+        // Save legacy profile record, then create/find student document record
         $.ajax({
             url: '/api/fafsa/profile',
             method: 'POST',
@@ -3522,9 +3685,18 @@
             data: JSON.stringify({ firstName, middleName, lastName, studentName, dateOfBirth, planningYear }),
             success: function() {
                 $('#fafsaProfileSaved').show();
-                setTimeout(() => $('#fafsaProfileSaved').fadeOut(), 2500);
+                setTimeout(() => $('#fafsaProfileSaved').fadeOut(), 1500);
+                // Find-or-create student record and transition to found panel
+                $.ajax({
+                    url: '/api/fafsa/student/find-or-create',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ firstName, middleName, lastName, dateOfBirth }),
+                    success: function(data) { fafsaLoadStudentData(data); },
+                    error: function() { /* profile saved; student record may retry on next search */ }
+                });
             },
-            error: function() { alert('Could not save your profile. Please try again.'); }
+            error: function() { alert('Could not save profile. Please try again.'); }
         });
     }
 
@@ -3532,6 +3704,7 @@
         if (applyFafsaPaywall()) return;
         const files = $('#fafsaFileInput')[0].files;
         if (!files || files.length === 0) { alert('Please choose at least one file to upload.'); return; }
+        if (!fafsaCurrentStudentId) { alert('Please search for or create a student profile first.'); return; }
 
         $('#fafsaUploadSpinner').show();
         $('#fafsaUploadBtn').prop('disabled', true);
@@ -3540,7 +3713,7 @@
             const formData = new FormData();
             formData.append('file', file);
             return $.ajax({
-                url: '/api/fafsa/upload-tax-doc',
+                url: '/api/fafsa/student/' + fafsaCurrentStudentId + '/upload',
                 method: 'POST',
                 data: formData,
                 processData: false,
@@ -3548,15 +3721,11 @@
             });
         };
 
-        // Upload sequentially so the paywall check applies per-file
         let chain = Promise.resolve();
         const results = [];
         Array.from(files).forEach(file => {
             chain = chain.then(() => uploadOne(file).then(resp => {
-                if (resp.paywalled) {
-                    applyFafsaPaywall();
-                    return;
-                }
+                if (resp.paywalled) { applyFafsaPaywall(); return; }
                 results.push(resp);
                 noteFafsaUsage();
             }));
@@ -3565,14 +3734,25 @@
         chain.then(() => {
             $('#fafsaUploadSpinner').hide();
             $('#fafsaUploadBtn').prop('disabled', false);
+            $('#fafsaFileInput').val('');
             if (results.length > 0) {
                 results.forEach(r => {
                     if (r.extracted) Object.assign(fafsaExtractedKV, r.extracted);
                     renderFafsaExtractedPreview({ [r.filename]: r.extracted }, true);
+                    // Add to doc list
+                    const kvCount = r.extracted ? Object.keys(r.extracted).length : 0;
+                    const newDoc = `<div class="credit-option-card" style="margin-bottom:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;">
+                        <span style="font-size:18px;">📄</span>
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-weight:600;font-size:13px;">${r.filename}</div>
+                            <div style="font-size:11px;color:var(--muted);">${kvCount} fields extracted · just now</div>
+                        </div>
+                        ${kvCount > 0 ? '<span style="color:var(--accent);font-size:11px;font-weight:700;">✓ Extracted</span>' : '<span style="color:#c0392b;font-size:11px;">⚠ Not extracted</span>'}
+                    </div>`;
+                    $('#fafsaDocList').append(newDoc);
                 });
                 $('#fafsaSummarySection').show();
                 $('#fafsaPostExtractSection').css({opacity:'1','pointer-events':'auto','user-select':'auto'});
-                $('#fafsaPostExtractHint').hide();
             }
         }).catch(() => {
             $('#fafsaUploadSpinner').hide();
