@@ -21,6 +21,14 @@
         <java.version>17</java.version>
     </properties>
 
+    <!-- callisto-extraction-core is vendored under libs/ — not on Maven Central -->
+    <repositories>
+        <repository>
+            <id>callisto-local</id>
+            <url>file://${project.basedir}/libs</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>

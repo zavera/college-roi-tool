@@ -420,10 +420,19 @@ public class FafsaPrepController {
         if (!isUsageAllowed(user)) return ResponseEntity.ok(Map.of("paywalled", true));
 
         Optional<FafsaProfile> profileOpt = fafsaProfileRepository.findByUser_Email(user.getEmail());
-        if (profileOpt.isEmpty() || profileOpt.get().getExtractedDataJson() == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Upload a tax document first."));
+        if (profileOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Save your FAFSA profile first."));
         }
         FafsaProfile profile = profileOpt.get();
+
+        // Prefer KV from the new document extraction table; fall back to legacy extractedDataJson
+        String kvJson = buildKvJsonFromStudentDocs(user, profile);
+        if (kvJson == null && profile.getExtractedDataJson() == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Upload a tax document first."));
+        }
+        if (kvJson != null) {
+            profile.setExtractedDataJson(kvJson);
+        }
 
         try {
             String aiJson = groqService.getAssetRepositioningAdvice(profile);
@@ -592,6 +601,28 @@ public class FafsaPrepController {
     private static double doubleOf(Object v) {
         if (v == null) return 0;
         try { return Double.parseDouble(v.toString()); } catch (NumberFormatException e) { return 0; }
+    }
+
+    /**
+     * Looks up the student record linked to this profile's name+DOB, then returns their
+     * merged document KV pairs as a JSON string. Returns null if no student is found or KV is empty.
+     */
+    private String buildKvJsonFromStudentDocs(AppUser user, FafsaProfile profile) {
+        if (profile.getStudentName() == null || profile.getDateOfBirth() == null) return null;
+        try {
+            String[] parts = profile.getStudentName().trim().split("\\s+");
+            String firstName = parts[0];
+            String lastName = parts[parts.length - 1]; // skip middle name(s)
+            Optional<Map<String, Object>> found = studentDocumentService.searchStudent(
+                user.getId(), firstName, lastName, profile.getDateOfBirth());
+            if (found.isEmpty()) return null;
+            Long studentId = Long.valueOf(found.get().get("studentId").toString());
+            Map<String, String> kv = studentDocumentService.getActiveKvPayload(studentId);
+            if (kv.isEmpty()) return null;
+            return objectMapper.writeValueAsString(kv);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /** Resolves the current user strictly from the authenticated session — never from request params/body. */

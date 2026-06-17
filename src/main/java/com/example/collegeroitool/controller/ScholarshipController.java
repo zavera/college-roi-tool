@@ -4,6 +4,7 @@ import com.example.collegeroitool.model.AppUser;
 import com.example.collegeroitool.service.ScholarshipService;
 import com.example.collegeroitool.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +15,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/scholarship")
 public class ScholarshipController {
+
+    @Value("${premium.dev.bypass:false}")
+    private boolean devBypass;
 
     private final ScholarshipService scholarshipService;
     private final UserService userService;
@@ -26,7 +30,7 @@ public class ScholarshipController {
 
     @PostMapping("/external")
     public ResponseEntity<?> searchExternal(@RequestBody Map<String, Object> body, Principal principal) {
-        if (principal == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        if (principal == null && !devBypass) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
         try {
             Long studentId = body.get("studentId") != null ? Long.valueOf(body.get("studentId").toString()) : null;
             @SuppressWarnings("unchecked")
@@ -41,7 +45,7 @@ public class ScholarshipController {
 
     @PostMapping("/school-specific")
     public ResponseEntity<?> searchSchoolSpecific(@RequestBody Map<String, Object> body, Principal principal) {
-        if (principal == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        if (principal == null && !devBypass) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
         try {
             Long studentId = body.get("studentId") != null ? Long.valueOf(body.get("studentId").toString()) : null;
             @SuppressWarnings("unchecked")
@@ -58,7 +62,7 @@ public class ScholarshipController {
 
     @PostMapping("/timeline")
     public ResponseEntity<?> generateTimeline(@RequestBody Map<String, Object> body, Principal principal) {
-        if (principal == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        if (principal == null && !devBypass) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
         try {
             String selectedJson = objectMapper.writeValueAsString(
                 body.getOrDefault("selectedScholarships", List.of()));

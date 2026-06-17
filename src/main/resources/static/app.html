@@ -1328,41 +1328,6 @@
     </div>
 
     <!-- Step 2: Readiness summary -->
-    <div class="card" id="fafsaSummarySection" style="display:none;">
-        <h2>Readiness Summary</h2>
-        <button type="button" id="fafsaSummaryBtn" class="btn-primary" onclick="generateFafsaSummary()">Generate Readiness Summary</button>
-        <div id="fafsaSummarySpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:8px;">Analyzing your profile and searching for scholarships…</div>
-
-        <div id="fafsaSummaryCard" style="display:none;margin-top:18px;">
-            <p class="debt-section-title">Readiness Summary</p>
-            <p id="fafsaReadinessText" style="font-size:13px;line-height:1.6;margin-bottom:16px;"></p>
-
-            <p class="debt-section-title">Aid Projection</p>
-            <p id="fafsaAidProjectionText" style="font-size:13px;line-height:1.6;margin-bottom:16px;"></p>
-
-            <p class="debt-section-title">Appeal Opportunities <span style="font-weight:400;text-transform:none;color:var(--muted);">(check the ones to include in your roadmap)</span></p>
-            <ul id="fafsaAppealList" class="credit-build-tips" style="list-style:none;padding-left:0;margin-bottom:16px;"></ul>
-
-            <p class="debt-section-title">Scholarship Matches <span style="font-weight:400;text-transform:none;color:var(--muted);">(live search results — check the ones to include)</span></p>
-            <div id="fafsaScholarshipGrid" class="credit-options-grid" style="margin-bottom:16px;"></div>
-
-            <p class="debt-section-title">Deadlines &amp; Timeline</p>
-            <ul id="fafsaDeadlinesList" style="font-size:13px;line-height:1.6;margin-bottom:8px;"></ul>
-        </div>
-    </div>
-
-    <!-- Step 3: Roadmap -->
-    <div class="card" id="fafsaRoadmapSection" style="display:none;">
-        <h2>Your Roadmap</h2>
-        <button type="button" id="fafsaRoadmapBtn" class="btn-primary" onclick="generateFafsaRoadmap()">Generate My Roadmap</button>
-        <div id="fafsaRoadmapSpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:8px;">Building your roadmap…</div>
-
-        <div id="fafsaRoadmapCard" style="display:none;margin-top:18px;">
-            <p id="fafsaRoadmapSummary" style="font-size:13px;line-height:1.6;margin-bottom:14px;"></p>
-            <ol id="fafsaRoadmapList" style="font-size:13px;line-height:1.7;padding-left:20px;"></ol>
-        </div>
-    </div>
-
     <!-- ══ POST-EXTRACT GATED SECTION ══════════════════════════════════════ -->
     <div id="fafsaPostExtractSection" style="opacity:0.4;pointer-events:none;user-select:none;">
 
@@ -1378,9 +1343,9 @@
         <div id="fafsaDependencyResult" style="margin-top:14px;font-size:13px;line-height:1.6;"></div>
     </div>
 
-    <!-- Asset Repositioning Advisor -->
+    <!-- Asset Repositioning -->
     <div class="card" id="fafsaAssetCard">
-        <h2>Asset Repositioning Advisor</h2>
+        <h2>Asset Repositioning</h2>
         <p class="debt-step-sub">Analyzes your extracted tax data against FAFSA asset assessment rules and flags legal repositioning opportunities before next year's filing.</p>
         <button type="button" class="btn-primary" onclick="generateAssetRepositioning()">Get Asset Repositioning Advice</button>
         <div id="fafsaAssetSpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:8px;">Analyzing your assets…</div>

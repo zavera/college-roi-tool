@@ -578,13 +578,16 @@ public class GroqService {
         String scope = schoolSpecific
             ? "school-specific institutional scholarships and grants from the student's target schools"
             : "external national, state, and private scholarships";
-        String prompt = "You are a scholarship advisor. Search results from credible scholarship sources are provided below.\n\n"
+        boolean hasSearchResults = searchResults != null && !searchResults.isBlank() && !searchResults.equals("[]");
+        String searchSection = hasSearchResults
+            ? "Live search results (JSON):\n" + searchResults + "\n\nFrom these results, identify"
+            : "No live search results are available. Using your training knowledge, identify";
+        String prompt = "You are a scholarship advisor.\n\n"
             + "Student profile:\n" + studentContext + "\n"
-            + "Live search results (JSON):\n" + searchResults + "\n\n"
-            + "From these results, identify the best matching " + scope + " for this student.\n"
+            + searchSection + " the best matching " + scope + " for this student.\n"
             + "Return ONLY a JSON array (no markdown, no explanation). Each element must have:\n"
             + "  name (string), amount (string or null), deadline (string or null),\n"
-            + "  eligibility (1-2 sentence summary), link (real URL from search results), source (domain).\n"
+            + "  eligibility (1-2 sentence summary), link (URL or null), source (domain or \"groq-knowledge\").\n"
             + "Include 5-10 scholarships the student is realistically eligible for. Order by match quality.";
         return callGroq(prompt, 1800, 0.2);
     }
