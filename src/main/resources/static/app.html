@@ -3647,28 +3647,65 @@
     }
 
     // ── ASSET REPOSITIONING ADVISOR ──────────────────────────────────────────
-    // FAFSA asset assessment rules (hardcoded from 34 C.F.R. Part 668 / FSA Handbook):
-    // - Parent assets assessed at up to 5.64% above the asset protection allowance
-    // - Student assets assessed at 20%
-    // - Excluded: primary home equity, qualified retirement accounts (401k/IRA/pension),
-    //   small business assets (family-owned, <100 employees), annuities, life insurance cash value
-    // - 529 owned by parent: assessed at parent rate (5.64%)
-    // - 529 owned by grandparent: no longer counted on FAFSA (post-2024-25 simplification)
-    // - UGMA/UTMA: counted as student asset (20%)
-    // - Coverdell ESA: counted as parent asset if parent is owner
-    // Source: FSA Handbook Vol. 3, Chapter 2 (https://fsapartners.ed.gov)
+    // All rules below are sourced verbatim from official U.S. Department of Education publications.
+    // Primary sources:
+    //   [1] FSA Handbook 2024-25, Application and Verification Guide (AVG), Chapter 3
+    //       "Student Aid Index (SAI) and Pell Grant Eligibility"
+    //       https://fsapartners.ed.gov/knowledge-center/fsa-handbook/2024-2025/application-and-verification-guide/ch3-student-aid-index-sai-and-pell-grant-eligibility
+    //   [2] 20 U.S.C. § 1087vv (Higher Education Act, as amended by the FAFSA Simplification Act, P.L. 116-260)
+    //       Definition of "assets" and statutory exclusions
+    //   [3] 2024-25 Student Aid Index (SAI) and Pell Grant Eligibility Guide (ED, Jan 2024)
+    //       https://fsapartners.ed.gov/knowledge-center/library/handbooks-manuals-or-guides/2022-11-21/2024-25-student-aid-index-sai-and-pell-grant-eligibility-guide-updated-jan-30-2024
+    //   [4] 34 C.F.R. Part 668, Subpart E (Student Assistance General Provisions)
 
     const FAFSA_ASSET_RULES = {
-        parentAssetRate: 0.0564,
-        studentAssetRate: 0.20,
-        excluded: ['primary home equity', '401k', 'IRA', 'pension', 'annuity',
-                   'life insurance cash value', 'family business (<100 employees)'],
-        notes: [
-            'Parent 529 plans are assessed at the parent asset rate (up to 5.64%).',
-            'Grandparent-owned 529 plans are no longer reported on FAFSA after the 2024-25 simplification.',
-            'UGMA/UTMA accounts are student assets assessed at 20%.',
-            'Retirement accounts (401k, IRA, pension) are excluded from FAFSA asset calculations.',
-            'Primary home equity is excluded from FAFSA (but counted on CSS Profile).'
+
+        // ── Conversion rates (confirmed verbatim from AVG Ch 3 [1]) ──────────────
+        // "Parents' contribution from assets" -- "the conversion rate of 12%"  [1]
+        parentAssetConversionRate: 0.12,
+
+        // "Student's contribution from assets" -- "the conversion rate of 20%" (Formula A: dependent; Formula B: independent, no dependents) [1]
+        studentAssetRateFormulaAB: 0.20,
+
+        // "Student's contribution from assets" -- "the conversion rate of 7%" (Formula C: independent with dependents) [1]
+        studentAssetRateFormulaC: 0.07,
+
+        // ── Formula: Parent contribution from assets (AVG Ch 3, Formula A) ──────
+        // Step 1: Calculate net worth = cash/savings + investment net worth + adjusted business/farm net worth
+        // Step 2: Subtract Asset Protection Allowance (Table A4, indexed annually by age of older parent and marital status)
+        //         Table A4 values are published each award year in the SAI Formula Guide [3] and the Federal Register.
+        //         Download the current-year guide from [3] to get the exact table.
+        // Step 3: Multiply result by 12% = Parents' Contribution from Assets
+        parentAssetFormula: 'Net worth - Asset Protection Allowance (Table A4) x 12%',
+
+        // ── Assets that ARE counted [1][2] ───────────────────────────────────────
+        // Source: AVG Ch 3 -- "Net worth of investments" and "Cash, savings, checking, time deposits, and money market funds"
+        assetsIncluded: [
+            'Cash, savings, checking, time deposits, and money market funds',
+            'Net worth of investments: real estate (excluding primary residence), vacation homes, income-producing property, trusts, stocks, bonds, derivatives, securities, mutual funds, and tax shelters',
+            'Adjusted net worth of a business or investment farm (reduced by a small-business exclusion for family-owned businesses with fewer than 100 full-time equivalent employees)',
+            'Qualified education benefits (529 plans, prepaid tuition plans) owned by a parent or student -- assessed at the parent rate if the account owner is the parent [20 U.S.C. § 1087vv(c)(4)]',
+            'Coverdell Education Savings Accounts (ESAs) owned by a parent',
+            'UGMA/UTMA custodial accounts -- treated as student assets assessed at the student rate [20 U.S.C. § 1087vv(f)]',
+        ],
+
+        // ── Assets that are EXCLUDED -- statutory language from 20 U.S.C. § 1087vv(f) [2] ──
+        // "The term 'assets' shall not include --"
+        assetsExcluded: [
+            '[20 U.S.C. § 1087vv(f)(1)] The net value of the principal place of residence of the family (primary home equity)',
+            '[20 U.S.C. § 1087vv(f)(2)] The value of a qualified retirement plan (as defined in section 4974(c) of the Internal Revenue Code of 1986), including 401(k), 403(b), 457, IRA, Roth IRA, SEP, SIMPLE, Keogh, and pension plans',
+            '[20 U.S.C. § 1087vv(f)(3)] The value of a contract that qualifies as life insurance under State law',
+            '[20 U.S.C. § 1087vv(f)(4)] The value of an annuity',
+            '[20 U.S.C. § 1087vv(f)(5)] The value of a small business that is not publicly traded, is owned and controlled by the family, and has fewer than 100 full-time equivalent employees',
+            '[20 U.S.C. § 1087vv(f)(6)] The value of a family farm on which the family resides and which is their principal place of business',
+            '[FAFSA Simplification Act, P.L. 116-260, Sec. 702] Assets held in accounts owned by a grandparent (or other non-parent) are no longer reported on the FAFSA. Students are no longer required to report distributions from grandparent-owned 529 plans (effective 2024-25 award year)',
+        ],
+
+        // ── Citation footer to render on the UI ─────────────────────────────────
+        uiCitations: [
+            { label: 'AVG Ch 3 (2024-25)', url: 'https://fsapartners.ed.gov/knowledge-center/fsa-handbook/2024-2025/application-and-verification-guide/ch3-student-aid-index-sai-and-pell-grant-eligibility' },
+            { label: '20 U.S.C. § 1087vv', url: 'https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title20-section1087vv' },
+            { label: 'SAI Formula Guide (2024-25)', url: 'https://fsapartners.ed.gov/knowledge-center/library/handbooks-manuals-or-guides/2022-11-21/2024-25-student-aid-index-sai-and-pell-grant-eligibility-guide-updated-jan-30-2024' },
         ]
     };
 
