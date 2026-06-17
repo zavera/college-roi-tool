@@ -1298,7 +1298,10 @@
     </div>
 
     <!-- ══ POST-EXTRACT GATED SECTION ══════════════════════════════════════ -->
-    <div id="fafsaPostExtractSection" style="display:none;">
+    <div id="fafsaPostExtractSection" style="position:relative;opacity:0.4;pointer-events:none;user-select:none;">
+      <div id="fafsaPostExtractOverlay" style="position:absolute;top:0;left:0;right:0;bottom:0;z-index:10;display:flex;align-items:flex-start;justify-content:center;padding-top:40px;">
+        <span style="background:var(--navy);color:#fff;font-size:13px;padding:7px 18px;border-radius:20px;letter-spacing:.03em;">Complete document extraction above to unlock these tools</span>
+      </div>
 
     <!-- ══ ADVANCED STRATEGY TOOLS ══════════════════════════════════════════ -->
     <h2 style="margin:28px 0 4px;font-size:18px;">Advanced Strategy Tools</h2>
@@ -1357,6 +1360,7 @@
         <div id="fafsaDeadlinesResult" style="display:none;margin-top:16px;"></div>
     </div>
 
+    </div><!-- end fafsaPostExtractOverlay -->
     </div><!-- end #fafsaPostExtractSection -->
 
 </div><!-- end .container fafsa -->
@@ -3366,7 +3370,8 @@
                 Object.assign(fafsaExtractedKV, data.extractedData);
                 renderFafsaExtractedPreview(data.extractedData);
                 $('#fafsaSummarySection').show();
-                $('#fafsaPostExtractSection').show();
+                $('#fafsaPostExtractSection').css({opacity:'1','pointer-events':'auto','user-select':'auto'});
+                $('#fafsaPostExtractOverlay').hide();
             }
             if (data.readinessSummary) {
                 renderFafsaSummary(data.readinessSummary);
@@ -3448,7 +3453,8 @@
                     renderFafsaExtractedPreview({ [r.filename]: r.extracted }, true);
                 });
                 $('#fafsaSummarySection').show();
-                $('#fafsaPostExtractSection').show();
+                $('#fafsaPostExtractSection').css({opacity:'1','pointer-events':'auto','user-select':'auto'});
+                $('#fafsaPostExtractOverlay').hide();
             }
         }).catch(() => {
             $('#fafsaUploadSpinner').hide();
