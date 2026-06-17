@@ -1252,6 +1252,9 @@
         <div id="fafsaProfileSaved" style="display:none;font-size:12px;color:var(--accent);font-weight:700;margin-top:8px;">✓ Profile saved</div>
 
         <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px;">
+            <div style="background:#fef9ee;border:1px solid #f0d88a;border-radius:8px;padding:9px 14px;margin-bottom:12px;font-size:12px;color:#7a5c00;letter-spacing:.01em;">
+              Extract &amp; Save your documents below to unlock the Advanced Strategy Tools.
+            </div>
             <label for="fafsaFileInput">Upload Tax Documents (W-2, 1040, 1099, etc.)</label>
             <input type="file" id="fafsaFileInput" multiple accept=".pdf,.png,.jpg,.jpeg" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;">
             <button type="button" id="fafsaUploadBtn" class="btn-primary" style="margin-top:10px;" onclick="uploadFafsaDocs()">Extract &amp; Save</button>
@@ -1298,10 +1301,7 @@
     </div>
 
     <!-- ══ POST-EXTRACT GATED SECTION ══════════════════════════════════════ -->
-    <div id="fafsaPostExtractSection" style="position:relative;opacity:0.4;pointer-events:none;user-select:none;">
-      <div id="fafsaPostExtractOverlay" style="position:absolute;top:0;left:0;right:0;bottom:0;z-index:10;display:flex;align-items:flex-start;justify-content:center;padding-top:40px;">
-        <span style="background:var(--navy);color:#fff;font-size:13px;padding:7px 18px;border-radius:20px;letter-spacing:.03em;">Complete document extraction above to unlock these tools</span>
-      </div>
+    <div id="fafsaPostExtractSection" style="opacity:0.4;pointer-events:none;user-select:none;">
 
     <!-- ══ ADVANCED STRATEGY TOOLS ══════════════════════════════════════════ -->
     <h2 style="margin:28px 0 4px;font-size:18px;">Advanced Strategy Tools</h2>
@@ -1342,25 +1342,6 @@
         </div>
     </div>
 
-    <!-- CSS vs FAFSA Differential Explainer -->
-    <div class="card" id="fafsaCssCard">
-        <h2>CSS vs. FAFSA Differential Explainer</h2>
-        <p class="debt-step-sub">Flags which of your target schools likely require the CSS Profile and how its methodology differs from FAFSA for your profile.</p>
-        <button type="button" class="btn-primary" onclick="generateCssExplainer()">Explain CSS vs. FAFSA for My Schools</button>
-        <div id="fafsaCssSpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:8px;">Checking your target schools…</div>
-        <div id="fafsaCssResult" style="display:none;margin-top:16px;"></div>
-    </div>
-
-    <!-- Filing Date Optimizer -->
-    <div class="card" id="fafsaDeadlinesCard">
-        <h2>Filing Date Optimizer</h2>
-        <p class="debt-step-sub">Tracks the federal FAFSA window plus each target school's specific aid deadlines.</p>
-        <button type="button" class="btn-primary" onclick="generateFilingDeadlines()">Get My Filing Deadlines</button>
-        <div id="fafsaDeadlinesSpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:8px;">Searching for deadlines…</div>
-        <div id="fafsaDeadlinesResult" style="display:none;margin-top:16px;"></div>
-    </div>
-
-    </div><!-- end fafsaPostExtractOverlay -->
     </div><!-- end #fafsaPostExtractSection -->
 
 </div><!-- end .container fafsa -->
@@ -3371,7 +3352,7 @@
                 renderFafsaExtractedPreview(data.extractedData);
                 $('#fafsaSummarySection').show();
                 $('#fafsaPostExtractSection').css({opacity:'1','pointer-events':'auto','user-select':'auto'});
-                $('#fafsaPostExtractOverlay').hide();
+                $('#fafsaPostExtractHint').hide();
             }
             if (data.readinessSummary) {
                 renderFafsaSummary(data.readinessSummary);
@@ -3454,7 +3435,7 @@
                 });
                 $('#fafsaSummarySection').show();
                 $('#fafsaPostExtractSection').css({opacity:'1','pointer-events':'auto','user-select':'auto'});
-                $('#fafsaPostExtractOverlay').hide();
+                $('#fafsaPostExtractHint').hide();
             }
         }).catch(() => {
             $('#fafsaUploadSpinner').hide();
@@ -3826,74 +3807,6 @@
                 $('#fafsaPjSpinner').hide();
                 alert('Could not draft the appeal letter. Please try again.');
             }
-        });
-    }
-
-    // ── CSS VS FAFSA DIFFERENTIAL EXPLAINER ──────────────────────────────────
-    function generateCssExplainer() {
-        if (applyFafsaPaywall()) return;
-        $('#fafsaCssSpinner').show();
-        $.post('/api/fafsa/css-explainer', function(data) {
-            $('#fafsaCssSpinner').hide();
-            if (data.paywalled) { applyFafsaPaywall(); return; }
-            noteFafsaUsage();
-            let html = '';
-            (data.keyDifferences || []).forEach(d => {
-                html += `<div class="credit-option-card">
-                    <div class="co-name">${d.topic || ''}</div>
-                    <div class="co-detail"><strong>FAFSA:</strong> ${d.fafsaTreatment || ''}</div>
-                    <div class="co-detail"><strong>CSS Profile:</strong> ${d.cssTreatment || ''}</div>
-                    <div class="co-perk">${d.relevanceToStudent || ''}</div>
-                </div>`;
-            });
-            html = `<div class="credit-options-grid">${html}</div>`;
-            if (data.overallNote) html += `<p style="font-size:13px;line-height:1.6;margin-top:14px;">${data.overallNote}</p>`;
-            if (data.schools && data.schools.length) {
-                html += `<p class="debt-section-title" style="margin-top:16px;">Your Schools</p>`;
-                data.schools.forEach(s => {
-                    const r = s.cssSearchResult;
-                    html += `<div class="credit-option-card refi-card">
-                        <div class="co-name">${s.name}${s.state ? ' (' + s.state + ')' : ''}</div>
-                        ${r ? `<div class="co-detail">${r.snippet || ''}</div><a href="${r.url}" target="_blank" rel="noopener" class="co-apply">View source →</a>` : '<div class="co-detail">No live result found — check the school\'s financial aid page directly.</div>'}
-                    </div>`;
-                });
-            }
-            $('#fafsaCssResult').html(html).show();
-        }).fail(function() {
-            $('#fafsaCssSpinner').hide();
-            alert('Could not generate the CSS explainer. Please try again.');
-        });
-    }
-
-    // ── FILING DATE OPTIMIZER ────────────────────────────────────────────────
-    function generateFilingDeadlines() {
-        if (applyFafsaPaywall()) return;
-        $('#fafsaDeadlinesSpinner').show();
-        $.post('/api/fafsa/filing-deadlines', function(data) {
-            $('#fafsaDeadlinesSpinner').hide();
-            if (data.paywalled) { applyFafsaPaywall(); return; }
-            noteFafsaUsage();
-            let html = '';
-            if (data.federalDeadline) {
-                html += `<div class="credit-warning">
-                    <strong>${data.federalDeadline.name}</strong><br>${data.federalDeadline.timing}<br>
-                    <span style="font-size:12px;color:var(--muted);">${data.federalDeadline.note}</span>
-                </div>`;
-            }
-            (data.schoolDeadlines || []).forEach(sd => {
-                html += `<p class="debt-section-title" style="margin-top:14px;">${sd.school}</p>`;
-                (sd.results || []).forEach(r => {
-                    html += `<div class="credit-option-card">
-                        <div class="co-name">${r.name || ''}</div>
-                        <div class="co-detail">${r.snippet || ''}</div>
-                        <a href="${r.url}" target="_blank" rel="noopener" class="co-apply">View source →</a>
-                    </div>`;
-                });
-            });
-            $('#fafsaDeadlinesResult').html(html).show();
-        }).fail(function() {
-            $('#fafsaDeadlinesSpinner').hide();
-            alert('Could not fetch filing deadlines. Please try again.');
         });
     }
 

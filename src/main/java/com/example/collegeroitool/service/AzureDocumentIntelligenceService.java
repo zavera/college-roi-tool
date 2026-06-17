@@ -41,58 +41,61 @@ public class AzureDocumentIntelligenceService {
     }
 
     /**
-     * Extracts key-value pairs from a tax document via Azure Document Intelligence's
-     * generic prebuilt-document model. Fields that look like SSNs (by label or value
-     * pattern) are stripped before returning, as a baseline PII safeguard.
+     * Extracts KV pairs by sending raw bytes (used at upload time when bytes are already in memory).
+     * SSN fields are stripped before returning.
      */
     public Map<String, String> extractKeyValuePairs(MultipartFile file) throws Exception {
         if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
             return devStubKeyValuePairs(file.getOriginalFilename());
         }
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Ocp-Apim-Subscription-Key", apiKey);
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        String operationLocation = submitAnalyze(new HttpEntity<>(file.getBytes(), headers));
+        return parseKeyValuePairs(pollUntilDone(operationLocation, file.getOriginalFilename()));
+    }
 
+    /**
+     * Extracts KV pairs from a pre-signed SAS URL (used for re-extraction of stored documents).
+     * SSN fields are stripped before returning.
+     */
+    public Map<String, String> extractKeyValuePairsFromUrl(String documentUrl) throws Exception {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Ocp-Apim-Subscription-Key", apiKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        Map<String, String> body = Map.of("urlSource", documentUrl);
+        String operationLocation = submitAnalyze(new HttpEntity<>(body, headers));
+        return parseKeyValuePairs(pollUntilDone(operationLocation, documentUrl));
+    }
+
+    private String submitAnalyze(HttpEntity<?> request) {
         String analyzeUrl = endpoint.replaceAll("/$", "")
             + "/documentintelligence/documentModels/prebuilt-document:analyze?api-version=" + API_VERSION;
+        ResponseEntity<Void> response = restTemplate.exchange(analyzeUrl, HttpMethod.POST, request, Void.class);
+        String location = response.getHeaders().getFirst("Operation-Location");
+        if (location == null) throw new IllegalStateException(
+            "Azure Document Intelligence did not return an Operation-Location header.");
+        return location;
+    }
 
-        HttpHeaders postHeaders = new HttpHeaders();
-        postHeaders.set("Ocp-Apim-Subscription-Key", apiKey);
-        postHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-
-        ResponseEntity<Void> postResponse = restTemplate.exchange(
-            analyzeUrl, HttpMethod.POST, new HttpEntity<>(file.getBytes(), postHeaders), Void.class);
-
-        String operationLocation = postResponse.getHeaders().getFirst("Operation-Location");
-        if (operationLocation == null) {
-            throw new IllegalStateException("Azure Document Intelligence did not return an Operation-Location header.");
-        }
-
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> pollUntilDone(String operationLocation, String docId) throws Exception {
         HttpHeaders pollHeaders = new HttpHeaders();
         pollHeaders.set("Ocp-Apim-Subscription-Key", apiKey);
         HttpEntity<Void> pollEntity = new HttpEntity<>(pollHeaders);
 
         long deadline = System.currentTimeMillis() + 30_000;
-        Map<String, Object> result = null;
         while (System.currentTimeMillis() < deadline) {
-            @SuppressWarnings("unchecked")
             ResponseEntity<Map> pollResponse = restTemplate.exchange(
                 operationLocation, HttpMethod.GET, pollEntity, Map.class);
             Map<String, Object> body = pollResponse.getBody();
             String status = body != null ? (String) body.get("status") : null;
-            if ("succeeded".equals(status)) {
-                result = body;
-                break;
-            }
-            if ("failed".equals(status)) {
-                throw new IllegalStateException("Azure Document Intelligence analysis failed for "
-                    + file.getOriginalFilename());
-            }
+            if ("succeeded".equals(status)) return body;
+            if ("failed".equals(status)) throw new IllegalStateException(
+                "Azure Document Intelligence analysis failed for " + docId);
             Thread.sleep(1000);
         }
-        if (result == null) {
-            throw new IllegalStateException("Azure Document Intelligence analysis timed out for "
-                + file.getOriginalFilename());
-        }
-
-        return parseKeyValuePairs(result);
+        throw new IllegalStateException("Azure Document Intelligence analysis timed out for " + docId);
     }
 
     @SuppressWarnings("unchecked")

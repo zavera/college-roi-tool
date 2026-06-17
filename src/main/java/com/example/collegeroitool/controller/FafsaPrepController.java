@@ -7,6 +7,7 @@ import com.example.collegeroitool.service.AzureDocumentIntelligenceService;
 import com.example.collegeroitool.service.DependencyStatusService;
 import com.example.collegeroitool.service.GroqService;
 import com.example.collegeroitool.service.SaiCalculatorService;
+import com.example.collegeroitool.service.StudentDocumentService;
 import com.example.collegeroitool.service.TavilySearchClient;
 import com.example.collegeroitool.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,6 +39,7 @@ public class FafsaPrepController {
     private final TavilySearchClient tavilySearchClient;
     private final DependencyStatusService dependencyStatusService;
     private final SaiCalculatorService saiCalculatorService;
+    private final StudentDocumentService studentDocumentService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${premium.dev.bypass:false}")
@@ -47,7 +49,8 @@ public class FafsaPrepController {
                                 AzureDocumentIntelligenceService azureDocumentIntelligenceService,
                                 GroqService groqService, TavilySearchClient tavilySearchClient,
                                 DependencyStatusService dependencyStatusService,
-                                SaiCalculatorService saiCalculatorService) {
+                                SaiCalculatorService saiCalculatorService,
+                                StudentDocumentService studentDocumentService) {
         this.fafsaProfileRepository = fafsaProfileRepository;
         this.userService = userService;
         this.azureDocumentIntelligenceService = azureDocumentIntelligenceService;
@@ -55,6 +58,53 @@ public class FafsaPrepController {
         this.tavilySearchClient = tavilySearchClient;
         this.dependencyStatusService = dependencyStatusService;
         this.saiCalculatorService = saiCalculatorService;
+        this.studentDocumentService = studentDocumentService;
+    }
+
+    // ── STUDENT LOOKUP + DOCUMENT UPLOAD ────────────────────────────────────
+
+    /**
+     * Finds or creates a student by name+DOB, returns the student record with all
+     * active documents and their KV extracts. Documents with an empty KV extract
+     * will have re-extraction attempted automatically.
+     */
+    @PostMapping("/student/find-or-create")
+    public ResponseEntity<?> findOrCreateStudent(@RequestBody Map<String, String> body, Principal principal) {
+        AppUser user = resolveCurrentUser(principal).orElse(null);
+        if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        try {
+            String firstName = body.get("firstName");
+            String middleName = body.getOrDefault("middleName", null);
+            String lastName = body.get("lastName");
+            String dob = body.get("dateOfBirth");
+            if (firstName == null || lastName == null || dob == null)
+                return ResponseEntity.badRequest().body(Map.of("error", "firstName, lastName, and dateOfBirth are required"));
+            Map<String, Object> result = studentDocumentService.findOrCreateStudent(
+                user.getId(), firstName, middleName, lastName, java.time.LocalDate.parse(dob));
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Uploads a document for an existing student, stores the blob, extracts KV, and
+     * persists a document_kv_extracts record. Returns document metadata + extracted KV.
+     */
+    @PostMapping("/student/{studentId}/upload")
+    public ResponseEntity<?> uploadStudentDocument(@PathVariable Long studentId,
+                                                    @RequestParam("file") org.springframework.web.multipart.MultipartFile file,
+                                                    Principal principal) {
+        AppUser user = resolveCurrentUser(principal).orElse(null);
+        if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        if (!isUsageAllowed(user)) return ResponseEntity.ok(Map.of("paywalled", true));
+        try {
+            Map<String, Object> result = studentDocumentService.uploadDocument(studentId, file);
+            userService.incrementFafsaUsageCount(user.getEmail());
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @GetMapping("/profile")

@@ -61,6 +61,12 @@
             <artifactId>stripe-java</artifactId>
             <version>25.3.0</version>
         </dependency>
+        <!-- Azure Blob Storage: stores uploaded student documents -->
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-storage-blob</artifactId>
+            <version>12.25.1</version>
+        </dependency>
         <!-- Test dependencies (required for test compilation even when tests are skipped) -->
         <!-- Flyway: manages DB schema migrations so ddl-auto=update is not relied on -->
         <dependency>
