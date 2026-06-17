@@ -67,6 +67,12 @@
             <artifactId>azure-storage-blob</artifactId>
             <version>12.25.1</version>
         </dependency>
+        <!-- Callisto Extraction Core: azure-ai-formrecognizer SDK + PDF preprocessing pipeline -->
+        <dependency>
+            <groupId>io.callistotech</groupId>
+            <artifactId>callisto-extraction-core</artifactId>
+            <version>1.0.0</version>
+        </dependency>
         <!-- Test dependencies (required for test compilation even when tests are skipped) -->
         <!-- Flyway: manages DB schema migrations so ddl-auto=update is not relied on -->
         <dependency>
