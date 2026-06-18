@@ -7,6 +7,8 @@ import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.sas.BlobSasPermission;
 import com.azure.storage.blob.sas.BlobServiceSasSignatureValues;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,7 @@ import java.time.OffsetDateTime;
 @Service
 public class AzureBlobStorageService {
 
+    private static final Logger log = LoggerFactory.getLogger(AzureBlobStorageService.class);
     private static final String NOT_SET = "NOT_SET";
 
     @Value("${azure.blob.connection-string:" + NOT_SET + "}")
@@ -29,7 +32,11 @@ public class AzureBlobStorageService {
 
     @PostConstruct
     public void init() {
-        if (!NOT_SET.equals(connectionString)) {
+        if (NOT_SET.equals(connectionString)) {
+            log.warn("Azure Blob Storage not configured — document uploads will be disabled");
+            return;
+        }
+        try {
             BlobServiceClient serviceClient = new BlobServiceClientBuilder()
                 .connectionString(connectionString)
                 .buildClient();
@@ -38,6 +45,9 @@ public class AzureBlobStorageService {
                 containerClient.create();
             }
             enabled = true;
+            log.info("Azure Blob Storage ready — container: {}", containerName);
+        } catch (Exception e) {
+            log.error("Azure Blob Storage init failed — document uploads disabled: {}", e.getMessage());
         }
     }
 
