@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Astra — AI-Assisted Personalized Financial Planning</title>
-  <meta name="description" content="Astra is an AI-integrated financial planning assistant: extract your tax documents for FAFSA, get an AI readiness summary and aid projection, find scholarships via live search, optimize student loan repayment, and chat with AI about your own saved profile.">
-  <meta name="keywords" content="AI integrated financial planning, FAFSA help, FAFSA prep, FAFSA document extraction, financial aid decoder, college cost calculator, student loan repayment, IDR plans, PSLF eligibility, income-driven repayment, student debt relief, award letter explained, college financial aid, AI college tool, scholarship finder, financial aid chatbot, AI financial aid assistant, financial aid roadmap">
+  <meta name="description" content="Astra uses Groq AI and live Tavily search to find scholarships, decode financial aid award letters, optimize student loan repayment, and answer your financial aid questions — all in one tool.">
+  <meta name="keywords" content="AI financial planning, scholarship finder, award letter decoder, student loan repayment optimizer, IDR plans, PSLF eligibility, income-driven repayment, student debt relief, college cost calculator, Groq AI, Tavily live search, hardship letter generator">
   <meta name="author" content="Astra">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://astra-ed.org/">
@@ -19,14 +19,14 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://astra-ed.org/">
   <meta property="og:title" content="Astra — AI-Assisted Personalized Financial Planning">
-  <meta property="og:description" content="Extract tax documents for FAFSA, get an AI readiness summary and aid projection, find scholarships via live search, optimize student loan repayment, and chat with AI about your own profile. Built for students and families.">
+  <meta property="og:description" content="Live scholarship search, award letter decoder, loan repayment optimizer, and an AI chatbot — powered by Groq and Tavily live search. Try free, no credit card.">
   <meta property="og:image" content="https://astra-ed.org/android-chrome-512x512.png">
   <meta property="og:site_name" content="Astra">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Astra — AI-Assisted Personalized Financial Planning">
-  <meta name="twitter:description" content="FAFSA document extraction, AI readiness summary, scholarship finder, loan repayment optimizer, and an AI chatbot for your own profile — all in one tool.">
+  <meta name="twitter:description" content="Scholarship finder, award letter decoder, loan repayment optimizer, and an AI chatbot powered by Groq and Tavily live search.">
   <meta name="twitter:image" content="https://astra-ed.org/android-chrome-512x512.png">
 
   <!-- Structured Data -->
@@ -36,12 +36,12 @@
     "@type": "SoftwareApplication",
     "name": "Astra",
     "url": "https://astra-ed.org",
-    "description": "AI-integrated financial planning assistant that extracts tax documents for FAFSA prep, generates AI readiness summaries and aid projections, finds scholarships via live search, decodes FAFSA award letters, compares college costs, optimizes student loan repayment using all 8 federal IDR plans, checks PSLF eligibility, and answers ongoing questions through a personal AI chatbot.",
+    "description": "AI-powered financial planning assistant for students and families. Find scholarships via live Tavily search, decode award letters, compare college costs, optimize federal loan repayment, and chat with an AI assistant — all powered by the Groq llama-3.3-70b model.",
     "applicationCategory": "EducationApplication",
     "operatingSystem": "Web",
     "offers": {
       "@type": "Offer",
-      "price": "29.99",
+      "price": "99.99",
       "priceCurrency": "USD",
       "billingIncrement": "P1M"
     },
@@ -57,21 +57,18 @@
       }
     },
     "featureList": [
-      "FAFSA tax document key-value extraction (AI document intelligence)",
-      "AI-generated FAFSA readiness summary and aid eligibility projection",
-      "Financial aid appeal opportunity identification",
-      "Live scholarship search matched to student profile",
+      "Live scholarship search powered by Tavily matched to student profile",
       "Personalized financial aid roadmap generator with deadlines",
-      "AI chatbot for ongoing questions about your own saved profile",
-      "FAFSA financial aid award letter decoder",
-      "College cost of attendance calculator",
-      "Financial gap analysis",
+      "FAFSA award letter decoder",
+      "College cost of attendance calculator and financial gap analysis",
       "Side-by-side college comparison",
-      "AI-powered financial summary",
+      "AI-generated financial summary powered by Groq llama-3.3-70b",
       "Federal student loan repayment plan optimizer (SAVE, PAYE, IBR, ICR, Standard, Graduated, Extended)",
       "PSLF employer eligibility checker",
-      "Hardship letter generator for loan servicers",
-      "Live-searched 0% balance transfer and refinancing offers by credit score"
+      "Hardship letter generator grounded in live lender policy search",
+      "Private lender forbearance research via live Tavily search",
+      "Live-searched 0% balance transfer and refinancing offers by credit score",
+      "AI chatbot for financial aid questions powered by Groq"
     ]
   }
   </script>
@@ -180,8 +177,31 @@
     .hero-sub {
       font-size: clamp(15px, 2vw, 18px);
       color: rgba(255,255,255,0.72);
-      max-width: 560px; margin: 0 auto 36px; line-height: 1.65;
+      max-width: 580px; margin: 0 auto 28px; line-height: 1.65;
     }
+
+    /* Tech badges in hero */
+    .tech-badges {
+      display: flex; gap: 10px; justify-content: center;
+      flex-wrap: wrap; margin-bottom: 32px;
+    }
+    .tech-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px; font-weight: 700;
+      color: rgba(255,255,255,0.85);
+      letter-spacing: 0.2px;
+    }
+    .tech-badge .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .tech-badge.groq .dot  { background: #f97316; }
+    .tech-badge.tavily .dot { background: #38bdf8; }
+
     .hero-cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
     .btn-hero {
       display: inline-flex; align-items: center; gap: 8px;
@@ -201,7 +221,7 @@
     }
     .btn-ghost:hover { border-color: rgba(255,255,255,0.6); color: #fff; }
     .hero-trust {
-      margin-top: 32px; font-size: 12px;
+      margin-top: 20px; font-size: 12px;
       color: rgba(255,255,255,0.4); letter-spacing: 0.3px;
     }
 
@@ -240,10 +260,10 @@
       top: 0; left: 0; right: 0;
       height: 3px;
     }
-    .module-card.fafsa::before  { background: var(--navy-lt); }
-    .module-card.award::before  { background: var(--primary); }
-    .module-card.debt::before   { background: var(--accent); }
-    .module-card.chat::before   { background: var(--primary-dk); }
+    .module-card.award::before      { background: var(--primary); }
+    .module-card.debt::before        { background: var(--accent); }
+    .module-card.chat::before        { background: var(--primary-dk); }
+    .module-card.scholarship::before { background: #7c3aed; }
 
     .module-badge {
       display: inline-block;
@@ -252,13 +272,10 @@
       padding: 3px 10px; border-radius: 20px;
       margin-bottom: 16px;
     }
-    .fafsa .module-badge { background: #dde1ea; color: var(--navy); }
-    .award .module-badge { background: var(--primary-lt); color: var(--primary-dk); }
-    .debt  .module-badge { background: #d1fae5; color: #065f46; }
-    .chat  .module-badge { background: #f3e8d9; color: var(--primary-dk); }
-    .scholarship .module-badge { background: #ede9fe; color: #5b21b6; }
-    .module-card.scholarship::before { background: #7c3aed; }
-    .scholarship .module-features li::before { content: '✓'; color: #7c3aed; }
+    .award .module-badge       { background: var(--primary-lt); color: var(--primary-dk); }
+    .debt  .module-badge        { background: #d1fae5; color: #065f46; }
+    .chat  .module-badge        { background: #f3e8d9; color: var(--primary-dk); }
+    .scholarship .module-badge  { background: #ede9fe; color: #5b21b6; }
 
     .module-card h3 {
       font-size: 19px; font-weight: 800;
@@ -279,12 +296,74 @@
     .module-features li::before {
       font-weight: 700; flex-shrink: 0; margin-top: 1px;
     }
-    .award .module-features li::before { content: '✓'; color: var(--primary-dk); }
-    .debt  .module-features li::before { content: '✓'; color: var(--accent); }
+    .award .module-features li::before       { content: '✓'; color: var(--primary-dk); }
+    .debt  .module-features li::before        { content: '✓'; color: var(--accent); }
+    .chat  .module-features li::before        { content: '✓'; color: var(--primary-dk); }
+    .scholarship .module-features li::before  { content: '✓'; color: #7c3aed; }
+
+    /* Subscription-only badge */
+    .sub-only-tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: #fff8ed; border: 1px solid var(--primary);
+      color: var(--primary-dk); font-size: 10px; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 20px;
+      margin-left: 8px; vertical-align: middle;
+    }
+
+    /* Tech strip */
+    .tech-strip {
+      background: var(--navy);
+      padding: 44px 32px;
+    }
+    .tech-strip-inner {
+      max-width: 900px; margin: 0 auto; text-align: center;
+    }
+    .tech-strip h2 {
+      font-size: clamp(18px, 3vw, 24px);
+      font-weight: 800; color: #fff;
+      margin-bottom: 10px;
+    }
+    .tech-strip p {
+      font-size: 14px; color: rgba(255,255,255,0.55);
+      max-width: 560px; margin: 0 auto 32px; line-height: 1.65;
+    }
+    .tech-cards {
+      display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+    }
+    .tech-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 22px 26px;
+      text-align: left;
+      max-width: 260px; flex: 1; min-width: 200px;
+    }
+    .tech-card-icon {
+      font-size: 22px; margin-bottom: 10px;
+    }
+    .tech-card h4 {
+      font-size: 15px; font-weight: 800;
+      color: #fff; margin-bottom: 6px;
+    }
+    .tech-card p {
+      font-size: 12px; color: rgba(255,255,255,0.5);
+      line-height: 1.6; margin: 0;
+    }
+    .tech-card .pill {
+      display: inline-block;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 2px 8px;
+      font-size: 10px; font-weight: 700;
+      color: rgba(255,255,255,0.7);
+      letter-spacing: 0.5px; margin-top: 10px;
+    }
+    .tech-card.groq-card  .pill { background: rgba(249,115,22,0.2); color: #fb923c; }
+    .tech-card.tavily-card .pill { background: rgba(56,189,248,0.2); color: #38bdf8; }
 
     /* Pricing */
     .pricing { padding: 72px 32px; background: #fff; text-align: center; }
-    .pricing-inner { max-width: 440px; margin: 0 auto; }
+    .pricing-inner { max-width: 460px; margin: 0 auto; }
     .pricing h2 {
       font-size: clamp(20px, 3vw, 26px);
       font-weight: 800; color: var(--navy);
@@ -323,6 +402,7 @@
     }
     .pricing-feature:last-of-type { border-bottom: none; }
     .pricing-check { color: var(--accent); font-weight: 700; font-size: 15px; flex-shrink: 0; }
+    .pricing-lock { color: var(--primary-dk); font-weight: 700; font-size: 15px; flex-shrink: 0; }
     .btn-pricing {
       display: block; width: 100%;
       margin-top: 20px; padding: 14px;
@@ -334,12 +414,16 @@
     }
     .btn-pricing:hover { filter: brightness(1.15); }
     .pricing-note { font-size: 12px; color: var(--muted); margin-top: 12px; }
-    .free-badge {
-      display: inline-block;
-      background: #e8f5e9; color: var(--accent);
-      font-size: 11px; font-weight: 700;
-      padding: 3px 12px; border-radius: 20px; margin-bottom: 20px;
+    .free-row {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      text-align: left;
+      font-size: 13px; color: #065f46;
     }
+    .free-row strong { display: block; font-size: 14px; margin-bottom: 3px; }
 
     /* Footer */
     footer {
@@ -366,6 +450,7 @@
       .nav-link { display: none; }
       .hero { padding: 64px 20px 56px; }
       .modules { padding: 52px 20px; }
+      .tech-strip { padding: 40px 20px; }
       .pricing { padding: 52px 20px; }
     }
   </style>
@@ -386,10 +471,20 @@
 
 <section class="hero" id="main-content" aria-label="Hero">
   <p class="hero-eyebrow">AI-Assisted Personalized Financial Planning</p>
-  <h1>From FAFSA prep to <em>student loan relief</em> — Astra does it all.</h1>
+  <h1>Scholarships. Aid. Loans. <em>Answered in real time.</em></h1>
   <p class="hero-sub">
-    Extract your tax documents, get an AI readiness summary and aid projection, find scholarships through live search, decode your award letter, optimize federal loan repayment, and ask Astra anything about your own profile — anytime.
+    Find scholarships, decode your award letter, optimize federal loan repayment, and get private lender hardship help — grounded in live search results, not stale data.
   </p>
+  <div class="tech-badges">
+    <span class="tech-badge groq">
+      <span class="dot"></span>
+      Groq · llama-3.3-70b
+    </span>
+    <span class="tech-badge tavily">
+      <span class="dot"></span>
+      Tavily Live Search
+    </span>
+  </div>
   <div class="hero-cta-row">
     <a href="/register.html" class="btn-hero">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
@@ -397,71 +492,24 @@
     </a>
     <a href="/login.html" class="btn-ghost">Sign in</a>
   </div>
-  <p class="hero-trust">Free for your first 3 actions per tool &middot; No credit card required &middot; Cancel anytime</p>
+  <p class="hero-trust">1 free search per tool &middot; No credit card required &middot; Cancel anytime</p>
 </section>
 
 <section class="modules" id="features" aria-labelledby="modules-title">
   <div class="modules-inner">
     <p class="section-label">What&rsquo;s inside</p>
-    <h2 class="section-title" id="modules-title">Five tools. Every stage of your financial aid journey.</h2>
+    <h2 class="section-title" id="modules-title">Four tools. Every stage of your financial aid journey.</h2>
 
     <div class="module-grid">
-
-      <div class="module-card fafsa">
-        <span class="module-badge">FAFSA Prep</span>
-        <h3>AI Document Extraction &amp; Aid Readiness</h3>
-        <p>
-          Upload your tax documents and Astra extracts the same data FAFSA would import — then builds your readiness summary, aid projection, and roadmap.
-        </p>
-        <ul class="module-features">
-          <li>Tax document upload with AI key-value extraction</li>
-          <li>AI readiness summary &amp; aid eligibility projection</li>
-          <li>Appeal opportunities to help maximize your aid</li>
-          <li>Live scholarship search matched to your profile</li>
-          <li>Deadlines, timeline &amp; a personalized action roadmap</li>
-        </ul>
-      </div>
-
-      <div class="module-card award">
-        <span class="module-badge">Award Assist</span>
-        <h3>FAFSA &amp; Financial Aid Decoder</h3>
-        <p>
-          Understand your award letter, calculate your real cost gap, and compare colleges side by side — before you commit.
-        </p>
-        <ul class="module-features">
-          <li>College cost of attendance lookup</li>
-          <li>Award letter decoder — grants vs. loans, clearly</li>
-          <li>Financial gap analysis &amp; net price</li>
-          <li>Side-by-side college comparison</li>
-          <li>Earnings by major (200+ programs)</li>
-          <li>AI-generated scholarship suggestions</li>
-        </ul>
-      </div>
-
-      <div class="module-card debt">
-        <span class="module-badge">Post-Grad Debt Relief</span>
-        <h3>Student Loan Repayment Optimizer</h3>
-        <p>
-          Already graduated? Enter your loans and income and Astra calculates your best federal repayment path — and generates a hardship letter if you need one.
-        </p>
-        <ul class="module-features">
-          <li>All 8 federal repayment plans compared (SAVE, PAYE, IBR, ICR, Standard, Graduated, Extended)</li>
-          <li>PSLF employer eligibility checker (IRS 501c3 verified)</li>
-          <li>AI-recommended plan with rationale</li>
-          <li>Hardship letter generator for your loan servicer</li>
-          <li>Live-searched 0% balance transfer offers by credit score</li>
-          <li>Real-time private loan refinancing rate comparison</li>
-        </ul>
-      </div>
 
       <div class="module-card scholarship">
         <span class="module-badge">Scholarships</span>
         <h3>Scholarship Finder &amp; Action Timeline</h3>
         <p>
-          Find scholarships matched to your major, state, background, and financial profile — then build a prioritized action timeline so you never miss a deadline.
+          Find scholarships matched to your major, state, background, and financial profile using live Tavily search — then build a prioritized deadline timeline.
         </p>
         <ul class="module-features">
-          <li>Live AI-powered scholarship search by major, state &amp; demographics</li>
+          <li>Live AI-powered scholarship search via Tavily by major, state &amp; demographics</li>
           <li>School-specific merit aid lookup for your target colleges</li>
           <li>Select scholarships and generate a personalized deadline timeline</li>
           <li>First-generation, need-based, and diversity award matching</li>
@@ -469,16 +517,49 @@
         </ul>
       </div>
 
-      <div class="module-card chat">
-        <span class="module-badge">Ask Astra</span>
-        <h3>Your Personal AI Financial Aid Assistant</h3>
+      <div class="module-card award">
+        <span class="module-badge">Award Assist</span>
+        <h3>FAFSA &amp; Financial Aid Decoder</h3>
         <p>
-          Chat with Astra about your own saved profile — grounded entirely in your data, never anyone else&rsquo;s.
+          Understand your award letter, calculate your real cost gap, and compare colleges side by side — with an AI summary powered by Groq.
         </p>
         <ul class="module-features">
-          <li>Ask questions about your FAFSA Prep profile anytime</li>
-          <li>Answers grounded only in your own saved data</li>
-          <li>Remembers your readiness summary &amp; roadmap</li>
+          <li>College cost of attendance lookup</li>
+          <li>Award letter decoder — grants vs. loans, clearly</li>
+          <li>Financial gap analysis &amp; net price</li>
+          <li>Side-by-side college comparison</li>
+          <li>Earnings by major (200+ programs)</li>
+          <li>AI-generated financial summary via Groq llama-3.3-70b</li>
+        </ul>
+      </div>
+
+      <div class="module-card debt">
+        <span class="module-badge">Post-Grad Debt Relief</span>
+        <h3>Student Loan Repayment Optimizer</h3>
+        <p>
+          Enter your loans and income and Astra calculates your best repayment path. Private lender? Astra searches their live forbearance page to generate a tailored hardship letter.
+        </p>
+        <ul class="module-features">
+          <li>All 8 federal repayment plans compared (SAVE, PAYE, IBR, ICR, Standard, Graduated, Extended)</li>
+          <li>PSLF employer eligibility checker (IRS 501c3 verified)</li>
+          <li>AI-recommended plan with rationale via Groq</li>
+          <li>Hardship letter generator grounded in live studentaid.gov search</li>
+          <li>Private lender forbearance research via Tavily — letter tailored to that lender's actual policy</li>
+          <li>Live-searched 0% balance transfer &amp; refinancing offers by credit score</li>
+        </ul>
+      </div>
+
+      <div class="module-card chat">
+        <span class="module-badge">Ask Astra</span>
+        <span class="sub-only-tag">&#128274; Subscription</span>
+        <h3>Your Personal AI Financial Aid Assistant</h3>
+        <p>
+          Chat with Astra about financial aid, scholarships, and loan repayment — powered by Groq's fastest inference. Subscription required; never included in the free tier.
+        </p>
+        <ul class="module-features">
+          <li>Answers grounded in live search results, not training data alone</li>
+          <li>Ask anything about FAFSA rules, scholarships, or repayment options</li>
+          <li>Groq llama-3.3-70b — ultra-fast responses</li>
           <li>Available across every stage of your journey</li>
         </ul>
       </div>
@@ -487,6 +568,80 @@
   </div>
 </section>
 
+<!-- Tech Stack Strip -->
+<section class="tech-strip" aria-labelledby="tech-title">
+  <div class="tech-strip-inner">
+    <h2 id="tech-title">Powered by the best AI infrastructure available</h2>
+    <p>Every AI response in Astra is grounded in live, authoritative search results — not hardcoded rules that go stale. Financial aid rules change annually. Astra keeps up.</p>
+    <div class="tech-cards">
+      <div class="tech-card groq-card">
+        <div class="tech-card-icon">⚡</div>
+        <h4>Groq AI Inference</h4>
+        <p>All AI summaries, letters, and recommendations are generated by Groq running llama-3.3-70b — the fastest large language model inference available.</p>
+        <span class="pill">llama-3.3-70b</span>
+      </div>
+      <div class="tech-card tavily-card">
+        <div class="tech-card-icon">🔍</div>
+        <h4>Tavily Live Search</h4>
+        <p>Before every AI response about financial aid rules, Astra fetches live content from studentaid.gov, your lender's forbearance page, and other authoritative sources.</p>
+        <span class="pill">Real-time · Authoritative</span>
+      </div>
+      <div class="tech-card">
+        <div class="tech-card-icon">🔒</div>
+        <h4>FERPA-Compliant</h4>
+        <p>No student data in logs or URLs. All sensitive data travels encrypted. AI providers are contractually prohibited from using your data for model training.</p>
+        <span class="pill">Privacy First</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section class="pricing" id="pricing" aria-labelledby="pricing-title">
+  <div class="pricing-inner">
+    <h2 id="pricing-title">Simple, transparent pricing</h2>
+    <p class="pricing-sub">Start free. Unlock everything for one flat monthly rate.</p>
+    <div class="pricing-card">
+      <div class="pricing-header">
+        <p class="pricing-label">Full Access</p>
+        <div class="pricing-amount"><sup>$</sup>99.99</div>
+        <p class="pricing-period">per month &middot; cancel anytime</p>
+      </div>
+      <div class="pricing-body">
+        <div class="free-row">
+          <strong>Free tier included</strong>
+          1 search per tool (Scholarships, Award Assist, Post-Grad Debt Relief) — no credit card needed to start.
+        </div>
+        <div class="pricing-feature">
+          <span class="pricing-check">✓</span>
+          <span>Unlimited scholarship searches via live Tavily search</span>
+        </div>
+        <div class="pricing-feature">
+          <span class="pricing-check">✓</span>
+          <span>Unlimited Award Assist analyses &amp; AI summaries</span>
+        </div>
+        <div class="pricing-feature">
+          <span class="pricing-check">✓</span>
+          <span>Unlimited loan repayment analyses, hardship letters &amp; private lender research</span>
+        </div>
+        <div class="pricing-feature">
+          <span class="pricing-lock">⚡</span>
+          <span><strong>Ask Astra chatbot</strong> — subscription only, never free</span>
+        </div>
+        <div class="pricing-feature">
+          <span class="pricing-check">✓</span>
+          <span>Groq llama-3.3-70b AI on every response</span>
+        </div>
+        <div class="pricing-feature">
+          <span class="pricing-check">✓</span>
+          <span>Live search grounded answers — always current</span>
+        </div>
+        <a href="/register.html" class="btn-pricing">Get Started Free</a>
+        <p class="pricing-note">No credit card required to try. $99.99/mo after your free searches are used.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
 <footer role="contentinfo">
   <p class="footer-brand">Astra</p>
@@ -495,7 +650,7 @@
     <a href="/login.html">Sign In</a>
     <a href="/register.html">Register</a>
   </nav>
-  <p class="footer-copy">&copy; 2026 Astra &mdash; AI-integrated financial planning for FAFSA, college costs, and student loan repayment.</p>
+  <p class="footer-copy">&copy; 2026 Astra &mdash; AI-powered financial planning for scholarships, college costs, and student loan repayment.</p>
 </footer>
 
 </body>
