@@ -1,0 +1,5 @@
+ALTER TABLE app_users ADD COLUMN IF NOT EXISTS first_name            VARCHAR(255);
+ALTER TABLE app_users ADD COLUMN IF NOT EXISTS last_name             VARCHAR(255);
+ALTER TABLE app_users ADD COLUMN IF NOT EXISTS active                BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE app_users ADD COLUMN IF NOT EXISTS scholarship_search_count  INT NOT NULL DEFAULT 0;
+ALTER TABLE app_users ADD COLUMN IF NOT EXISTS award_assist_search_count INT NOT NULL DEFAULT 0;
