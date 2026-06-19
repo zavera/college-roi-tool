@@ -40,6 +40,13 @@ public class LlmAdviceRequest {
     // College-wide 6-yr median earnings (from Scorecard, distinct from major-specific earnings)
     private Double collegeWideEarnings;
 
+    // Private loan amount for this aid year (stored in fafsa_aid_packages)
+    private Double privateLoan;
+
+    // Identifies which student and aid year this package belongs to (for persistence)
+    private Long studentId;
+    private Integer aidYear;
+
     // Getters and Setters
     public String getCollegeName() { return collegeName; }
     public void setCollegeName(String collegeName) { this.collegeName = collegeName; }
@@ -121,4 +128,11 @@ public class LlmAdviceRequest {
 
     public java.util.List<java.util.Map<String, Object>> getCompareColleges() { return compareColleges; }
     public void setCompareColleges(java.util.List<java.util.Map<String, Object>> compareColleges) { this.compareColleges = compareColleges; }
+
+    public Double getPrivateLoan()         { return privateLoan; }
+    public void setPrivateLoan(Double v)   { this.privateLoan = v; }
+    public Long getStudentId()             { return studentId; }
+    public void setStudentId(Long v)       { this.studentId = v; }
+    public Integer getAidYear()            { return aidYear; }
+    public void setAidYear(Integer v)      { this.aidYear = v; }
 }

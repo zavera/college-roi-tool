@@ -5,6 +5,7 @@ import com.example.collegeroitool.model.AppUser;
 import com.example.collegeroitool.service.CreditOfferSearchService;
 import com.example.collegeroitool.service.DebtManagementService;
 import com.example.collegeroitool.service.GroqService;
+import com.example.collegeroitool.service.PostGradProfileService;
 import com.example.collegeroitool.service.TavilySearchClient;
 import com.example.collegeroitool.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,21 +31,25 @@ public class DebtManagementController {
     private final CreditOfferSearchService creditOfferSearchService;
     private final UserService userService;
     private final TavilySearchClient tavilySearchClient;
+    private final PostGradProfileService postGradProfileService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final List<String> STUDENTAID_DOMAINS = List.of("studentaid.gov", "consumerfinance.gov");
+    private static final List<String> GENERAL_DOMAINS    = List.of();
 
     @Value("${premium.dev.bypass:false}")
     private boolean devBypass;
 
     public DebtManagementController(DebtManagementService debtService, GroqService groqService,
                                      CreditOfferSearchService creditOfferSearchService,
-                                     UserService userService, TavilySearchClient tavilySearchClient) {
+                                     UserService userService, TavilySearchClient tavilySearchClient,
+                                     PostGradProfileService postGradProfileService) {
         this.debtService = debtService;
         this.groqService = groqService;
         this.creditOfferSearchService = creditOfferSearchService;
         this.userService = userService;
         this.tavilySearchClient = tavilySearchClient;
+        this.postGradProfileService = postGradProfileService;
     }
 
     /** Fetches live studentaid.gov content relevant to the given query for prompt injection. */
@@ -68,6 +73,11 @@ public class DebtManagementController {
     @PostMapping("/repayment-plans")
     public ResponseEntity<?> getRepaymentPlans(@RequestBody DebtIntakeRequest req) {
         try {
+            // Persist post-grad profile when studentId is provided
+            if (req.getStudentId() != null) {
+                try { postGradProfileService.save(req.getStudentId(), req); }
+                catch (Exception ignored) {}
+            }
             List<Map<String, Object>> plans = debtService.calculateRepaymentPlans(req);
             Map<String, Object> pslfResult = null;
             if (req.getEmployerName() != null && !req.getEmployerName().isBlank()) {
@@ -126,6 +136,85 @@ public class DebtManagementController {
         AppUser user = userService.findByEmail(email).orElse(null);
         if (user == null) return false;
         return user.isSubscriptionActive() || user.getDebtSearchCount() < FREE_LIVE_SEARCHES;
+    }
+
+    /** Fetches live web content about a private lender's hardship, repayment, and loan agreement pages. */
+    private Map<String, Object> fetchPrivateLenderResearch(String lender) {
+        Map<String, Object> result = new java.util.LinkedHashMap<>();
+        try {
+            var forbearance = tavilySearchClient.searchHandbook(
+                lender + " student loan forbearance hardship relief help center 2025", 3, GENERAL_DOMAINS, 1000);
+            result.put("forbearanceResults", forbearance);
+        } catch (Exception ignored) { result.put("forbearanceResults", List.of()); }
+        try {
+            var faq = tavilySearchClient.searchHandbook(
+                lender + " student loan repayment assistance FAQ hardship options 2025", 3, GENERAL_DOMAINS, 1000);
+            result.put("faqResults", faq);
+        } catch (Exception ignored) { result.put("faqResults", List.of()); }
+        try {
+            var terms = tavilySearchClient.searchHandbook(
+                lender + " student loan promissory note loan agreement repayment terms conditions", 2, GENERAL_DOMAINS, 800);
+            result.put("loanTermsResults", terms);
+        } catch (Exception ignored) { result.put("loanTermsResults", List.of()); }
+        return result;
+    }
+
+    @PostMapping("/private-lender-info")
+    public ResponseEntity<?> getPrivateLenderInfo(@RequestBody DebtIntakeRequest req) {
+        String lender = req.getPrivateLender();
+        if (lender == null || lender.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Private lender name is required."));
+        }
+        try {
+            Map<String, Object> research = fetchPrivateLenderResearch(lender);
+            return ResponseEntity.ok(research);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body(Map.of("error", "Could not fetch private lender info: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/private-hardship-letter")
+    public ResponseEntity<?> generatePrivateHardshipLetter(@RequestBody DebtIntakeRequest req) {
+        String lender = req.getPrivateLender();
+        if (lender == null || lender.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Private lender name is required."));
+        }
+        try {
+            Map<String, Object> research = fetchPrivateLenderResearch(lender);
+            // Flatten all live research into a single prompt-injection block
+            StringBuilder liveContent = new StringBuilder();
+            for (String key : List.of("forbearanceResults", "faqResults", "loanTermsResults")) {
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> items = (List<Map<String, Object>>) research.get(key);
+                if (items != null) {
+                    for (var item : items) {
+                        liveContent.append("\n[Source: ").append(item.get("url")).append("]\n");
+                        Object content = item.get("content");
+                        if (content == null) content = item.get("snippet");
+                        liveContent.append(content).append("\n");
+                    }
+                }
+            }
+            String live = liveContent.toString().trim();
+            if (live.isEmpty()) live = "(Live search unavailable — use lender website for current forbearance policies)";
+
+            String letter = groqService.getPrivateHardshipLetter(req, live);
+            String letterText    = letter;
+            String checklistText = "";
+            int splitIdx = letter.indexOf("---CHECKLIST---");
+            if (splitIdx >= 0) {
+                letterText    = letter.substring(0, splitIdx).trim();
+                checklistText = letter.substring(splitIdx + 15).trim();
+            }
+            return ResponseEntity.ok(Map.of(
+                "letter",    letterText,
+                "checklist", checklistText
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body(Map.of("error", "Could not generate private hardship letter: " + e.getMessage()));
+        }
     }
 
     @PostMapping("/pslf-check")

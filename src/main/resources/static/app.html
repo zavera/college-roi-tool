@@ -1086,6 +1086,74 @@
             line-height: 1.7;
         }
         #hardshipChecklist strong { color: #166534; display: block; margin-bottom: 6px; }
+        /* Private lender letter output mirrors federal letter styling */
+        #privateHardshipLetterOutput {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12.5px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            margin-top: 16px;
+            color: var(--text);
+        }
+        #privateHardshipChecklist {
+            margin-top: 14px;
+            padding: 14px 16px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+        #privateHardshipChecklist strong { color: #166534; display: block; margin-bottom: 6px; }
+        /* ── Private Lender Research Sections ── */
+        .private-lender-section {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 18px;
+            margin-bottom: 14px;
+            background: #fafbfc;
+        }
+        .private-lender-section-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .private-lender-section-icon {
+            font-size: 20px;
+            line-height: 1;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .private-lender-result {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-left: 3px solid var(--primary);
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 10px;
+        }
+        .private-lender-result:last-child { margin-bottom: 0; }
+        .private-lender-result-link {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--primary-dk);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 4px;
+            word-break: break-all;
+        }
+        .private-lender-result-link:hover { text-decoration: underline; }
+        .private-lender-result-snippet {
+            font-size: 12.5px;
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+        }
         /* ── Credit Options Cards ── */
         .credit-warning {
             background: #fff8ec;
@@ -1242,7 +1310,7 @@
         <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your 3 free FAFSA Prep actions</h3>
         <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock unlimited document extraction, readiness summaries, scholarship search, and roadmap generation.</p>
         <a href="/api/stripe/create-checkout-session" class="btn-primary" style="display:inline-block;text-decoration:none;padding:13px 28px;font-size:15px;">
-            Unlock for <strong>$29.99/mo</strong>
+            Unlock for <strong>$99.99/mo</strong>
         </a>
         <div style="font-size:12px;color:var(--muted);margin-top:8px;">Includes Award Assist + Post-Grad Debt Relief + FAFSA Prep · Cancel anytime</div>
     </div>
@@ -1738,7 +1806,7 @@
             <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your 3 free searches</h3>
             <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock unlimited college searches, financial gap analysis, and AI summaries.</p>
             <div style="background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px;">
-                <div style="font-size:28px;font-weight:800;color:var(--navy);">$29.99<span style="font-size:14px;font-weight:400;color:var(--muted)"> / month</span></div>
+                <div style="font-size:28px;font-weight:800;color:var(--navy);">$99.99<span style="font-size:14px;font-weight:400;color:var(--muted)"> / month</span></div>
                 <div style="font-size:12px;color:var(--muted);margin-top:4px;">Unlimited searches · AI summaries · Financial gap analysis</div>
             </div>
             <button type="button" class="btn-unlock" onclick="handleUnlock()" style="width:100%;padding:14px;font-size:15px;">
@@ -1763,7 +1831,7 @@
         <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your 3 free analyses</h3>
         <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock unlimited student loan repayment analyses, PSLF checks, and hardship letter generation.</p>
         <a href="/api/stripe/create-checkout-session" class="btn-primary" style="display:inline-block;text-decoration:none;padding:13px 28px;font-size:15px;">
-            Unlock for <strong>$29.99/mo</strong>
+            Unlock for <strong>$99.99/mo</strong>
         </a>
         <div style="font-size:12px;color:var(--muted);margin-top:8px;">Includes Award Assist + Post-Grad Debt Relief · Cancel anytime</div>
     </div>
@@ -1783,7 +1851,14 @@
             </div>
             <div class="field-group">
                 <label for="dPrivateBalance">Private Loan Balance ($)</label>
-                <input type="number" id="dPrivateBalance" placeholder="e.g. 10000" min="0" step="100">
+                <input type="number" id="dPrivateBalance" placeholder="e.g. 10000" min="0" step="100" oninput="togglePrivateLenderField()">
+            </div>
+        </div>
+
+        <div class="debt-form-row" id="privateLenderRow" style="display:none;">
+            <div class="field-group" style="flex:1;">
+                <label for="dPrivateLender">Private Lender <span style="color:#c53030;font-weight:600;">*</span> <span style="font-weight:400;color:var(--muted)">required when private balance is entered</span></label>
+                <input type="text" id="dPrivateLender" placeholder="e.g. Sallie Mae, Navient, Discover, Earnest, SoFi, College Ave">
             </div>
         </div>
 
@@ -1965,6 +2040,54 @@
         </div>
     </div>
 
+    <!-- Private Lender Research Card (shown only when private balance + lender provided) -->
+    <div class="debt-step" id="privateLenderResearchCard" style="display:none;">
+        <p class="debt-section-title">Private Lender Research <span class="groq-tag">Live · Tavily</span></p>
+        <h2 id="privateLenderResearchTitle">Hardship &amp; Repayment Options</h2>
+        <p class="debt-step-sub">Live research pulled from your lender's own website — hardship help center, loan agreement terms, and repayment assistance FAQ.</p>
+        <div id="privateLenderResearchSpinner" style="display:none;font-size:13px;color:var(--muted);font-style:italic;padding:12px 0;">Searching lender resources…</div>
+        <div id="privateLenderResearchContent"></div>
+    </div>
+
+    <!-- Private Lender Hardship Letter Generator -->
+    <div class="debt-step" id="privateHardshipCard" style="display:none;">
+        <p class="debt-section-title">Private Lender Hardship Letter <span class="groq-tag">Groq · llama-3.3-70b</span></p>
+        <h2>Request Forbearance from Your Private Lender</h2>
+        <p class="debt-step-sub">Private lenders set their own forbearance and hardship policies — not federal regulations. Astra generates a letter tailored to your lender's specific programs based on live research above.</p>
+
+        <div class="field-group">
+            <label for="dPrivateHardshipType">Hardship Type</label>
+            <select id="dPrivateHardshipType" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
+                <option value="">Select hardship type…</option>
+                <option value="job loss">Job Loss / Unemployment</option>
+                <option value="income reduction">Significant Income Reduction</option>
+                <option value="medical">Medical Emergency or Illness</option>
+                <option value="natural disaster">Natural Disaster or Emergency</option>
+                <option value="financial hardship">General Financial Hardship</option>
+            </select>
+        </div>
+        <div class="field-group" style="margin-bottom:0;">
+            <label for="dPrivateHardshipDetails">Brief Description of Your Situation</label>
+            <textarea id="dPrivateHardshipDetails" rows="3" placeholder="e.g. Lost my position in April when my company downsized, currently pursuing new opportunities but monthly expenses exceed income." style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;resize:vertical;"></textarea>
+        </div>
+
+        <button type="button" class="btn-ai" onclick="generatePrivateHardshipLetter()" id="privateHardshipBtn" style="margin-top:16px;">
+            Generate Private Lender Hardship Letter
+        </button>
+        <div id="privateHardshipSpinner" style="display:none;font-size:13px;color:var(--muted);font-style:italic;padding:12px 0;">
+            Generating your hardship letter…
+        </div>
+
+        <div id="privateHardshipLetterWrap" style="display:none;">
+            <pre id="privateHardshipLetterOutput"></pre>
+            <button type="button" class="btn-copy" onclick="copyPrivateHardshipLetter()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy Letter
+            </button>
+            <div id="privateHardshipChecklist"></div>
+        </div>
+    </div>
+
 </div><!-- end .container postgrad -->
 </div><!-- end #tab-postgrad -->
 
@@ -1977,7 +2100,7 @@
         <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your 3 free FAFSA Prep actions</h3>
         <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock unlimited chat with Astra about your saved profile.</p>
         <a href="/api/stripe/create-checkout-session" class="btn-primary" style="display:inline-block;text-decoration:none;padding:13px 28px;font-size:15px;">
-            Unlock for <strong>$29.99/mo</strong>
+            Unlock for <strong>$99.99/mo</strong>
         </a>
     </div>
 </div>
@@ -2009,7 +2132,7 @@
     let lastCreditData   = {};
     let fafsaUsageCount  = 0;
     let premiumActive    = false;
-    const FREE_SEARCHES     = 3;
+    const FREE_SEARCHES     = 1;
     const FREE_FAFSA_USES   = 3;
     let chatHistory = [];
     let fafsaCurrentStudentId = null;
@@ -4601,7 +4724,7 @@
             return;
         }
 
-        const federalBalance = parseFloat($('#dFederalBalance').val()) || 0;
+        const federalBalance  = parseFloat($('#dFederalBalance').val()) || 0;
         if (federalBalance <= 0) {
             alert('Please enter your federal loan balance to calculate repayment plans.');
             return;
@@ -4611,6 +4734,13 @@
             alert('Please enter your annual gross income.');
             return;
         }
+        const privateBalance = parseFloat($('#dPrivateBalance').val()) || 0;
+        const privateLender  = $('#dPrivateLender').val().trim();
+        if (privateBalance > 0 && !privateLender) {
+            alert('Please enter your private lender name — it is required when a private loan balance is provided.');
+            $('#dPrivateLender').focus();
+            return;
+        }
 
         $('#debtSpinner').show();
         $('#debtAnalyzeBtn').prop('disabled', true);
@@ -4618,7 +4748,8 @@
 
         const payload = {
             federalLoanBalance: federalBalance,
-            privateLoanBalance: parseFloat($('#dPrivateBalance').val()) || 0,
+            privateLoanBalance: privateBalance,
+            privateLender:      privateLender || null,
             loanServicer:       $('#dServicer').val(),
             interestRate:       parseFloat($('#dInterestRate').val()) || null,
             gracePeriodEndDate: $('#dGracePeriod').val() || null,
@@ -4644,6 +4775,10 @@
                 document.getElementById('debtResultsCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
                 // Credit options — live search, isolated so any error here never blocks the results
                 fetchCreditOptions(payload);
+                // Private lender research — runs only when a private balance + lender were provided
+                if (privateBalance > 0 && privateLender) {
+                    fetchPrivateLenderInfo(privateLender);
+                }
                 // Increment counter; show paywall on next attempt if limit reached
                 $.post('/api/auth/debt-search/increment', function(res) {
                     debtSearchCount = res.debtSearchCount || (debtSearchCount + 1);
@@ -4753,6 +4888,131 @@
                 $('#hardshipBtn').prop('disabled', false);
                 alert('Could not generate the hardship letter. Please try again.');
             }
+        });
+    }
+
+    function togglePrivateLenderField() {
+        const bal = parseFloat($('#dPrivateBalance').val()) || 0;
+        if (bal > 0) {
+            $('#privateLenderRow').show();
+        } else {
+            $('#privateLenderRow').hide();
+            $('#dPrivateLender').val('');
+        }
+    }
+
+    function fetchPrivateLenderInfo(lender) {
+        if (!lender) return;
+        $('#privateLenderResearchTitle').text(lender + ' — Hardship & Repayment Options');
+        $('#privateLenderResearchCard').show();
+        $('#privateLenderResearchSpinner').show();
+        $('#privateLenderResearchContent').html('');
+        $('#privateHardshipCard').hide();
+
+        $.ajax({
+            url: '/api/debt/private-lender-info',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ privateLender: lender }),
+            success: function(resp) {
+                $('#privateLenderResearchSpinner').hide();
+                $('#privateLenderResearchContent').html(renderPrivateLenderResearch(resp, lender));
+                $('#privateHardshipCard').show();
+                document.getElementById('privateLenderResearchCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            },
+            error: function() {
+                $('#privateLenderResearchSpinner').hide();
+                $('#privateLenderResearchContent').html('<p style="color:var(--muted);font-size:13px;">Could not retrieve live lender information. You can still generate a hardship letter below.</p>');
+                $('#privateHardshipCard').show();
+            }
+        });
+    }
+
+    function renderPrivateLenderResearch(resp, lender) {
+        const sections = [
+            { key: 'forbearanceResults',  icon: '⚠',  title: 'Hardship &amp; Forbearance Help Center',   desc: 'Live results from ' + lender + '\'s hardship programs and forbearance pages.' },
+            { key: 'faqResults',          icon: '?',  title: 'Repayment Assistance FAQ',                  desc: 'Common questions and lender answers about payment relief options.' },
+            { key: 'loanTermsResults',    icon: '📄', title: 'Loan Agreement &amp; Promissory Note Terms', desc: 'Key repayment terms and conditions from your loan agreement.' }
+        ];
+        let html = '';
+        sections.forEach(function(sec) {
+            const results = resp[sec.key] || [];
+            html += `<div class="private-lender-section">
+                <div class="private-lender-section-header">
+                    <span class="private-lender-section-icon">${sec.icon}</span>
+                    <div>
+                        <strong>${sec.title}</strong>
+                        <p style="font-size:12px;color:var(--muted);margin:2px 0 0;">${sec.desc}</p>
+                    </div>
+                </div>`;
+            if (results.length === 0) {
+                html += `<p style="font-size:13px;color:var(--muted);padding:8px 0;">No live results found — check <a href="https://www.google.com/search?q=${encodeURIComponent(lender + ' student loan hardship forbearance')}" target="_blank" rel="noopener" style="color:var(--primary-dk);">${lender}'s website directly →</a></p>`;
+            } else {
+                results.forEach(function(r) {
+                    const name    = r.name    || r.source || '';
+                    const snippet = r.content || r.snippet || '';
+                    const url     = r.url     || '#';
+                    html += `<div class="private-lender-result">
+                        <a href="${url}" target="_blank" rel="noopener" class="private-lender-result-link">${name || url}</a>
+                        <p class="private-lender-result-snippet">${snippet}</p>
+                    </div>`;
+                });
+            }
+            html += `</div>`;
+        });
+        return html;
+    }
+
+    function generatePrivateHardshipLetter() {
+        const hardshipType = $('#dPrivateHardshipType').val();
+        if (!hardshipType) { alert('Please select a hardship type.'); return; }
+        const lender = $('#dPrivateLender').val().trim();
+        if (!lender) { alert('Please enter your private lender name in the loan intake form above.'); return; }
+
+        $('#privateHardshipSpinner').show();
+        $('#privateHardshipBtn').prop('disabled', true);
+        $('#privateHardshipLetterWrap').hide();
+
+        const payload = {
+            privateLender:      lender,
+            privateLoanBalance: parseFloat($('#dPrivateBalance').val()) || 0,
+            annualGrossIncome:  parseFloat($('#dIncome').val()) || 0,
+            householdSize:      parseInt($('#dHousehold').val()) || 1,
+            employmentStatus:   $('#dEmploymentStatus').val(),
+            hardshipType:       hardshipType,
+            hardshipDetails:    $('#dPrivateHardshipDetails').val().trim()
+        };
+
+        $.ajax({
+            url: '/api/debt/private-hardship-letter',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            success: function(resp) {
+                $('#privateHardshipLetterOutput').text(resp.letter || '');
+                if (resp.checklist) {
+                    $('#privateHardshipChecklist').html('<strong>Supporting Documents to Attach:</strong>' + resp.checklist);
+                }
+                $('#privateHardshipLetterWrap').show();
+                $('#privateHardshipSpinner').hide();
+                $('#privateHardshipBtn').prop('disabled', false);
+                document.getElementById('privateHardshipLetterWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            },
+            error: function() {
+                $('#privateHardshipSpinner').hide();
+                $('#privateHardshipBtn').prop('disabled', false);
+                alert('Could not generate the hardship letter. Please try again.');
+            }
+        });
+    }
+
+    function copyPrivateHardshipLetter() {
+        const text = document.getElementById('privateHardshipLetterOutput').innerText;
+        navigator.clipboard.writeText(text).then(function() {
+            const btn = document.querySelector('#privateHardshipLetterWrap .btn-copy');
+            const orig = btn.innerHTML;
+            btn.textContent = 'Copied!';
+            setTimeout(function() { btn.innerHTML = orig; }, 2000);
         });
     }
 

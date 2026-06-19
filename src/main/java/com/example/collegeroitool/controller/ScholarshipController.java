@@ -1,6 +1,7 @@
 package com.example.collegeroitool.controller;
 
 import com.example.collegeroitool.model.AppUser;
+import com.example.collegeroitool.service.ScholarshipProfileService;
 import com.example.collegeroitool.service.ScholarshipService;
 import com.example.collegeroitool.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,11 +21,15 @@ public class ScholarshipController {
     private boolean devBypass;
 
     private final ScholarshipService scholarshipService;
+    private final ScholarshipProfileService scholarshipProfileService;
     private final UserService userService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ScholarshipController(ScholarshipService scholarshipService, UserService userService) {
+    public ScholarshipController(ScholarshipService scholarshipService,
+                                  ScholarshipProfileService scholarshipProfileService,
+                                  UserService userService) {
         this.scholarshipService = scholarshipService;
+        this.scholarshipProfileService = scholarshipProfileService;
         this.userService = userService;
     }
 
@@ -38,6 +43,10 @@ public class ScholarshipController {
             String comments = body.getOrDefault("comments", "").toString();
             @SuppressWarnings("unchecked")
             List<String> schools = (List<String>) body.getOrDefault("targetSchools", List.of());
+            if (studentId != null) {
+                try { scholarshipProfileService.upsert(studentId, demographics, comments, schools); }
+                catch (Exception ignored) {}
+            }
             String json = scholarshipService.search(studentId, demographics, comments, schools);
             return ResponseEntity.ok(Map.of("scholarships", parseOrRaw(json)));
         } catch (Exception e) {

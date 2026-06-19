@@ -16,6 +16,14 @@ public class AppUser {
 
     private String name;
 
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "last_name")
+    private String lastName;
+
+    private boolean active = true;
+
     private String passwordHash;
 
     /** "local" or "google" */
@@ -30,12 +38,24 @@ public class AppUser {
 
     private int fafsaUsageCount = 0;
 
+    @Column(name = "scholarship_search_count")
+    private int scholarshipSearchCount = 0;
+
+    @Column(name = "award_assist_search_count")
+    private int awardAssistSearchCount = 0;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     // ── Getters / Setters ─────────────────────────────────────────────────────
 
-    public Long getId()                        { return id; }
-    public String getEmail()                   { return email; }
+    public Long getId()                              { return id; }
+    public String getFirstName()                     { return firstName; }
+    public void   setFirstName(String v)             { this.firstName = v; }
+    public String getLastName()                      { return lastName; }
+    public void   setLastName(String v)              { this.lastName = v; }
+    public boolean isActive()                        { return active; }
+    public void    setActive(boolean v)              { this.active = v; }
+    public String getEmail()                         { return email; }
     public void   setEmail(String email)       { this.email = email; }
     public String getName()                    { return name; }
     public void   setName(String name)         { this.name = name; }
@@ -49,7 +69,11 @@ public class AppUser {
     public void setSearchCount(int n)          { this.searchCount = n; }
     public int  getDebtSearchCount()           { return debtSearchCount; }
     public void setDebtSearchCount(int n)      { this.debtSearchCount = n; }
-    public int  getFafsaUsageCount()           { return fafsaUsageCount; }
-    public void setFafsaUsageCount(int n)      { this.fafsaUsageCount = n; }
-    public LocalDateTime getCreatedAt()        { return createdAt; }
+    public int  getFafsaUsageCount()             { return fafsaUsageCount; }
+    public void setFafsaUsageCount(int n)        { this.fafsaUsageCount = n; }
+    public int  getScholarshipSearchCount()      { return scholarshipSearchCount; }
+    public void setScholarshipSearchCount(int n) { this.scholarshipSearchCount = n; }
+    public int  getAwardAssistSearchCount()      { return awardAssistSearchCount; }
+    public void setAwardAssistSearchCount(int n) { this.awardAssistSearchCount = n; }
+    public LocalDateTime getCreatedAt()          { return createdAt; }
 }

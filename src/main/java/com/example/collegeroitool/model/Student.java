@@ -30,6 +30,12 @@ public class Student {
     @Column(name = "date_of_birth", nullable = false)
     private LocalDate dateOfBirth;
 
+    @Column(name = "institution_id")
+    private Long institutionId;
+
+    @Column(name = "active", nullable = false)
+    private boolean active = true;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -44,5 +50,10 @@ public class Student {
     public void setLastName(String lastName) { this.lastName = lastName; }
     public LocalDate getDateOfBirth() { return dateOfBirth; }
     public void setDateOfBirth(LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
+    public Long getInstitutionId()                   { return institutionId; }
+    public void setInstitutionId(Long v)             { this.institutionId = v; }
+    public boolean isActive()                        { return active; }
+    public void setActive(boolean v)                 { this.active = v; }
+    public LocalDateTime getCreatedAt()              { return createdAt; }
 }
+

@@ -17,6 +17,12 @@ public class Institution {
     @Column(nullable = false, unique = true)
     private String code;
 
+    @Column(name = "short_name")
+    private String shortName;
+
+    @Column(name = "full_name")
+    private String fullName;
+
     private boolean active = true;
 
     @Column(name = "created_at", nullable = false)
@@ -27,6 +33,10 @@ public class Institution {
     public void setName(String name)          { this.name = name; }
     public String getCode()                   { return code; }
     public void setCode(String code)          { this.code = code; }
+    public String getShortName()              { return shortName; }
+    public void setShortName(String v)        { this.shortName = v; }
+    public String getFullName()               { return fullName; }
+    public void setFullName(String v)         { this.fullName = v; }
     public boolean isActive()                 { return active; }
     public void setActive(boolean active)     { this.active = active; }
     public LocalDateTime getCreatedAt()       { return createdAt; }

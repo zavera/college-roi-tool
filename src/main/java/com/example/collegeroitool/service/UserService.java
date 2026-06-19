@@ -1,6 +1,7 @@
 package com.example.collegeroitool.service;
 
 import com.example.collegeroitool.model.AppUser;
+import com.example.collegeroitool.repository.UserInstitutionRepository;
 import com.example.collegeroitool.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -17,12 +18,16 @@ import java.util.Optional;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final UserInstitutionRepository userInstitutionRepository;
     private final PasswordEncoder passwordEncoder;
     private final InstitutionService institutionService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+    public UserService(UserRepository userRepository,
+                       UserInstitutionRepository userInstitutionRepository,
+                       PasswordEncoder passwordEncoder,
                        @Lazy InstitutionService institutionService) {
         this.userRepository = userRepository;
+        this.userInstitutionRepository = userInstitutionRepository;
         this.passwordEncoder = passwordEncoder;
         this.institutionService = institutionService;
     }
@@ -137,6 +142,17 @@ public class UserService implements UserDetailsService {
             userRepository.save(u);
             return u.getFafsaUsageCount();
         }).orElse(-1);
+    }
+
+    /**
+     * Returns true when the user has an active membership at any institution
+     * other than the default "callisto-tech" instance.
+     * Used to gate FAFSA Prep endpoints — institution users only.
+     */
+    public boolean hasInstitutionAccess(String email) {
+        return userRepository.findByEmail(email.toLowerCase()).map(u ->
+            userInstitutionRepository.hasInstitutionAccess(u.getId())
+        ).orElse(false);
     }
 
     /** Toggle subscription on/off; returns the new state, or empty if user not found */

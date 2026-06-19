@@ -14,6 +14,8 @@ public class DebtIntakeRequest {
     private String creditScoreBand;        // below-580, 580-619, 620-659, 660-699, 700-739, 740+
     private Boolean disabilityStatus;
     private String schoolAttended;
+    private Long studentId;                 // optional — links analysis to a student record for persistence
+    private String privateLender;           // name of private lender (required when privateLoanBalance > 0)
     private String hardshipType;           // economic, unemployment, medical, general
     private String hardshipDetails;
 
@@ -56,6 +58,12 @@ public class DebtIntakeRequest {
 
     public String getSchoolAttended() { return schoolAttended; }
     public void setSchoolAttended(String v) { this.schoolAttended = v; }
+
+    public Long getStudentId() { return studentId; }
+    public void setStudentId(Long v) { this.studentId = v; }
+
+    public String getPrivateLender() { return privateLender; }
+    public void setPrivateLender(String v) { this.privateLender = v; }
 
     public String getHardshipType() { return hardshipType; }
     public void setHardshipType(String v) { this.hardshipType = v; }

@@ -41,6 +41,7 @@ public class GroqService {
     private String counselorPromptTemplate;
     private String repaymentPromptTemplate;
     private String hardshipPromptTemplate;
+    private String privateHardshipPromptTemplate;
     private String fafsaReadinessPromptTemplate;
     private String fafsaRoadmapPromptTemplate;
     private String fafsaChatPromptTemplate;
@@ -87,6 +88,9 @@ public class GroqService {
             StandardCharsets.UTF_8);
         hardshipPromptTemplate = new String(
             new ClassPathResource("prompts/hardship-prompt.txt").getInputStream().readAllBytes(),
+            StandardCharsets.UTF_8);
+        privateHardshipPromptTemplate = new String(
+            new ClassPathResource("prompts/private-hardship-prompt.txt").getInputStream().readAllBytes(),
             StandardCharsets.UTF_8);
         fafsaReadinessPromptTemplate = new String(
             new ClassPathResource("prompts/fafsa-readiness-prompt.txt").getInputStream().readAllBytes(),
@@ -497,6 +501,60 @@ public class GroqService {
 
     public String getHardshipLetter(com.example.collegeroitool.dto.DebtIntakeRequest req) {
         return getHardshipLetter(req, null);
+    }
+
+    public String getPrivateHardshipLetter(com.example.collegeroitool.dto.DebtIntakeRequest req, String liveContent) {
+        if (DEV_STUB_KEY.equals(apiKey)) {
+            return buildPrivateHardshipLetterStub(req);
+        }
+        String live = liveContent != null ? liveContent : "(No live content retrieved — visit lender website for current hardship policies)";
+        String prompt = privateHardshipPromptTemplate
+            .replace("{{privateLender}}", req.getPrivateLender() != null ? req.getPrivateLender() : "Your Private Lender")
+            .replace("{{privateBalance}}", fmt(req.getPrivateLoanBalance() != null ? req.getPrivateLoanBalance() : 0))
+            .replace("{{income}}", fmt(req.getAnnualGrossIncome() != null ? req.getAnnualGrossIncome() : 0))
+            .replace("{{householdSize}}", String.valueOf(req.getHouseholdSize() != null ? req.getHouseholdSize() : 1))
+            .replace("{{employmentStatus}}", req.getEmploymentStatus() != null ? req.getEmploymentStatus() : "not provided")
+            .replace("{{hardshipType}}", req.getHardshipType() != null ? req.getHardshipType() : "financial hardship")
+            .replace("{{hardshipDetails}}", req.getHardshipDetails() != null ? req.getHardshipDetails() : "not provided")
+            .replace("{{liveSearchContent}}", live);
+        return callGroq(prompt, 1500, 0.3);
+    }
+
+    private String buildPrivateHardshipLetterStub(com.example.collegeroitool.dto.DebtIntakeRequest req) {
+        String lender   = req.getPrivateLender()      != null ? req.getPrivateLender()      : "Your Private Lender";
+        String balance  = req.getPrivateLoanBalance() != null ? fmt(req.getPrivateLoanBalance()) : "N/A";
+        String income   = req.getAnnualGrossIncome()  != null ? fmt(req.getAnnualGrossIncome())  : "N/A";
+        String hardship = req.getHardshipType()       != null ? req.getHardshipType()       : "financial hardship";
+        String details  = req.getHardshipDetails()    != null ? req.getHardshipDetails()    : "";
+        int  household  = req.getHouseholdSize()      != null ? req.getHouseholdSize()      : 1;
+        String employ   = req.getEmploymentStatus()   != null ? req.getEmploymentStatus()   : "not specified";
+
+        return "[Date]\n\n"
+            + "Hardship / Customer Assistance Department\n"
+            + lender + "\n\n"
+            + "Re: Request for Hardship Forbearance — Private Student Loan Account [ACCOUNT NUMBER]\n\n"
+            + "To Whom It May Concern,\n\n"
+            + "I am writing to formally request a hardship forbearance or payment reduction on my private student loan "
+            + "with " + lender + " due to " + hardship + ". My current outstanding private loan balance is approximately $" + balance + ".\n\n"
+            + "My household of " + household + " has an annual gross income of $" + income
+            + ", and my current employment status is " + employ + "."
+            + (details.isBlank() ? "" : " " + details) + "\n\n"
+            + "I respectfully request a temporary forbearance or reduced payment arrangement for a period of 3–6 months "
+            + "while I work to stabilize my financial situation. I am committed to resuming full payments as soon as "
+            + "my circumstances allow and wish to avoid any negative impact on my credit or loan standing.\n\n"
+            + "I am prepared to provide supporting documentation, including proof of income, employment status, "
+            + "and household size, upon request. Please advise on any forms or documentation required by "
+            + lender + " to process this hardship request.\n\n"
+            + "Thank you for your time and consideration.\n\n"
+            + "Sincerely,\n[BORROWER NAME]\n[ACCOUNT NUMBER]\n[Phone Number]\n[Email Address]\n\n"
+            + "---CHECKLIST---\n"
+            + "- Recent pay stubs or proof of income (last 30–60 days)\n"
+            + "- Letter of unemployment or termination (if applicable)\n"
+            + "- Bank statements showing current financial hardship\n"
+            + "- Medical documentation (if hardship is health-related)\n"
+            + "- Tax return or W-2 from most recent filing year\n"
+            + "- Household size documentation (e.g., tax return or birth certificates)\n"
+            + "- Any completed hardship or forbearance forms required by " + lender;
     }
 
     // ── FAFSA Prep ─────────────────────────────────────────────────────────────
