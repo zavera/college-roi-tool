@@ -4676,8 +4676,21 @@
         $('#debtAiAdvice').html(aiHtml);
 
         const fmt = n => '$' + Number(n).toLocaleString();
+        // Always show fixed plans first (Standard, Graduated) as a reference baseline,
+        // then the recommended IDR plan, then remaining plans by total paid ascending.
+        const FIXED_PLANS = ['Standard Repayment', 'Graduated Repayment', 'Extended Repayment'];
+        const sorted = [...plans].sort((a, b) => {
+            const aFixed = FIXED_PLANS.indexOf(a.planName);
+            const bFixed = FIXED_PLANS.indexOf(b.planName);
+            if (aFixed !== -1 && bFixed !== -1) return aFixed - bFixed;
+            if (aFixed !== -1) return -1;
+            if (bFixed !== -1) return 1;
+            if (a.planName === recommended) return -1;
+            if (b.planName === recommended) return 1;
+            return a.totalPaid - b.totalPaid;
+        });
         let rows = '';
-        plans.forEach(p => {
+        sorted.forEach(p => {
             const isRec = p.planName === recommended;
             rows += `<tr class="${isRec ? 'plan-recommended' : ''}">
                 <td><strong>${p.planName}</strong>${isRec ? '<span class="plan-recommended-badge">Best for you</span>' : ''}<br>
