@@ -1284,7 +1284,6 @@
     </div>
     <div class="hdr-user">
         <span class="hdr-badge">Advisor</span>
-        <span id="hdrInstitution" class="hdr-institution-tag" style="display:none;" title=""></span>
         <span class="hdr-user-name" id="hdrUserName" style="display:none;"></span>
         <a class="hdr-logout" id="hdrLogout" style="display:none;" href="#">Sign Out</a>
     </div>
@@ -1304,24 +1303,6 @@
 <!-- ══ SCHOLARSHIP TAB ══════════════════════════════════════════════════════ -->
 <div id="tab-scholarship" style="display:block;position:relative;">
 <div class="container">
-
-  <!-- Student context banner -->
-  <div id="scholStudentBanner" style="background:#f0f4ff;border:1px solid #c5d0f0;border-radius:8px;padding:10px 16px;margin-bottom:18px;font-size:13px;color:var(--navy);display:flex;align-items:center;gap:10px;">
-    <span style="font-weight:700;">Student:</span>
-    <span id="scholStudentName" style="flex:1;">No student selected -- go to FAFSA Prep tab and save a profile first.</span>
-    <button type="button" class="btn-secondary" style="font-size:11px;padding:4px 12px;" onclick="scholLoadStudent()">Refresh</button>
-  </div>
-
-  <!-- Supporting documents -->
-  <div class="card">
-    <h2>Supporting Documents</h2>
-    <p class="debt-step-sub">Upload transcripts, certificates, awards, test scores, or any other supporting documents.</p>
-    <input type="file" id="scholFileInput" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
-      style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;">
-    <button type="button" id="scholUploadBtn" class="btn-primary" style="margin-top:10px;" onclick="uploadScholarshipDocs()">Upload &amp; Extract</button>
-    <div id="scholUploadSpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:8px;">Extracting document data…</div>
-    <div id="scholUploadedList" style="margin-top:12px;font-size:12px;color:var(--muted);"></div>
-  </div>
 
   <!-- Scholarship criteria -->
   <div class="card">
@@ -1944,13 +1925,12 @@
     <div class="card">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
             <h2 style="margin:0;">Ask Astra</h2>
-            <span id="chatInstitutionBadge" style="display:none;background:var(--navy,#1a2e4a);color:#fff;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:20px;"></span>
         </div>
-        <p class="debt-step-sub">Astra answers questions about all students at your institution. Add students in the FAFSA Prep tab first.</p>
+        <p class="debt-step-sub">Ask Astra anything about financial aid, scholarships, or student loan repayment.</p>
 
         <div style="display:flex;flex-direction:column;width:100%;box-sizing:border-box;">
             <div id="chatMessages" style="height:360px;overflow-y:auto;border:1.5px solid var(--border);border-radius:8px;padding:14px;margin-bottom:8px;background:#fafbfc;font-size:13px;line-height:1.6;box-sizing:border-box;"></div>
-            <input type="text" id="chatInput" placeholder="Ask about your students…" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;box-sizing:border-box;" onkeydown="if(event.key==='Enter'){sendChatMessage();}">
+            <input type="text" id="chatInput" placeholder="Ask about financial aid, scholarships, or loan repayment…" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;box-sizing:border-box;" onkeydown="if(event.key==='Enter'){sendChatMessage();}">
             <button type="button" class="btn-primary" style="margin-top:8px;" onclick="sendChatMessage()">Send</button>
             <div id="chatSpinner" style="display:none;font-size:12px;color:var(--muted);margin-top:6px;">Astra is thinking…</div>
         </div>
@@ -3270,15 +3250,9 @@
                 const displayName = data.name || data.email || '';
                 $("#hdrUserName").text(displayName).show();
                 $("#hdrLogout").show();
-                if (data.institutionName) {
-                    $('#hdrInstitution').text(data.institutionName).attr('title', data.institutionName).show();
-                }
                 searchCount     = data.searchCount     || 0;
                 debtSearchCount = data.debtSearchCount || 0;
                 premiumActive   = data.subscriptionActive || false;
-                if (data.institutionName) {
-                    $('#chatInstitutionBadge').text(data.institutionName).show();
-                }
                 if (debtSearchCount >= FREE_SEARCHES && !premiumActive) {
                     applyDebtPaywall();
                 }
@@ -3434,7 +3408,6 @@
         document.getElementById('tab-chat').style.display         = tab === 'chat'         ? 'block' : 'none';
         document.querySelectorAll('.mod-tab').forEach(btn => btn.classList.remove('active'));
         document.getElementById('tab-btn-' + tab).classList.add('active');
-        if (tab === 'scholarship') scholLoadStudent();
     }
 
     // ── DEBT ANALYSIS ─────────────────────────────────────────────────────────
@@ -3636,83 +3609,7 @@
 
     // ── SCHOLARSHIP TAB ──────────────────────────────────────────────────────
 
-    // Shared state: student persists from FAFSA tab via fafsaProfile load
-    let scholStudentId   = null;
-    let scholStudentName = '';
     let scholSelectedScholarships = [];  // [{name, amount, deadline, link}]
-
-    function scholLoadStudent() {
-        // Pull identity from FAFSA profile fields already in the DOM
-        const first  = ($('#fafsaFirstName').val()  || '').trim();
-        const last   = ($('#fafsaLastName').val()   || '').trim();
-        const dob    = ($('#fafsaDob').val()         || '').trim();
-        if (!first || !last || !dob) {
-            $('#scholStudentName').text('No student loaded -- save a profile in the FAFSA Prep tab first.');
-            return;
-        }
-        const display = first + ' ' + last;
-        $.ajax({
-            url: '/api/fafsa/student/find-or-create',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ firstName: first, middleName: $('#fafsaMiddleName').val() || '', lastName: last, dateOfBirth: dob }),
-            success(data) {
-                scholStudentId   = data.studentId;
-                scholStudentName = display;
-                $('#scholStudentName').text(display + '  |  DOB: ' + dob);
-                renderScholarshipDocList(data.documents || []);
-            },
-            error() {
-                $('#scholStudentName').text(display + ' (profile not yet saved -- save in FAFSA Prep first)');
-            }
-        });
-    }
-
-    function renderScholarshipDocList(docs) {
-        if (!docs.length) { $('#scholUploadedList').html(''); return; }
-        const html = docs.map(d =>
-            `<span style="display:inline-flex;align-items:center;gap:5px;background:#f0f2f5;border-radius:12px;padding:3px 10px;margin:2px;font-size:11px;">
-              📄 ${d.filename}
-              <span style="color:var(--accent);font-size:10px;">${Object.keys(d.extracted||{}).length} fields extracted</span>
-            </span>`
-        ).join('');
-        $('#scholUploadedList').html('<p style="font-size:11px;color:var(--muted);margin:6px 0 4px;">Uploaded documents:</p>' + html);
-    }
-
-    function uploadScholarshipDocs() {
-        if (!scholStudentId) {
-            alert('Load a student first by saving a profile in the FAFSA Prep tab.');
-            return;
-        }
-        const files = $('#scholFileInput')[0].files;
-        if (!files.length) { alert('Select at least one file.'); return; }
-
-        $('#scholUploadBtn').prop('disabled', true);
-        $('#scholUploadSpinner').show();
-
-        let chain = Promise.resolve();
-        const results = [];
-        Array.from(files).forEach(file => {
-            chain = chain.then(() => {
-                const fd = new FormData();
-                fd.append('file', file);
-                return $.ajax({
-                    url: '/api/fafsa/student/' + scholStudentId + '/upload',
-                    method: 'POST', data: fd, processData: false, contentType: false
-                }).then(r => results.push(r)).catch(() => {});
-            });
-        });
-
-        chain.then(() => {
-            $('#scholUploadBtn').prop('disabled', false);
-            $('#scholUploadSpinner').hide();
-            if (results.length) renderScholarshipDocList(results.map(r => ({
-                filename: r.filename,
-                extracted: r.extracted || {}
-            })));
-            $('#scholFileInput').val('');
-        });
-    }
 
     // ── Scholarship tab: target school chips ─────────────────────────────────
     let scholSelectedSchools = [];
@@ -3783,7 +3680,6 @@
             method: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({
-                studentId:    scholStudentId,
                 demographics: scholDemographics(),
                 comments:     $('#scholComments').val().trim(),
                 targetSchools: scholSelectedSchools
