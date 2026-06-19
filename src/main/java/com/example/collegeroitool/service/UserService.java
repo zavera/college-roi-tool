@@ -135,6 +135,15 @@ public class UserService implements UserDetailsService {
         }).orElse(-1);
     }
 
+    /** Increment scholarship search count; returns new count, or -1 if user not found */
+    public int incrementScholarshipSearchCount(String email) {
+        return userRepository.findByEmail(email.toLowerCase()).map(u -> {
+            u.setScholarshipSearchCount(u.getScholarshipSearchCount() + 1);
+            userRepository.save(u);
+            return u.getScholarshipSearchCount();
+        }).orElse(-1);
+    }
+
     /** Increment FAFSA Prep module usage count; returns new count, or -1 if user not found */
     public int incrementFafsaUsageCount(String email) {
         return userRepository.findByEmail(email.toLowerCase()).map(u -> {

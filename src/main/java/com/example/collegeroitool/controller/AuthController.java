@@ -106,18 +106,20 @@ public class AuthController {
         int searchCount = user != null ? user.getSearchCount() : 0;
         int debtSearchCount = user != null ? user.getDebtSearchCount() : 0;
         int fafsaUsageCount = user != null ? user.getFafsaUsageCount() : 0;
+        int scholarshipSearchCount = user != null ? user.getScholarshipSearchCount() : 0;
         if (user != null && user.getName() != null) name = user.getName();
 
         String institutionName = user != null ? resolveInstitutionName(user) : "Callisto Tech";
         return ResponseEntity.ok(Map.of(
-            "loggedIn",            true,
-            "email",               email,
-            "name",                name != null ? name : email,
-            "subscriptionActive",  subscribed,
-            "searchCount",         searchCount,
-            "debtSearchCount",     debtSearchCount,
-            "fafsaUsageCount",     fafsaUsageCount,
-            "institutionName",     institutionName
+            "loggedIn",                true,
+            "email",                   email,
+            "name",                    name != null ? name : email,
+            "subscriptionActive",      subscribed,
+            "searchCount",             searchCount,
+            "debtSearchCount",         debtSearchCount,
+            "fafsaUsageCount",         fafsaUsageCount,
+            "scholarshipSearchCount",  scholarshipSearchCount,
+            "institutionName",         institutionName
         ));
     }
 
@@ -138,6 +140,25 @@ public class AuthController {
 
         int count = userService.incrementSearchCount(email);
         return ResponseEntity.ok(Map.of("searchCount", count));
+    }
+
+    /** Increment scholarship search count for the calling user and return new count */
+    @PostMapping("/scholarship-search/increment")
+    public ResponseEntity<?> incrementScholarshipSearch(Principal principal) {
+        if (devBypass && principal == null) {
+            return ResponseEntity.ok(Map.of("scholarshipSearchCount", 0));
+        }
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        }
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = (auth.getPrincipal() instanceof OAuth2User oAuth2User)
+            ? oAuth2User.<String>getAttribute("email")
+            : principal.getName();
+
+        int count = userService.incrementScholarshipSearchCount(email);
+        return ResponseEntity.ok(Map.of("scholarshipSearchCount", count));
     }
 
     /** Increment debt-relief search count for the calling user and return new count */

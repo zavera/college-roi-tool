@@ -1302,6 +1302,17 @@
 
 <!-- ══ SCHOLARSHIP TAB ══════════════════════════════════════════════════════ -->
 <div id="tab-scholarship" style="display:block;position:relative;">
+<div id="scholPaywall" style="display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(255,255,255,0.84);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
+    <div style="text-align:center;max-width:360px;">
+        <div style="font-size:36px;margin-bottom:12px;">🎓</div>
+        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your 1 free scholarship search</h3>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock unlimited scholarship searches, award letter analyses, and loan repayment tools.</p>
+        <a href="/api/stripe/create-checkout-session" class="btn-primary" style="display:inline-block;text-decoration:none;padding:13px 28px;font-size:15px;">
+            Unlock for <strong>$99.99/mo</strong>
+        </a>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px;">Includes Scholarships + Award Assist + Post-Grad Debt Relief · Cancel anytime</div>
+    </div>
+</div>
 <div class="container">
 
   <!-- Scholarship criteria -->
@@ -1644,7 +1655,7 @@
 <div id="debtPaywall" style="display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(255,255,255,0.84);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
     <div style="text-align:center;max-width:360px;">
         <div style="font-size:36px;margin-bottom:12px;">🎓</div>
-        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your 3 free analyses</h3>
+        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your 1 free analysis</h3>
         <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock unlimited student loan repayment analyses, PSLF checks, and hardship letter generation.</p>
         <a href="/api/stripe/create-checkout-session" class="btn-primary" style="display:inline-block;text-decoration:none;padding:13px 28px;font-size:15px;">
             Unlock for <strong>$99.99/mo</strong>
@@ -1944,6 +1955,7 @@
     // ── STATE ──────────────────────────────────────────────────────────────────
     let searchCount      = 0;
     let debtSearchCount  = 0;
+    let scholSearchCount  = 0;
     let lastCreditData   = {};
     let premiumActive    = false;
     const FREE_SEARCHES     = 1;
@@ -3230,6 +3242,8 @@
             debtSearchCount = 0;
             $("#tab-postgrad > .container").css({ filter: '', opacity: '', 'pointer-events': '', 'user-select': '' });
             $("#debtPaywall").hide();
+            $("#tab-scholarship > .container").css({ filter: '', opacity: '', 'pointer-events': '', 'user-select': '' });
+            $("#scholPaywall").hide();
             $('#debtAnalyzeBtn').text('Analyze My Loans');
             $("#chatPaywall").hide();
         } else if (payment === 'cancelled') {
@@ -3252,9 +3266,13 @@
                 $("#hdrLogout").show();
                 searchCount     = data.searchCount     || 0;
                 debtSearchCount = data.debtSearchCount || 0;
+                scholSearchCount = data.scholarshipSearchCount || 0;
                 premiumActive   = data.subscriptionActive || false;
                 if (debtSearchCount >= FREE_SEARCHES && !premiumActive) {
                     applyDebtPaywall();
+                }
+                if (scholSearchCount >= FREE_SEARCHES && !premiumActive) {
+                    applyScholPaywall();
                 }
                 renderPjCategories();
             } else {
@@ -3415,6 +3433,13 @@
         if (debtSearchCount >= FREE_SEARCHES) {
             $("#tab-postgrad > .container").css({ filter: "blur(5px)", opacity: "0.35", "user-select": "none", "pointer-events": "none" });
             $("#debtPaywall").css("display", "flex");
+        }
+    }
+
+    function applyScholPaywall() {
+        if (scholSearchCount >= FREE_SEARCHES && !premiumActive) {
+            $("#tab-scholarship > .container").css({ filter: "blur(5px)", opacity: "0.35", "user-select": "none", "pointer-events": "none" });
+            $("#scholPaywall").css("display", "flex");
         }
     }
 
@@ -3673,6 +3698,13 @@
     }
 
     function searchScholarships() {
+        if (scholSearchCount >= FREE_SEARCHES && !premiumActive) {
+            applyScholPaywall();
+            return;
+        }
+        $.post('/api/auth/scholarship-search/increment', function(res) {
+            scholSearchCount = res.scholarshipSearchCount || (scholSearchCount + 1);
+        });
         $('#scholSearchSpinner').text('Searching scholarships…').show();
         $('#scholResultsSection').hide();
         $.ajax({
@@ -3694,6 +3726,7 @@
                     $('#scholResultsSubtitle').text(scholarships.length + ' matching scholarships found. Select the ones you want to apply to.');
                     renderScholarshipResults(scholarships, 'scholAllResults', 'scholResultsSection', 'scholResultsSubtitle', 'all');
                 }
+                if (scholSearchCount >= FREE_SEARCHES && !premiumActive) applyScholPaywall();
             },
             error() {
                 $('#scholSearchSpinner').hide();
