@@ -41,7 +41,7 @@ public class TavilySearchClient {
     }
 
     public boolean isLiveSearchConfigured() {
-        return !(devBypass && DEV_STUB_KEY.equals(apiKey));
+        return !DEV_STUB_KEY.equals(apiKey);
     }
 
     /** Runs a Tavily search, returning normalized {name, snippet, url, source: "live"} results, or empty on any failure. */
@@ -84,6 +84,52 @@ public class TavilySearchClient {
         }
     }
 
+    /**
+     * Handbook-focused search: targets specific domains, uses advanced depth, and returns
+     * longer content excerpts (up to {@code contentMaxLen} chars) suitable for prompt injection.
+     */
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> searchHandbook(String query, int maxResults,
+                                                     List<String> includeDomains, int contentMaxLen) {
+        try {
+            Map<String, Object> body = new HashMap<>();
+            body.put("api_key", apiKey);
+            body.put("query", query);
+            body.put("max_results", maxResults);
+            body.put("search_depth", "advanced");
+            body.put("include_raw_content", true);
+            if (includeDomains != null && !includeDomains.isEmpty()) {
+                body.put("include_domains", includeDomains);
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                TAVILY_URL, new HttpEntity<>(body, headers), Map.class);
+
+            Map<String, Object> responseBody = response.getBody();
+            if (responseBody == null) return List.of();
+
+            List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
+            if (results == null) return List.of();
+
+            List<Map<String, Object>> parsed = new ArrayList<>();
+            for (Map<String, Object> r : results) {
+                // Prefer raw_content (full page text) over content (snippet) for handbook pages
+                String raw = r.get("raw_content") instanceof String rc ? rc : (String) r.get("content");
+                Map<String, Object> item = new HashMap<>();
+                item.put("title", r.get("title"));
+                item.put("content", truncate(cleanHandbookText(raw), contentMaxLen));
+                item.put("url", r.get("url"));
+                parsed.add(item);
+            }
+            return parsed;
+        } catch (Exception e) {
+            return List.of();
+        }
+    }
+
     /** Strip markdown artifacts/links and truncate raw search content to a display-friendly snippet. */
     private static String cleanSnippet(String raw) {
         if (raw == null) return "";
@@ -97,5 +143,19 @@ public class TavilySearchClient {
             cleaned = cleaned.substring(0, SNIPPET_MAX_LEN).trim() + "…";
         }
         return cleaned;
+    }
+
+    private static String cleanHandbookText(String raw) {
+        if (raw == null) return "";
+        return raw
+            .replaceAll("\\[([^\\]]*)\\]\\([^)]*\\)", "$1")
+            .replaceAll("[#*_`]", "")
+            .replaceAll("\\s{3,}", "\n\n")
+            .trim();
+    }
+
+    private static String truncate(String s, int max) {
+        if (s == null) return "";
+        return s.length() <= max ? s : s.substring(0, max).trim() + "…";
     }
 }

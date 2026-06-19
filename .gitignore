@@ -36,3 +36,6 @@ build/
 .env.local
 *.env
 application-local.properties
+
+# Local H2 file database
+data/

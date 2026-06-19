@@ -256,6 +256,9 @@
     .award .module-badge { background: var(--primary-lt); color: var(--primary-dk); }
     .debt  .module-badge { background: #d1fae5; color: #065f46; }
     .chat  .module-badge { background: #f3e8d9; color: var(--primary-dk); }
+    .scholarship .module-badge { background: #ede9fe; color: #5b21b6; }
+    .module-card.scholarship::before { background: #7c3aed; }
+    .scholarship .module-features li::before { content: '✓'; color: #7c3aed; }
 
     .module-card h3 {
       font-size: 19px; font-weight: 800;
@@ -400,7 +403,7 @@
 <section class="modules" id="features" aria-labelledby="modules-title">
   <div class="modules-inner">
     <p class="section-label">What&rsquo;s inside</p>
-    <h2 class="section-title" id="modules-title">Four tools. Every stage of your financial aid journey.</h2>
+    <h2 class="section-title" id="modules-title">Five tools. Every stage of your financial aid journey.</h2>
 
     <div class="module-grid">
 
@@ -451,6 +454,21 @@
         </ul>
       </div>
 
+      <div class="module-card scholarship">
+        <span class="module-badge">Scholarships</span>
+        <h3>Scholarship Finder &amp; Action Timeline</h3>
+        <p>
+          Find scholarships matched to your major, state, background, and financial profile — then build a prioritized action timeline so you never miss a deadline.
+        </p>
+        <ul class="module-features">
+          <li>Live AI-powered scholarship search by major, state &amp; demographics</li>
+          <li>School-specific merit aid lookup for your target colleges</li>
+          <li>Select scholarships and generate a personalized deadline timeline</li>
+          <li>First-generation, need-based, and diversity award matching</li>
+          <li>Connected to CollegeScorecard for real school data</li>
+        </ul>
+      </div>
+
       <div class="module-card chat">
         <span class="module-badge">Ask Astra</span>
         <h3>Your Personal AI Financial Aid Assistant</h3>
@@ -469,36 +487,6 @@
   </div>
 </section>
 
-<section class="pricing" id="pricing" aria-labelledby="pricing-title">
-  <div class="pricing-inner">
-    <h2 id="pricing-title">Simple, affordable pricing</h2>
-    <p class="pricing-sub">One plan. Everything included. Cancel anytime.</p>
-
-    <div class="free-badge">&#10003; First 3 college searches always free</div>
-
-    <div class="pricing-card">
-      <div class="pricing-header">
-        <p class="pricing-label">Full Access</p>
-        <div class="pricing-amount"><sup>$</sup>29.99</div>
-        <p class="pricing-period">per month &middot; cancel anytime</p>
-      </div>
-      <div class="pricing-body">
-        <div class="pricing-feature"><span class="pricing-check">&#10003;</span> AI tax document extraction &amp; FAFSA readiness summary</div>
-        <div class="pricing-feature"><span class="pricing-check">&#10003;</span> Live scholarship search &amp; personalized roadmap</div>
-        <div class="pricing-feature"><span class="pricing-check">&#10003;</span> Unlimited college searches &amp; comparisons</div>
-        <div class="pricing-feature"><span class="pricing-check">&#10003;</span> Full financial gap analysis</div>
-        <div class="pricing-feature"><span class="pricing-check">&#10003;</span> AI financial summary &amp; scholarship matching</div>
-        <div class="pricing-feature"><span class="pricing-check">&#10003;</span> Federal loan repayment plan optimizer (all 8 plans)</div>
-        <div class="pricing-feature"><span class="pricing-check">&#10003;</span> PSLF employer eligibility checker</div>
-        <div class="pricing-feature"><span class="pricing-check">&#10003;</span> AI hardship letter generator</div>
-        <div class="pricing-feature"><span class="pricing-check">&#10003;</span> Live balance transfer &amp; refinancing search</div>
-        <div class="pricing-feature"><span class="pricing-check">&#10003;</span> 24/7 AI chatbot for your own profile</div>
-        <a href="/register.html" class="btn-pricing">Get Started Free</a>
-        <p class="pricing-note">Secure checkout via Stripe. Cancel anytime.</p>
-      </div>
-    </div>
-  </div>
-</section>
 
 <footer role="contentinfo">
   <p class="footer-brand">Astra</p>

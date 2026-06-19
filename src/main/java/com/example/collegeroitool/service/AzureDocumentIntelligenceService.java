@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Thin Spring wrapper around {@link CallistoDocExtractor} from callisto-extraction-core.
@@ -21,27 +22,36 @@ import java.util.Map;
 @Service
 public class AzureDocumentIntelligenceService {
 
-    @Value("${azure.docintel.endpoint}")
+    @Value("${azure.docintel.endpoint:NOT_SET}")
     private String endpoint;
 
-    @Value("${azure.docintel.key}")
+    @Value("${azure.docintel.key:NOT_SET}")
     private String apiKey;
 
     @Value("${premium.dev.bypass:false}")
     private boolean devBypass;
 
-    private static final String DEV_STUB_KEY = "AZURE_DOCINTEL_KEY_NOT_SET";
+    private static final Logger log = Logger.getLogger(AzureDocumentIntelligenceService.class.getName());
 
     private CallistoDocExtractor extractor;
 
     @PostConstruct
     void init() {
-        if (!devBypass || !DEV_STUB_KEY.equals(apiKey)) {
+        boolean unconfigured = endpoint == null || endpoint.isBlank()
+            || endpoint.contains("NOT_SET") || apiKey == null || apiKey.isBlank()
+            || apiKey.contains("NOT_SET");
+        if (unconfigured) {
+            log.warning("Azure Document Intelligence not configured — extraction will use dev stubs");
+            return;
+        }
+        try {
             extractor = CallistoDocExtractor.builder()
                 .endpoint(endpoint)
                 .apiKey(apiKey)
                 .pollTimeout(Duration.ofSeconds(90))
                 .build();
+        } catch (Exception e) {
+            log.warning("Azure Document Intelligence init failed (" + e.getMessage() + ") — extraction disabled");
         }
     }
 

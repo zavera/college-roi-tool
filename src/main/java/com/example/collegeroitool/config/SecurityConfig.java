@@ -74,7 +74,8 @@ public class SecurityConfig {
                     "/sitemap.xml",
                     "/robots.txt",
                     "/BingSiteAuth.xml",
-                    "/error"
+                    "/error",
+                    "/api/demo/document/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )

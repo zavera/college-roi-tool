@@ -1,6 +1,8 @@
 package com.example.collegeroitool.controller;
 
 import com.example.collegeroitool.model.AppUser;
+import com.example.collegeroitool.model.Institution;
+import com.example.collegeroitool.service.InstitutionService;
 import com.example.collegeroitool.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,12 +23,14 @@ public class AuthController {
 
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     private final UserService userService;
+    private final InstitutionService institutionService;
 
     @Value("${premium.dev.bypass:false}")
     private boolean devBypass;
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, InstitutionService institutionService) {
         this.userService = userService;
+        this.institutionService = institutionService;
     }
 
     /** Register a new local account */
@@ -65,11 +69,13 @@ public class AuthController {
     public ResponseEntity<?> me(Principal principal) {
         // Dev bypass: no real session — synthesise an active dev user
         if (devBypass && principal == null) {
+            String devInstitution = resolveInstitutionName(userService.findOrCreateDevUser());
             return ResponseEntity.ok(Map.of(
                 "loggedIn",           true,
                 "email",              "dev@local",
                 "name",               "Dev User",
-                "subscriptionActive", true
+                "subscriptionActive", true,
+                "institutionName",    devInstitution
             ));
         }
         if (principal == null) {
@@ -102,6 +108,7 @@ public class AuthController {
         int fafsaUsageCount = user != null ? user.getFafsaUsageCount() : 0;
         if (user != null && user.getName() != null) name = user.getName();
 
+        String institutionName = user != null ? resolveInstitutionName(user) : "Callisto Tech";
         return ResponseEntity.ok(Map.of(
             "loggedIn",            true,
             "email",               email,
@@ -109,7 +116,8 @@ public class AuthController {
             "subscriptionActive",  subscribed,
             "searchCount",         searchCount,
             "debtSearchCount",     debtSearchCount,
-            "fafsaUsageCount",     fafsaUsageCount
+            "fafsaUsageCount",     fafsaUsageCount,
+            "institutionName",     institutionName
         ));
     }
 
@@ -169,6 +177,16 @@ public class AuthController {
         return userService.toggleSubscription(email)
             .<ResponseEntity<?>>map(active -> ResponseEntity.ok(Map.of("subscriptionActive", active)))
             .orElse(ResponseEntity.badRequest().body(Map.of("error", "User not found")));
+    }
+
+    private String resolveInstitutionName(AppUser user) {
+        try {
+            return institutionService.resolveActiveInstitution(user)
+                .map(Institution::getName)
+                .orElse("Callisto Tech");
+        } catch (Exception e) {
+            return "Callisto Tech";
+        }
     }
 
     /** Admin endpoint — activate a subscription by email */

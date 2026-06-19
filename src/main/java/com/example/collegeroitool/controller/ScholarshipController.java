@@ -28,23 +28,8 @@ public class ScholarshipController {
         this.userService = userService;
     }
 
-    @PostMapping("/external")
-    public ResponseEntity<?> searchExternal(@RequestBody Map<String, Object> body, Principal principal) {
-        if (principal == null && !devBypass) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
-        try {
-            Long studentId = body.get("studentId") != null ? Long.valueOf(body.get("studentId").toString()) : null;
-            @SuppressWarnings("unchecked")
-            Map<String, Object> demographics = (Map<String, Object>) body.getOrDefault("demographics", Map.of());
-            String comments = body.getOrDefault("comments", "").toString();
-            String json = scholarshipService.searchExternal(studentId, demographics, comments);
-            return ResponseEntity.ok(Map.of("scholarships", parseOrRaw(json)));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
-        }
-    }
-
-    @PostMapping("/school-specific")
-    public ResponseEntity<?> searchSchoolSpecific(@RequestBody Map<String, Object> body, Principal principal) {
+    @PostMapping("/search")
+    public ResponseEntity<?> search(@RequestBody Map<String, Object> body, Principal principal) {
         if (principal == null && !devBypass) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
         try {
             Long studentId = body.get("studentId") != null ? Long.valueOf(body.get("studentId").toString()) : null;
@@ -53,11 +38,23 @@ public class ScholarshipController {
             String comments = body.getOrDefault("comments", "").toString();
             @SuppressWarnings("unchecked")
             List<String> schools = (List<String>) body.getOrDefault("targetSchools", List.of());
-            String json = scholarshipService.searchSchoolSpecific(studentId, demographics, comments, schools);
+            String json = scholarshipService.search(studentId, demographics, comments, schools);
             return ResponseEntity.ok(Map.of("scholarships", parseOrRaw(json)));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
+    }
+
+    /** Kept for backwards compatibility — delegates to unified search. */
+    @PostMapping("/external")
+    public ResponseEntity<?> searchExternal(@RequestBody Map<String, Object> body, Principal principal) {
+        return search(body, principal);
+    }
+
+    /** Kept for backwards compatibility — delegates to unified search. */
+    @PostMapping("/school-specific")
+    public ResponseEntity<?> searchSchoolSpecific(@RequestBody Map<String, Object> body, Principal principal) {
+        return search(body, principal);
     }
 
     @PostMapping("/timeline")

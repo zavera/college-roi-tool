@@ -44,3 +44,46 @@ This application handles student financial aid data. FERPA (20 U.S.C. § 1232g, 
 
 FERPA implementing regulations: 34 C.F.R. Part 99
 FSA Handbook (annual): https://fsapartners.ed.gov/knowledge-center/fsa-handbook
+
+---
+
+## Callisto Tech: Live-Search-First Product Philosophy
+
+Every Callisto Tech product must eliminate context switching — users should never need to leave the product to verify information in a browser. This means:
+
+### Core rule
+**Live search is part of the reasoning context, not an optional enhancement.** Before every AI-generated output that references financial aid rules, regulations, or program requirements, fetch live content from authoritative sources (FSA Handbook, studentaid.gov, CFPB, etc.) via Tavily and inject it into the Groq prompt. Hardcoded rules go stale; live content does not.
+
+### When to apply this
+- Any feature calling Groq about FAFSA rules → search `fsapartners.ed.gov` first
+- Any feature calling Groq about federal loan programs → search `studentaid.gov` first
+- Any feature calling Groq about credit/refinancing → search `studentaid.gov` and `consumerfinance.gov`
+- Scholarship guidance → search `studentaid.gov` for program rules
+- New AI features in any Callisto product → evaluate a live-search source before building the prompt
+
+### Implementation pattern
+Use `TavilySearchClient.searchHandbook()` with `include_domains`, `search_depth: "advanced"`, `include_raw_content: true`. Inject the retrieved content as `{{liveSearchContent}}` or similar in the prompt template. If live search fails, fall back gracefully with a note so the model uses its training knowledge with appropriate uncertainty.
+
+### Why this matters
+Financial aid rules change annually (new SAI formula, PPY changes, SAVE plan litigation, PSLF waivers). Specificity and accuracy of financial data are non-negotiable for a product that counselors and families rely on for real decisions. Stale rules = wrong advice = harm to students.
+
+### Claude proactive guidance
+When reviewing code in this project:
+- If you see a Groq prompt with hardcoded regulation text → suggest replacing with a live Tavily search
+- If you see a new AI feature without a live-search source → flag it and recommend one
+- If a prompt template lacks `{{liveSearchContent}}` → ask whether it should have one
+
+---
+
+## Institutional Multi-Tenancy
+
+This product is designed for institutional use (financial aid offices, counseling centers). The data model reflects this:
+
+- `institutions` table: each institution is a named entity with a unique `code`
+- `user_institutions`: many-to-many join (counselor ↔ institution), with `active` flag
+- `student_institutions`: many-to-many join (student ↔ institution), with `active` flag
+- Email uniqueness is scoped per institution — one email cannot have two accounts at the same institution
+- On login, the user's institution is resolved from their email → session; never from a client-supplied parameter
+- All institution-scoped queries must derive `institutionId` from the server-side session (same FERPA rule as `userId`)
+- Demo institution: "Callisto Tech" (`callisto-tech`), seeded in V8 migration; all new users auto-enroll here
+- The chatbot (Ask Astra) answers questions scoped to the logged-in counselor's active institution only

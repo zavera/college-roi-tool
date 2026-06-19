@@ -48,6 +48,7 @@ public class GroqService {
     private String fafsaPjAppealPromptTemplate;
     private String fafsaSaiCommentaryPromptTemplate;
     private String fafsaCssExplainerPromptTemplate;
+    private String institutionalChatPromptTemplate;
 
     private final RestTemplate restTemplate;
 
@@ -108,12 +109,15 @@ public class GroqService {
         fafsaCssExplainerPromptTemplate = new String(
             new ClassPathResource("prompts/fafsa-css-explainer-prompt.txt").getInputStream().readAllBytes(),
             StandardCharsets.UTF_8);
+        institutionalChatPromptTemplate = new String(
+            new ClassPathResource("prompts/institutional-chat-prompt.txt").getInputStream().readAllBytes(),
+            StandardCharsets.UTF_8);
     }
 
     // ── Free AI Summary ───────────────────────────────────────────────────────
 
     public String getFinancialAdvice(LlmAdviceRequest req) {
-        if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
+        if (DEV_STUB_KEY.equals(apiKey)) {
             return buildDevStubAdvice(req);
         }
         String prompt = buildSummaryPrompt(req);
@@ -217,7 +221,7 @@ public class GroqService {
     // ── Premium Scholarship & Employment Intelligence ─────────────────────────
 
     public String getPremiumInsights(PremiumInsightsRequest req) {
-        if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
+        if (DEV_STUB_KEY.equals(apiKey)) {
             return buildDevStubInsights(req);
         }
         String section = req.getSection() != null ? req.getSection() : "";
@@ -438,14 +442,16 @@ public class GroqService {
 
     public String getRepaymentRecommendation(com.example.collegeroitool.dto.DebtIntakeRequest req,
                                               java.util.List<java.util.Map<String, Object>> plans,
-                                              java.util.Map<String, Object> pslfResult) {
-        if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
+                                              java.util.Map<String, Object> pslfResult,
+                                              String liveContent) {
+        if (DEV_STUB_KEY.equals(apiKey)) {
             return "{\"recommendedPlan\":\"SAVE (formerly REPAYE)\",\"rationale\":\"Given your income relative to your loan balance, SAVE provides the lowest monthly payment and caps unpaid interest from growing your principal. This protects you if your income stays flat in the near term.\",\"keyInsight\":\"Your debt-to-income ratio is high — income-driven repayment is essential to avoid default.\",\"pslfNote\":null,\"warningFlag\":null}";
         }
         try {
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
             String plansJson = mapper.writeValueAsString(plans);
             Boolean pslfEligible = pslfResult != null ? (Boolean) pslfResult.get("pslfEligible") : null;
+            String live = liveContent != null ? liveContent : "(No live content retrieved)";
             String prompt = repaymentPromptTemplate
                 .replace("{{federalBalance}}", fmt(req.getFederalLoanBalance() != null ? req.getFederalLoanBalance() : 0))
                 .replace("{{privateBalance}}", fmt(req.getPrivateLoanBalance() != null ? req.getPrivateLoanBalance() : 0))
@@ -457,17 +463,26 @@ public class GroqService {
                 .replace("{{creditBand}}", req.getCreditScoreBand() != null ? req.getCreditScoreBand() : "not provided")
                 .replace("{{servicer}}", req.getLoanServicer() != null ? req.getLoanServicer() : "not provided")
                 .replace("{{pslfEligible}}", pslfEligible != null ? String.valueOf(pslfEligible) : "unknown")
-                .replace("{{plansJson}}", plansJson);
-            return callGroq(prompt, 600, 0.2);
+                .replace("{{plansJson}}", plansJson)
+                .replace("{{liveSearchContent}}", live);
+            return callGroq(prompt, 700, 0.2);
         } catch (Exception e) {
             return "{\"error\":\"Could not generate recommendation: " + e.getMessage() + "\"}";
         }
     }
 
-    public String getHardshipLetter(com.example.collegeroitool.dto.DebtIntakeRequest req) {
-        if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
-            return "[Demo mode] Hardship letter generation requires a live Groq API key. In production, Astra generates a complete, servicer-ready letter with your specific financial details and the applicable federal regulation citation.";
+    /** @deprecated Use {@link #getRepaymentRecommendation(Object, java.util.List, java.util.Map, String)} */
+    public String getRepaymentRecommendation(com.example.collegeroitool.dto.DebtIntakeRequest req,
+                                              java.util.List<java.util.Map<String, Object>> plans,
+                                              java.util.Map<String, Object> pslfResult) {
+        return getRepaymentRecommendation(req, plans, pslfResult, null);
+    }
+
+    public String getHardshipLetter(com.example.collegeroitool.dto.DebtIntakeRequest req, String liveContent) {
+        if (DEV_STUB_KEY.equals(apiKey)) {
+            return buildHardshipLetterStub(req);
         }
+        String live = liveContent != null ? liveContent : "(No live content retrieved)";
         String prompt = hardshipPromptTemplate
             .replace("{{servicer}}", req.getLoanServicer() != null ? req.getLoanServicer() : "Your Loan Servicer")
             .replace("{{federalBalance}}", fmt(req.getFederalLoanBalance() != null ? req.getFederalLoanBalance() : 0))
@@ -475,14 +490,19 @@ public class GroqService {
             .replace("{{householdSize}}", String.valueOf(req.getHouseholdSize() != null ? req.getHouseholdSize() : 1))
             .replace("{{employmentStatus}}", req.getEmploymentStatus() != null ? req.getEmploymentStatus() : "not provided")
             .replace("{{hardshipType}}", req.getHardshipType() != null ? req.getHardshipType() : "general")
-            .replace("{{hardshipDetails}}", req.getHardshipDetails() != null ? req.getHardshipDetails() : "not provided");
-        return callGroq(prompt, 1200, 0.3);
+            .replace("{{hardshipDetails}}", req.getHardshipDetails() != null ? req.getHardshipDetails() : "not provided")
+            .replace("{{liveSearchContent}}", live);
+        return callGroq(prompt, 1400, 0.3);
+    }
+
+    public String getHardshipLetter(com.example.collegeroitool.dto.DebtIntakeRequest req) {
+        return getHardshipLetter(req, null);
     }
 
     // ── FAFSA Prep ─────────────────────────────────────────────────────────────
 
     public String getFafsaReadinessSummary(com.example.collegeroitool.model.FafsaProfile profile) {
-        if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
+        if (DEV_STUB_KEY.equals(apiKey)) {
             return "{\"readinessSummary\":\"Your tax documentation looks complete for a standard FAFSA filing — wages and federal withholding are both present.\",\"aidProjection\":\"Based on the income shown, you're likely in range for partial need-based aid plus full federal loan eligibility. This is an estimate, not an award letter.\",\"appealOpportunities\":[{\"title\":\"Professional judgment review\",\"detail\":\"If your family's income has changed since this tax year, ask the financial aid office for a professional judgment review using current income instead.\"}],\"scholarshipQueries\":[\"first-generation college student scholarships 2026\",\"need-based scholarships for incoming freshmen 2026\"],\"deadlines\":[{\"name\":\"FAFSA opens\",\"timing\":\"October 1 each year\",\"note\":\"File as early as possible — some state and institutional aid is first-come, first-served.\"}]}";
         }
         try {
@@ -501,7 +521,7 @@ public class GroqService {
 
     public String getFafsaRoadmap(com.example.collegeroitool.model.FafsaProfile profile,
                                    String deadlinesJson, String selectedOptionsJson) {
-        if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
+        if (DEV_STUB_KEY.equals(apiKey)) {
             return "{\"roadmapSteps\":[{\"order\":1,\"title\":\"File the FAFSA\",\"targetDate\":\"By October 1\",\"detail\":\"Submit as early as possible to maximize first-come, first-served state and institutional aid.\"},{\"order\":2,\"title\":\"Apply to selected scholarships\",\"targetDate\":\"Within 2 weeks of FAFSA filing\",\"detail\":\"Complete applications for the scholarships you selected while your financial documents are still organized.\"}],\"summary\":\"This plan front-loads your FAFSA filing, then layers in scholarship applications while your paperwork is fresh.\"}";
         }
         try {
@@ -518,8 +538,8 @@ public class GroqService {
 
     public String getFafsaChatResponse(com.example.collegeroitool.model.FafsaProfile profile,
                                         String conversationHistory, String question) {
-        if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
-            return "[Demo mode] Live chat requires a Groq API key. In production, Astra answers questions using only your saved FAFSA Prep profile.";
+        if (DEV_STUB_KEY.equals(apiKey)) {
+            return buildFafsaChatStub(profile, question);
         }
         String prompt = fafsaChatPromptTemplate
             .replace("{{studentName}}", profile.getStudentName() != null ? profile.getStudentName() : "not provided")
@@ -534,27 +554,128 @@ public class GroqService {
     }
 
     public String getAssetRepositioningAdvice(com.example.collegeroitool.model.FafsaProfile profile) {
-        if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
-            return "{\"opportunities\":[{\"title\":\"Shift non-retirement savings into a retirement account\",\"rationale\":\"Retirement accounts (401k, IRA) are not counted as assets on the FAFSA, while regular savings and brokerage accounts are.\",\"caveat\":\"Confirm contribution limits and any early-withdrawal restrictions with a financial advisor before moving funds.\"}],\"generalNote\":\"Retirement accounts and primary home equity are excluded from FAFSA assets, but some CSS Profile schools do count home equity.\"}";
-        }
-        String prompt = fafsaAssetRepositioningPromptTemplate
-            .replace("{{dependencyStatus}}", profile.getDependencyStatus() != null ? profile.getDependencyStatus() : "not yet determined")
-            .replace("{{extractedDataJson}}", profile.getExtractedDataJson() != null ? profile.getExtractedDataJson() : "{}");
-        return callGroq(prompt, 900, 0.3);
+        return getAssetRepositioningAdvice(
+            profile.getExtractedDataJson() != null ? profile.getExtractedDataJson() : "{}",
+            null, null, null, null, null);
     }
 
-    public String getProfessionalJudgmentAppeal(String studentName, String circumstancesJson) {
-        if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
-            return "[Demo mode] Professional judgment appeal letter generation requires a live Groq API key. In production, Astra drafts a complete letter referencing your specific selected circumstances.\n---CHECKLIST---\n- Documentation requires a live Groq API key to generate in demo mode.";
+    public String getAssetRepositioningAdvice(String kvJson, String awardYear, String handbookContent,
+                                               Integer expectedTaxYear, Integer extractedTaxYear, String taxYearNote) {
+        String year = awardYear != null ? awardYear : "2026-2027";
+        if (DEV_STUB_KEY.equals(apiKey)) {
+            String discrepancy = "null";
+            if (expectedTaxYear != null && extractedTaxYear != null && !extractedTaxYear.equals(expectedTaxYear)) {
+                discrepancy = "{\"extractedTaxYear\":" + extractedTaxYear + ",\"expectedTaxYear\":" + expectedTaxYear
+                    + ",\"message\":\"Your uploaded documents are from " + extractedTaxYear
+                    + ", but the " + year + " FAFSA requires " + expectedTaxYear
+                    + " tax data. Please re-upload the correct year's tax documents.\""
+                    + ",\"handbookRule\":\"FSA Handbook AVG Ch 2 (" + year + "): FAFSA uses Prior-Prior Year (PPY) tax data — always 2 years before the academic year start.\"}";
+            }
+            return "{\"discrepancy\":" + discrepancy + ",\"opportunities\":[{\"title\":\"Move $12,000 in taxable savings into a 401(k) before FAFSA filing\",\"fafsa_field\":\"Parent assets — net worth of investments (AVG Ch 3, " + year + ")\",\"rationale\":\"Taxable savings count toward the parent asset contribution rate of 12%; shifting $12,000 into a 401(k) removes it from the SAI calculation entirely.\"},{\"title\":\"Pay down $5,000 in credit card debt using liquid savings\",\"fafsa_field\":\"Parent assets — cash, savings and checking accounts (AVG Ch 3, " + year + ")\",\"rationale\":\"Consumer debt is not deducted from assets on FAFSA; reducing reportable cash by $5,000 directly lowers the net worth figure assessed at 12%.\"}],\"source\":\"FSA Handbook, AVG Ch 3 (" + year + ")\",\"source_url\":\"https://fsapartners.ed.gov/knowledge-center/fsa-handbook/" + year + "/application-and-verification-guide/ch3-student-aid-index-sai-and-pell-grant-eligibility\"}";
         }
-        String prompt = fafsaPjAppealPromptTemplate
-            .replace("{{studentName}}", studentName != null ? studentName : "the student")
-            .replace("{{circumstancesJson}}", circumstancesJson != null ? circumstancesJson : "[]");
+        String handbook = handbookContent != null ? handbookContent : "(No live content retrieved — reason from training knowledge of FSA Handbook AVG Ch 3 " + year + ")";
+        String prompt = fafsaAssetRepositioningPromptTemplate
+            .replace("{{awardYear}}", year)
+            .replace("{{expectedTaxYear}}", expectedTaxYear != null ? expectedTaxYear.toString() : "unknown")
+            .replace("{{extractedTaxYear}}", extractedTaxYear != null ? extractedTaxYear.toString() : "not detected")
+            .replace("{{taxYearNote}}", taxYearNote != null ? taxYearNote : "")
+            .replace("{{handbookContent}}", handbook)
+            .replace("{{extractedDataJson}}", kvJson != null ? kvJson : "{}");
         return callGroq(prompt, 1200, 0.3);
     }
 
+    public String getProfessionalJudgmentAppeal(String studentName, String circumstancesJson,
+                                                 String extractedDataJson, String awardYear, String handbookContent) {
+        String year = awardYear != null ? awardYear : "2026-2027";
+        if (DEV_STUB_KEY.equals(apiKey)) {
+            return buildPjAppealStub(studentName, circumstancesJson, extractedDataJson, year);
+        }
+        String handbook = handbookContent != null ? handbookContent : "(No live content retrieved — reason from training knowledge of FSA Handbook Vol. 3, Ch. 5 " + year + ")";
+        String prompt = fafsaPjAppealPromptTemplate
+            .replace("{{awardYear}}", year)
+            .replace("{{studentName}}", studentName != null ? studentName : "the student")
+            .replace("{{circumstancesJson}}", circumstancesJson != null ? circumstancesJson : "[]")
+            .replace("{{extractedDataJson}}", extractedDataJson != null ? extractedDataJson : "{}")
+            .replace("{{handbookContent}}", handbook);
+        return callGroq(prompt, 1600, 0.3);
+    }
+
+    @SuppressWarnings("unchecked")
+    private String buildPjAppealStub(String studentName, String circumstancesJson,
+                                      String extractedDataJson, String year) {
+        String name = (studentName != null && !studentName.isBlank()) ? studentName : "the student";
+
+        // Parse circumstances
+        com.fasterxml.jackson.databind.ObjectMapper _om = new com.fasterxml.jackson.databind.ObjectMapper();
+        List<String> bulletLines = new java.util.ArrayList<>();
+        List<String> checklistLines = new java.util.ArrayList<>();
+        try {
+            List<java.util.Map<String, Object>> circs = _om.readValue(
+                circumstancesJson != null ? circumstancesJson : "[]",
+                new com.fasterxml.jackson.core.type.TypeReference<>() {});
+            for (java.util.Map<String, Object> c : circs) {
+                String cat    = (String) c.getOrDefault("category", "");
+                String detail = (String) c.getOrDefault("detail", "");
+                String line = "• " + cat;
+                if (detail != null && !detail.isBlank()) line += ": " + detail;
+                bulletLines.add(line);
+                checklistLines.add("• Documentation supporting \"" + cat + "\" (e.g. relevant records, statements, or official correspondence)");
+            }
+        } catch (Exception ignored) {}
+
+        // Pull a few key financial figures
+        String agi = "", wages = "", filingStatus = "", major = "";
+        try {
+            java.util.Map<String, Object> kv = _om.readValue(
+                extractedDataJson != null ? extractedDataJson : "{}",
+                new com.fasterxml.jackson.core.type.TypeReference<>() {});
+            agi         = String.valueOf(kv.getOrDefault("Adjusted Gross Income", ""));
+            wages       = String.valueOf(kv.getOrDefault("Total Wages and Salaries", ""));
+            filingStatus = String.valueOf(kv.getOrDefault("Filing Status", ""));
+            major       = String.valueOf(kv.getOrDefault("Major", ""));
+        } catch (Exception ignored) {}
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Dear Financial Aid Officer,\n\n");
+        sb.append("I am writing to respectfully request a Professional Judgment (PJ) review of my financial aid package ")
+          .append("for the ").append(year).append(" award year, pursuant to Section 479A of the Higher Education Act ")
+          .append("and FSA Handbook Volume 3, Chapter 5 (").append(year).append(").\n\n");
+
+        if (!agi.isBlank() || !major.isBlank()) {
+            sb.append("My most recent tax return");
+            if (!filingStatus.isBlank()) sb.append(" (").append(filingStatus).append(")");
+            if (!agi.isBlank())   sb.append(" reflects an Adjusted Gross Income of $").append(agi);
+            if (!wages.isBlank()) sb.append(", with total wages of $").append(wages);
+            sb.append(".");
+            if (!major.isBlank()) sb.append(" I am pursuing a degree in ").append(major).append(".");
+            sb.append("\n\n");
+        }
+
+        if (!bulletLines.isEmpty()) {
+            sb.append("However, my current financial situation has materially changed since that return was filed. ")
+              .append("The following special circumstances warrant a re-evaluation of my demonstrated financial need:\n\n");
+            bulletLines.forEach(l -> sb.append(l).append("\n"));
+            sb.append("\n");
+        }
+
+        sb.append("I respectfully request that your office exercise Professional Judgment to adjust my Cost of Attendance ")
+          .append("or Expected Family Contribution (SAI) as permitted under HEA § 479A to more accurately reflect my ")
+          .append("current ability to pay. I am prepared to provide any supporting documentation you require.\n\n");
+        sb.append("Thank you sincerely for your time and consideration.\n\n");
+        sb.append("Respectfully,\n").append(name);
+
+        // Checklist
+        sb.append("\n---CHECKLIST---\n");
+        sb.append("• Signed personal statement describing your special circumstance\n");
+        checklistLines.forEach(l -> sb.append(l).append("\n"));
+        sb.append("• Copy of most recent tax return (Form 1040) with all schedules\n");
+        sb.append("• Contact information for the financial aid office PJ coordinator");
+
+        return sb.toString();
+    }
+
     public String getSaiStrategyCommentary(String projectionJson) {
-        if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
+        if (DEV_STUB_KEY.equals(apiKey)) {
             return "{\"summary\":\"Your projected SAI stays relatively stable across years based on the inputs provided, with small changes tracking your projected income and asset changes.\",\"strategyNotes\":[\"Consider timing large one-time income events (bonuses, capital gains) in years that matter less for aid, if possible.\"]}";
         }
         String prompt = fafsaSaiCommentaryPromptTemplate
@@ -563,7 +684,7 @@ public class GroqService {
     }
 
     public String getCssFafsaExplainer(String extractedDataJson, String targetSchoolsJson) {
-        if (devBypass && DEV_STUB_KEY.equals(apiKey)) {
+        if (DEV_STUB_KEY.equals(apiKey)) {
             return "{\"keyDifferences\":[{\"topic\":\"Home equity\",\"fafsaTreatment\":\"Not counted as an asset.\",\"cssTreatment\":\"Often counted, sometimes capped as a multiple of income.\",\"relevanceToStudent\":\"If your family owns a home with significant equity, CSS Profile schools may calculate a higher expected contribution than FAFSA-only schools.\"},{\"topic\":\"Non-custodial parent income\",\"fafsaTreatment\":\"Not required.\",\"cssTreatment\":\"Often required, even after divorce.\",\"relevanceToStudent\":\"If parents are divorced or separated, CSS Profile schools may still expect financial information from both parents.\"}],\"overallNote\":\"CSS Profile schools may calculate a meaningfully different (often higher) expected contribution than FAFSA-only schools, depending on home equity and family structure.\"}";
         }
         String prompt = fafsaCssExplainerPromptTemplate
@@ -574,25 +695,43 @@ public class GroqService {
 
     // ── SCHOLARSHIP ──────────────────────────────────────────────────────────
 
-    public String getScholarshipRecommendations(String studentContext, String searchResults, boolean schoolSpecific) {
-        String scope = schoolSpecific
-            ? "school-specific institutional scholarships and grants from the student's target schools"
-            : "external national, state, and private scholarships";
+    public String getScholarshipRecommendations(String studentContext, String searchResults) {
+        if (DEV_STUB_KEY.equals(apiKey)) {
+            return buildScholarshipStub(studentContext);
+        }
         boolean hasSearchResults = searchResults != null && !searchResults.isBlank() && !searchResults.equals("[]");
         String searchSection = hasSearchResults
-            ? "Live search results (JSON):\n" + searchResults + "\n\nFrom these results, identify"
-            : "No live search results are available. Using your training knowledge, identify";
-        String prompt = "You are a scholarship advisor.\n\n"
+            ? "Live search results (JSON):\n" + searchResults + "\n\nFrom these results and your training knowledge, identify"
+            : "No live search results available. Using your training knowledge, identify";
+        String prompt = "You are a scholarship advisor. Return a single unified list covering both national/state/private external scholarships AND school-specific institutional awards — do not separate them.\n\n"
             + "Student profile:\n" + studentContext + "\n"
-            + searchSection + " the best matching " + scope + " for this student.\n"
+            + searchSection + " the best matching scholarships for this student.\n"
+            + "Rules:\n"
+            + "- Include a mix: national merit/demographic awards, state grants, major-specific awards, and (if target schools are listed) institutional awards from those schools.\n"
+            + "- Every scholarship must be real and verifiable — real name, real sponsor, real URL where possible.\n"
+            + "- Order by match quality (best fit first).\n"
+            + "- Include 8-12 scholarships total.\n"
             + "Return ONLY a JSON array (no markdown, no explanation). Each element must have:\n"
             + "  name (string), amount (string or null), deadline (string or null),\n"
-            + "  eligibility (1-2 sentence summary), link (URL or null), source (domain or \"groq-knowledge\").\n"
-            + "Include 5-10 scholarships the student is realistically eligible for. Order by match quality.";
-        return callGroq(prompt, 1800, 0.2);
+            + "  eligibility (1-2 sentence summary), link (URL or null), source (domain or \"groq-knowledge\"),\n"
+            + "  type (one of: \"external\", \"school-specific\", \"state\").";
+        return callGroq(prompt, 2000, 0.2);
+    }
+
+    /** @deprecated Use {@link #getScholarshipRecommendations(String, String)} */
+    public String getScholarshipRecommendations(String studentContext, String searchResults, boolean schoolSpecific) {
+        return getScholarshipRecommendations(studentContext, searchResults);
     }
 
     public String getScholarshipTimeline(String selectedScholarshipsJson, String studentName) {
+        if (DEV_STUB_KEY.equals(apiKey)) {
+            String name = studentName != null ? studentName : "the student";
+            return "[{\"week\":\"Now — Week 1\",\"action\":\"Gather all required materials: transcripts, letters of recommendation, essay drafts, and financial documents.\",\"relatedScholarship\":\"All\",\"dueDate\":null,\"category\":\"Prepare\"},"
+                + "{\"week\":\"Week 2\",\"action\":\"Draft personal statement and scholarship essays. Have a counselor or teacher review your drafts.\",\"relatedScholarship\":\"All\",\"dueDate\":null,\"category\":\"Write\"},"
+                + "{\"week\":\"Week 3\",\"action\":\"Request official transcripts and letters of recommendation from teachers/counselors.\",\"relatedScholarship\":\"All\",\"dueDate\":null,\"category\":\"Request\"},"
+                + "{\"week\":\"Week 4\",\"action\":\"Submit scholarship applications. Double-check all requirements and confirm receipt.\",\"relatedScholarship\":\"All\",\"dueDate\":null,\"category\":\"Submit\"},"
+                + "{\"week\":\"6–8 Weeks After Submission\",\"action\":\"Follow up with scholarship sponsors if no confirmation received. Check portal status.\",\"relatedScholarship\":\"All\",\"dueDate\":null,\"category\":\"Follow-up\"}]";
+        }
         String prompt = "You are a college financial aid advisor. Generate a detailed action timeline for a student applying to these scholarships:\n\n"
             + selectedScholarshipsJson + "\n\n"
             + "Return ONLY a JSON array (no markdown). Each element represents one action item with:\n"
@@ -602,6 +741,42 @@ public class GroqService {
             + "Order chronologically. Include: gathering materials, writing essays, requesting transcripts/letters,\n"
             + "submission deadlines, and expected award announcement dates. Be specific with dates where available.";
         return callGroq(prompt, 1500, 0.3);
+    }
+
+    private String buildScholarshipStub(String studentContext) {
+        // Parse key fields from the plain-text student context
+        String ctx = studentContext != null ? studentContext.toLowerCase() : "";
+        boolean firstGen   = ctx.contains("first generation") || ctx.contains("first-gen");
+        boolean stem       = ctx.contains("engineer") || ctx.contains("computer science")
+                          || ctx.contains("nursing") || ctx.contains("electrical");
+        boolean lowIncome  = ctx.contains("18") || ctx.contains("pell") || ctx.contains("efc: 0")
+                          || ctx.contains("efc: $0");
+        boolean hispanic   = ctx.contains("ramirez") || ctx.contains("hispanic") || ctx.contains("latina");
+        boolean asian      = ctx.contains("park") || ctx.contains("sharma") || ctx.contains("asian");
+
+        java.util.List<String> scholarships = new java.util.ArrayList<>();
+        scholarships.add("{\"name\":\"Federal Pell Grant\",\"amount\":\"Up to $7,395/year\",\"deadline\":\"FAFSA priority deadline varies by school\",\"eligibility\":\"Need-based federal grant for undergraduates with exceptional financial need. No repayment required.\",\"link\":\"https://studentaid.gov/understand-aid/types/grants/pell\",\"source\":\"studentaid.gov\",\"type\":\"external\"}");
+        if (firstGen) {
+            scholarships.add("{\"name\":\"Dell Scholars Program\",\"amount\":\"$20,000 total\",\"deadline\":\"December 1\",\"eligibility\":\"First-generation, low-income students with demonstrated need who are on track to graduate. Includes laptop and support resources.\",\"link\":\"https://www.dellscholars.org\",\"source\":\"dellscholars.org\",\"type\":\"external\"}");
+            scholarships.add("{\"name\":\"Jack Kent Cooke Foundation College Scholarship\",\"amount\":\"Up to $55,000/year\",\"deadline\":\"November (high school seniors)\",\"eligibility\":\"High-achieving students with significant financial need, including first-generation students.\",\"link\":\"https://www.jkcf.org/our-scholarships/college-scholarship-program/\",\"source\":\"jkcf.org\",\"type\":\"external\"}");
+        }
+        if (stem) {
+            scholarships.add("{\"name\":\"Gates Scholarship\",\"amount\":\"Full cost of attendance\",\"deadline\":\"September 15\",\"eligibility\":\"High-achieving, Pell-eligible minority students pursuing STEM or other high-need fields.\",\"link\":\"https://www.thegatesscholarship.org\",\"source\":\"thegatesscholarship.org\",\"type\":\"external\"}");
+            scholarships.add("{\"name\":\"SMART Scholarship (DoD)\",\"amount\":\"Full tuition + stipend\",\"deadline\":\"December 1\",\"eligibility\":\"U.S. citizens pursuing STEM degrees who are willing to work for the Department of Defense after graduation.\",\"link\":\"https://www.smartscholarship.org\",\"source\":\"smartscholarship.org\",\"type\":\"external\"}");
+        }
+        if (hispanic) {
+            scholarships.add("{\"name\":\"Hispanic Scholarship Fund\",\"amount\":\"$500–$5,000\",\"deadline\":\"February 15\",\"eligibility\":\"Hispanic-heritage students with minimum 3.0 GPA enrolled in a U.S. accredited college or university.\",\"link\":\"https://www.hsf.net\",\"source\":\"hsf.net\",\"type\":\"external\"}");
+        }
+        if (asian) {
+            scholarships.add("{\"name\":\"Asian & Pacific Islander American Scholarship Fund\",\"amount\":\"$2,500–$20,000\",\"deadline\":\"January 10\",\"eligibility\":\"APIA heritage students with demonstrated financial need, minimum 2.7 GPA, and community involvement.\",\"link\":\"https://www.apiasf.org\",\"source\":\"apiasf.org\",\"type\":\"external\"}");
+        }
+        scholarships.add("{\"name\":\"Coca-Cola Scholars Program\",\"deadline\":\"October 31\",\"amount\":\"$20,000\",\"eligibility\":\"High school seniors demonstrating leadership in school and community activities, with strong academic achievement.\",\"link\":\"https://www.coca-colascholarsfoundation.org\",\"source\":\"coca-colascholarsfoundation.org\",\"type\":\"external\"}");
+        scholarships.add("{\"name\":\"Elks National Foundation Most Valuable Student Scholarship\",\"amount\":\"$1,000–$12,500/year\",\"deadline\":\"November 15 (local lodge)\",\"eligibility\":\"U.S. citizens enrolled full-time as college freshmen, judged on scholarship, leadership, and financial need.\",\"link\":\"https://www.elks.org/scholars/scholarships/mvs.cfm\",\"source\":\"elks.org\",\"type\":\"external\"}");
+        if (lowIncome) {
+            scholarships.add("{\"name\":\"Questbridge National College Match\",\"amount\":\"Full four-year scholarship\",\"deadline\":\"September 27\",\"eligibility\":\"Low-income, high-achieving students with strong academics who may qualify for full scholarships at partner universities.\",\"link\":\"https://www.questbridge.org\",\"source\":\"questbridge.org\",\"type\":\"external\"}");
+        }
+        scholarships.add("{\"name\":\"Sallie Mae Bridging the Dream Scholarship\",\"amount\":\"$2,500\",\"deadline\":\"Multiple cycles per year\",\"eligibility\":\"Open to U.S. college students demonstrating financial need with a personal statement about their educational goals.\",\"link\":\"https://www.salliemae.com/college-planning/scholarships/\",\"source\":\"salliemae.com\",\"type\":\"external\"}");
+        return "[" + String.join(",", scholarships) + "]";
     }
 
     // ── Shared Groq caller ────────────────────────────────────────────────────
@@ -627,6 +802,128 @@ public class GroqService {
         List<Map<String, Object>> choices = (List<Map<String, Object>>) response.getBody().get("choices");
         Map<String, Object> msg = (Map<String, Object>) choices.get(0).get("message");
         return (String) msg.get("content");
+    }
+
+    private String buildHardshipLetterStub(com.example.collegeroitool.dto.DebtIntakeRequest req) {
+        String servicer  = req.getLoanServicer()      != null ? req.getLoanServicer()      : "Your Loan Servicer";
+        String balance   = req.getFederalLoanBalance() != null ? fmt(req.getFederalLoanBalance()) : "N/A";
+        String income    = req.getAnnualGrossIncome()  != null ? fmt(req.getAnnualGrossIncome())  : "N/A";
+        String hardship  = req.getHardshipType()       != null ? req.getHardshipType()       : "financial hardship";
+        String details   = req.getHardshipDetails()    != null ? req.getHardshipDetails()    : "";
+        int    household = req.getHouseholdSize()      != null ? req.getHouseholdSize()      : 1;
+        String employ    = req.getEmploymentStatus()   != null ? req.getEmploymentStatus()   : "not specified";
+
+        return "Re: Request for Income-Driven Repayment Reconsideration — Federal Student Loan Account\n\n"
+            + "To Whom It May Concern at " + servicer + ",\n\n"
+            + "I am writing to formally request reconsideration of my federal student loan repayment plan due to "
+            + hardship + ". My current outstanding federal loan balance is approximately $" + balance + ".\n\n"
+            + "My household of " + household + " has an annual gross income of $" + income
+            + ", and my current employment status is " + employ + "."
+            + (details.isBlank() ? "" : " " + details) + "\n\n"
+            + "Under 34 C.F.R. § 682.215 and the Income-Driven Repayment (IDR) provisions of the Higher Education Act, "
+            + "borrowers experiencing financial hardship are entitled to have their monthly payments recalculated "
+            + "based on current income and family size. I respectfully request that my account be reviewed under "
+            + "the SAVE Plan (Saving on a Valuable Education) or an equivalent income-driven option.\n\n"
+            + "I am prepared to submit Form IBR/SAVE along with supporting documentation, including proof of income "
+            + "and household size, at your request.\n\n"
+            + "Thank you for your prompt attention to this matter.\n\n"
+            + "Sincerely,\n[Borrower Name]\n[Account Number]\n[Contact Information]";
+    }
+
+    private String buildFafsaChatStub(com.example.collegeroitool.model.FafsaProfile profile, String question) {
+        String name = profile.getStudentName() != null ? profile.getStudentName() : "the student";
+        String year = profile.getPlanningYear() != null ? String.valueOf(profile.getPlanningYear()) : "the upcoming";
+
+        // Extract AGI from profile if available
+        String agiNote = "";
+        if (profile.getExtractedDataJson() != null && !profile.getExtractedDataJson().isBlank()) {
+            try {
+                @SuppressWarnings("unchecked")
+                java.util.Map<String, Object> kv = new com.fasterxml.jackson.databind.ObjectMapper()
+                    .readValue(profile.getExtractedDataJson(), java.util.Map.class);
+                Object agi = kv.get("Adjusted Gross Income");
+                if (agi != null) agiNote = " Based on the tax data on file (AGI: $" + agi + "), ";
+            } catch (Exception ignored) {}
+        }
+
+        String q = question != null ? question.toLowerCase() : "";
+        if (q.contains("pell") || q.contains("grant")) {
+            return "For " + year + " award year:" + agiNote + "Pell Grant eligibility is primarily determined by your "
+                + "Student Aid Index (SAI). Students with an SAI near zero qualify for the maximum Pell Grant "
+                + "($7,395 for 2024-25). Eligibility phases out as SAI increases. File the FAFSA as early as October 1 "
+                + "to secure priority consideration from your school's institutional aid office.";
+        }
+        if (q.contains("loan") || q.contains("borrow")) {
+            return "Federal Direct Loans for " + year + " are available regardless of income." + agiNote
+                + "Subsidized loans (need-based, no interest while enrolled) are preferable to Unsubsidized. "
+                + "Independent students can borrow up to $9,500/year in Direct Loans (Year 1). "
+                + "Always exhaust grants and scholarships before borrowing.";
+        }
+        if (q.contains("deadline") || q.contains("when")) {
+            return "Key FAFSA deadlines for " + name + ": The federal deadline is June 30 of the award year, "
+                + "but state and institutional deadlines are often much earlier — many fall between February and April. "
+                + "File as soon as the FAFSA opens (October 1) to maximize first-come, first-served aid.";
+        }
+        return "Great question about " + name + "'s " + year + " financial aid." + agiNote
+            + "I can help with FAFSA strategy, scholarship searches, professional judgment opportunities, "
+            + "and aid appeal letters. To get a specific answer, I need a Groq API key configured — "
+            + "please set GROQ_API_KEY in your environment. In the meantime, all other features "
+            + "(readiness summary, roadmap, PJ appeal, scholarships) are fully functional.";
+    }
+
+    private String buildInstitutionalChatStub(String institutionName,
+                                               List<Map<String, Object>> studentRoster, String question) {
+        int count = studentRoster != null ? studentRoster.size() : 0;
+        String q  = question != null ? question.toLowerCase() : "";
+
+        // Try to answer about a specific student by name
+        if (studentRoster != null) {
+            for (Map<String, Object> s : studentRoster) {
+                String sName = String.valueOf(s.getOrDefault("name", "")).toLowerCase();
+                if (!sName.isBlank() && q.contains(sName.split(" ")[0].toLowerCase())) {
+                    String financialData = String.valueOf(s.getOrDefault("financialData", "(no data)"));
+                    return "Here is what I have on file for " + s.get("name") + " at " + institutionName + ":\n\n"
+                        + financialData + "\n\nFor a deeper AI analysis, configure a GROQ_API_KEY.";
+                }
+            }
+        }
+
+        if (q.contains("how many") || q.contains("count") || q.contains("student")) {
+            return institutionName + " currently has " + count + " student"
+                + (count != 1 ? "s" : "") + " on file with Astra. "
+                + "Ask me about a specific student by name to see their financial summary.";
+        }
+        if (q.contains("pell") || q.contains("grant")) {
+            return "Across " + institutionName + "'s " + count + " enrolled students, Pell Grant eligibility "
+                + "varies by SAI. Students with lower adjusted gross income (under ~$30k) are typically "
+                + "eligible for substantial need-based aid. Review each student's profile for specific projections.";
+        }
+        return "I'm Astra, your financial aid assistant for " + institutionName + ". "
+            + "I have " + count + " student" + (count != 1 ? "s" : "") + " on file. "
+            + "Ask me about a specific student by name, or ask about aid trends, Pell eligibility, "
+            + "or scholarship opportunities across your cohort.";
+    }
+
+    public String getInstitutionalChatResponse(String institutionName,
+                                                List<Map<String, Object>> studentRoster,
+                                                String conversationHistory,
+                                                String question) {
+        if (DEV_STUB_KEY.equals(apiKey)) {
+            return buildInstitutionalChatStub(institutionName, studentRoster, question);
+        }
+        String rosterJson;
+        try {
+            rosterJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(studentRoster);
+        } catch (Exception e) {
+            rosterJson = studentRoster.toString();
+        }
+        String prompt = institutionalChatPromptTemplate
+            .replace("{{institutionName}}", institutionName)
+            .replace("{{studentCount}}", String.valueOf(studentRoster.size()))
+            .replace("{{studentRosterJson}}", rosterJson)
+            .replace("{{conversationHistory}}", conversationHistory != null ? conversationHistory : "(no prior messages)")
+            .replace("{{question}}", question);
+        return callGroq(prompt, 800, 0.3);
     }
 
     private static String fmt(double value) {

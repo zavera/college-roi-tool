@@ -166,6 +166,21 @@
             letter-spacing: 1px;
             text-transform: uppercase;
         }
+        .hdr-institution-tag {
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.75);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 10px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 160px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
 
         /* ── Container ── */
         .container {
@@ -1201,6 +1216,7 @@
     </div>
     <div class="hdr-user">
         <span class="hdr-badge">Advisor</span>
+        <span id="hdrInstitution" class="hdr-institution-tag" style="display:none;" title=""></span>
         <span class="hdr-user-name" id="hdrUserName" style="display:none;"></span>
         <a class="hdr-logout" id="hdrLogout" style="display:none;" href="#">Sign Out</a>
     </div>
@@ -1274,8 +1290,15 @@
                 <button type="button" onclick="fafsaResetSearch()" style="margin-left:auto;font-size:12px;padding:4px 12px;background:none;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;color:var(--muted);">Change Student</button>
             </div>
 
-            <!-- Existing documents list -->
-            <div id="fafsaDocList" style="margin-bottom:16px;"></div>
+            <!-- Existing documents accordion -->
+            <div class="prem-section" id="fafsaDocAccordion" style="margin-bottom:16px;">
+                <div class="prem-section-hdr open" onclick="toggleFafsaDocAccordion()">
+                    <span>Documents</span>
+                    <span id="fafsaDocCount" style="background:#eef2ff;color:var(--navy);border-radius:10px;padding:1px 9px;font-size:11px;font-weight:700;margin-left:4px;">0</span>
+                    <span class="prem-chevron">▼</span>
+                </div>
+                <div class="prem-section-body open" id="fafsaDocList" style="padding:12px 14px;"></div>
+            </div>
 
             <!-- Upload section -->
             <div style="border-top:1px solid var(--border);padding-top:14px;">
@@ -1285,9 +1308,8 @@
                 <label for="fafsaFileInput">Upload Tax Documents (W-2, 1040, 1099, etc.)</label>
                 <input type="file" id="fafsaFileInput" multiple accept=".pdf,.png,.jpg,.jpeg" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;">
                 <button type="button" id="fafsaUploadBtn" class="btn-primary" style="margin-top:10px;" onclick="uploadFafsaDocs()">Extract &amp; Save</button>
-                <div id="fafsaUploadSpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:8px;">Extracting document data — this may take up to 30 seconds per file…</div>
+                <div id="fafsaUploadStatusList" style="margin-top:12px;"></div>
             </div>
-            <div id="fafsaExtractedPreview" style="margin-top:16px;"></div>
         </div>
 
         <!-- ── Create new profile state ── -->
@@ -1315,8 +1337,9 @@
                     <input type="date" id="fafsaDob">
                 </div>
                 <div class="field-group">
-                    <label for="fafsaPlanningYear">Year Planning to Be in College</label>
-                    <input type="number" id="fafsaPlanningYear" placeholder="e.g. 2027" min="2024" max="2035" step="1">
+                    <label for="fafsaPlanningYear">College Start Year (Fall) <span style="font-weight:400;text-transform:none;font-size:10px;">(required for FAFSA year matching)</span></label>
+                    <input type="number" id="fafsaPlanningYear" placeholder="e.g. 2027" min="2024" max="2035" step="1" oninput="updateFafsaYearHint()">
+                    <div id="fafsaYearHint" style="display:none;margin-top:5px;font-size:12px;color:var(--primary);background:rgba(201,168,124,0.12);border-radius:5px;padding:5px 9px;line-height:1.5;"></div>
                 </div>
             </div>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
@@ -1336,7 +1359,7 @@
     <p class="debt-step-sub" style="margin-bottom:16px;">Deeper, structured tools to help you maximize aid and plan ahead.</p>
 
     <!-- Dependency Status Calculator -->
-    <div class="card" id="fafsaDependencyCard">
+    <div class="card" id="fafsaDependencyCard" style="margin-bottom:20px;">
         <h2>Dependency Status Calculator</h2>
         <p class="debt-step-sub">Select every statement that applies to you. Checked = Yes. Your status updates instantly and is saved to your profile.</p>
         <div id="fafsaDependencyQuestions"></div>
@@ -1344,29 +1367,29 @@
     </div>
 
     <!-- Asset Repositioning -->
-    <div class="card" id="fafsaAssetCard">
-        <h2>Asset Repositioning</h2>
-        <p class="debt-step-sub">Analyzes your extracted tax data against FAFSA asset assessment rules and flags legal repositioning opportunities before next year's filing.</p>
-        <button type="button" class="btn-primary" onclick="generateAssetRepositioning()">Get Asset Repositioning Advice</button>
-        <div id="fafsaAssetSpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:8px;">Analyzing your assets…</div>
-        <div id="fafsaAssetResult" style="display:none;margin-top:16px;"></div>
+    <div class="card" id="fafsaAssetCard" style="padding:28px 28px 24px;margin-bottom:32px;">
+        <h2 style="margin-bottom:8px;">Asset Repositioning Assist <span class="groq-tag">Groq · llama-3.3-70b</span></h2>
+        <p class="debt-step-sub" style="margin-bottom:20px;">Reviews your extracted tax data against SAI asset rules and shows specific dollar moves to reduce your Student Aid Index before next year's filing.</p>
+        <button type="button" class="btn-primary" onclick="generateAssetRepositioning()">Generate</button>
+        <div id="fafsaAssetSpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:12px;">Analyzing your assets…</div>
+        <div id="fafsaAssetResult" style="display:none;margin-top:20px;"></div>
     </div>
 
     <!-- Professional Judgment Screener -->
-    <div class="card" id="fafsaPjCard">
-        <h2>Special Circumstance Letter Generator</h2>
-        <p class="debt-step-sub">Check any special circumstances that apply, add details, attach supporting documents, and Astra drafts a professional judgment appeal letter for your financial aid office.</p>
-        <div id="fafsaPjCategories"></div>
-        <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px;">
-            <label for="fafsaPjFiles">Supporting Documents <span style="font-weight:400;text-transform:none;font-size:10px;color:var(--muted);">(optional — medical bills, termination letters, death certificates, etc.)</span></label>
-            <input type="file" id="fafsaPjFiles" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" style="width:100%;margin-top:6px;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;">
+    <div class="card" id="fafsaPjCard" style="padding:28px 28px 24px;">
+        <h2 style="margin-bottom:8px;">Special Circumstance Letter Generator <span class="groq-tag">Groq · llama-3.3-70b</span></h2>
+        <p class="debt-step-sub" style="margin-bottom:20px;">Check any special circumstances that apply, add details, and Astra drafts a professional judgment appeal letter for your financial aid office.</p>
+        <div id="fafsaPjCategories" style="margin-bottom:4px;"></div>
+        <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:20px;">
+            <label for="fafsaPjFiles" style="display:block;margin-bottom:6px;">Supporting Documents <span style="font-weight:400;text-transform:none;font-size:10px;color:var(--muted);">(optional — medical bills, termination letters, death certificates, etc.)</span></label>
+            <input type="file" id="fafsaPjFiles" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;">
             <div id="fafsaPjFileList" style="margin-top:8px;font-size:12px;color:var(--muted);"></div>
         </div>
-        <button type="button" class="btn-primary" style="margin-top:14px;" onclick="generatePjAppeal()">Draft My Appeal Letter</button>
-        <div id="fafsaPjSpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:8px;">Drafting your letter…</div>
-        <div id="fafsaPjResultWrap" style="display:none;margin-top:16px;">
-            <pre id="fafsaPjLetterOutput" style="white-space:pre-wrap;font-family:inherit;font-size:13px;line-height:1.6;background:#fafbfc;border:1.5px solid var(--border);border-radius:6px;padding:14px;"></pre>
-            <div id="fafsaPjChecklist" style="font-size:13px;line-height:1.6;margin-top:10px;"></div>
+        <button type="button" class="btn-primary" style="margin-top:20px;" onclick="generatePjAppeal()">Draft My Appeal Letter</button>
+        <div id="fafsaPjSpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:12px;">Drafting your letter…</div>
+        <div id="fafsaPjResultWrap" style="display:none;margin-top:20px;">
+            <pre id="fafsaPjLetterOutput" style="white-space:pre-wrap;font-family:inherit;font-size:13px;line-height:1.7;background:#fafbfc;border:1.5px solid var(--border);border-radius:8px;padding:18px;"></pre>
+            <div id="fafsaPjChecklist" style="font-size:13px;line-height:1.6;margin-top:12px;"></div>
         </div>
     </div>
 
@@ -1440,15 +1463,8 @@
         </select>
       </div>
       <div>
-        <label for="scholEthnicity">Ethnicity <span style="font-weight:400;font-size:10px;color:var(--muted);">(optional -- used to match targeted scholarships)</span></label>
+        <label for="scholEthnicity">Ethnicity <span style="font-weight:400;font-size:10px;color:var(--muted);">(optional — used to match targeted scholarships)</span></label>
         <input type="text" id="scholEthnicity" placeholder="e.g. Hispanic, Asian American…" style="width:100%;padding:9px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:6px;">
-      </div>
-      <div>
-        <label for="scholFinancialNeed">Financial Need Level</label>
-        <select id="scholFinancialNeed" style="width:100%;padding:9px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:6px;background:#fff;">
-          <option value="">-- Select --</option>
-          <option>High</option><option>Medium</option><option>Low</option>
-        </select>
       </div>
     </div>
     <div style="margin-top:12px;display:flex;align-items:center;gap:10px;">
@@ -1461,9 +1477,12 @@
         style="width:100%;padding:9px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:6px;resize:vertical;box-sizing:border-box;"></textarea>
     </div>
     <div style="margin-top:12px;">
-      <label for="scholTargetSchools">Target Schools <span style="font-weight:400;font-size:10px;color:var(--muted);">(comma-separated, for school-specific search)</span></label>
-      <input type="text" id="scholTargetSchools" placeholder="e.g. University of Michigan, Johns Hopkins, UCLA"
-        style="width:100%;padding:9px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:6px;">
+      <label>Target Schools <span style="font-weight:400;font-size:10px;color:var(--muted);">(type to search — include for school-specific scholarships)</span></label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="text" id="scholSchoolSearch" placeholder="Type 2+ characters to search…"
+          style="flex:1;padding:9px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:6px;">
+      </div>
+      <div id="scholSchoolChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;min-height:4px;"></div>
     </div>
     <div style="margin-top:12px;">
       <label for="scholComments">Additional Notes</label>
@@ -1472,36 +1491,27 @@
     </div>
   </div>
 
-  <!-- Search actions -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
-    <button type="button" class="btn-primary" onclick="searchExternalScholarships()">Search External Scholarships</button>
-    <button type="button" class="btn-primary" onclick="searchSchoolScholarships()">Search School-Specific Scholarships</button>
+  <!-- Search action -->
+  <div style="margin-bottom:20px;">
+    <button type="button" class="btn-primary" onclick="searchScholarships()">Search Scholarships</button>
   </div>
   <div id="scholSearchSpinner" style="display:none;text-align:center;font-size:13px;color:var(--muted);margin-bottom:12px;">Searching and matching scholarships…</div>
 
-  <!-- External results -->
-  <div id="scholExternalSection" style="display:none;">
+  <!-- Combined results -->
+  <div id="scholResultsSection" style="display:none;">
     <div class="card" style="padding-bottom:8px;">
-      <h2>External Scholarships</h2>
-      <p class="debt-step-sub" id="scholExternalSubtitle"></p>
-      <div id="scholExternalResults"></div>
-    </div>
-  </div>
-
-  <!-- School-specific results -->
-  <div id="scholSchoolSection" style="display:none;">
-    <div class="card" style="padding-bottom:8px;">
-      <h2>School-Specific Scholarships</h2>
-      <p class="debt-step-sub" id="scholSchoolSubtitle"></p>
-      <div id="scholSchoolResults"></div>
+      <h2>Scholarships <span class="groq-tag">Groq · llama-3.3-70b</span></h2>
+      <p class="debt-step-sub" id="scholResultsSubtitle"></p>
+      <div id="scholAllResults"></div>
     </div>
   </div>
 
   <!-- Timeline -->
   <div id="scholTimelineSection" style="display:none;margin-top:4px;">
-    <div style="text-align:center;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
       <button type="button" class="btn-primary" onclick="generateScholarshipTimeline()">Generate Application Timeline</button>
-      <div id="scholTimelineSpinner" style="display:none;font-size:13px;color:var(--muted);margin-top:8px;">Building your timeline…</div>
+      <button type="button" id="scholPrintBtn" style="display:none;padding:9px 18px;font-size:13px;font-weight:700;border:1.5px solid var(--primary);border-radius:6px;background:#fff;color:var(--primary);cursor:pointer;" onclick="printTimeline()">Print Timeline</button>
+      <div id="scholTimelineSpinner" style="display:none;font-size:13px;color:var(--muted);">Building your timeline…</div>
     </div>
     <div id="scholTimelineOutput"></div>
   </div>
@@ -1872,9 +1882,9 @@
     <!-- Step 2: Repayment Plan Results (hidden until analysis runs) -->
     <div id="debtResultsCard" style="display:none;">
 
-        <!-- AI Recommendation -->
+        <!-- AI Assist -->
         <div class="debt-step">
-            <p class="debt-section-title">AI Recommendation</p>
+            <p class="debt-section-title">AI Assist <span class="groq-tag">Groq · llama-3.3-70b</span></p>
             <div id="debtAiAdvice" class="debt-ai-box" aria-live="polite"></div>
         </div>
 
@@ -1974,16 +1984,18 @@
 
 <div class="container" style="max-width:760px;">
     <div class="card">
-        <h2>Ask Astra About Your Profile</h2>
-        <p class="debt-step-sub">Astra answers using only your own saved FAFSA Prep profile — build your profile in the FAFSA Prep tab first.</p>
-
-        <div id="chatMessages" style="height:360px;overflow-y:auto;border:1.5px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px;background:#fafbfc;font-size:13px;line-height:1.6;"></div>
-
-        <div style="display:flex;gap:8px;">
-            <input type="text" id="chatInput" placeholder="e.g. What deadlines should I prioritize?" style="flex:1;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;" onkeydown="if(event.key==='Enter'){sendChatMessage();}">
-            <button type="button" class="btn-primary" style="padding:10px 20px;" onclick="sendChatMessage()">Send</button>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
+            <h2 style="margin:0;">Ask Astra</h2>
+            <span id="chatInstitutionBadge" style="display:none;background:var(--navy,#1a2e4a);color:#fff;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:20px;"></span>
         </div>
-        <div id="chatSpinner" style="display:none;font-size:12px;color:var(--muted);margin-top:8px;">Astra is thinking…</div>
+        <p class="debt-step-sub">Astra answers questions about all students at your institution. Add students in the FAFSA Prep tab first.</p>
+
+        <div style="display:flex;flex-direction:column;width:100%;box-sizing:border-box;">
+            <div id="chatMessages" style="height:360px;overflow-y:auto;border:1.5px solid var(--border);border-radius:8px;padding:14px;margin-bottom:8px;background:#fafbfc;font-size:13px;line-height:1.6;box-sizing:border-box;"></div>
+            <input type="text" id="chatInput" placeholder="Ask about your students…" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;box-sizing:border-box;" onkeydown="if(event.key==='Enter'){sendChatMessage();}">
+            <button type="button" class="btn-primary" style="margin-top:8px;" onclick="sendChatMessage()">Send</button>
+            <div id="chatSpinner" style="display:none;font-size:12px;color:var(--muted);margin-top:6px;">Astra is thinking…</div>
+        </div>
     </div>
 </div>
 </div><!-- end #tab-chat -->
@@ -1994,6 +2006,7 @@
     // ── STATE ──────────────────────────────────────────────────────────────────
     let searchCount      = 0;
     let debtSearchCount  = 0;
+    let lastCreditData   = {};
     let fafsaUsageCount  = 0;
     let premiumActive    = false;
     const FREE_SEARCHES     = 3;
@@ -3304,10 +3317,16 @@
                 const displayName = data.name || data.email || '';
                 $("#hdrUserName").text(displayName).show();
                 $("#hdrLogout").show();
+                if (data.institutionName) {
+                    $('#hdrInstitution').text(data.institutionName).attr('title', data.institutionName).show();
+                }
                 searchCount     = data.searchCount     || 0;
                 debtSearchCount = data.debtSearchCount || 0;
                 fafsaUsageCount = data.fafsaUsageCount  || 0;
                 premiumActive   = data.subscriptionActive || false;
+                if (data.institutionName) {
+                    $('#chatInstitutionBadge').text(data.institutionName).show();
+                }
                 if (debtSearchCount >= FREE_SEARCHES && !premiumActive) {
                     applyDebtPaywall();
                 }
@@ -3511,7 +3530,7 @@
                 $('#fafsaLastName').val(parts[parts.length - 1] || '');
             }
             if (data.dateOfBirth) $('#fafsaDob').val(data.dateOfBirth);
-            if (data.planningYear) $('#fafsaPlanningYear').val(data.planningYear);
+            if (data.planningYear) { $('#fafsaPlanningYear').val(data.planningYear); updateFafsaYearHint(); }
             if (data.extractedData) {
                 Object.assign(fafsaExtractedKV, data.extractedData);
                 renderFafsaExtractedPreview(data.extractedData);
@@ -3535,6 +3554,33 @@
     }
 
     // ── FAFSA SEARCH-FIRST FLOW ───────────────────────────────────────────────
+
+    function toggleFafsaDocAccordion() {
+        const hdr  = document.querySelector('#fafsaDocAccordion .prem-section-hdr');
+        const body = document.getElementById('fafsaDocList');
+        hdr.classList.toggle('open');
+        body.classList.toggle('open');
+    }
+
+    function updateFafsaDocCount() {
+        const count = $('#fafsaDocList .credit-option-card').length;
+        $('#fafsaDocCount').text(count);
+    }
+
+    // FAFSA year relationship: college start year → award year → required tax year (always 2 years back)
+    function fafsaTaxYear(startYear) { return startYear - 2; }
+    function fafsaAwardYear(startYear) { return startYear + '-' + (startYear + 1); }
+
+    function updateFafsaYearHint() {
+        const val = parseInt($('#fafsaPlanningYear').val(), 10);
+        const hint = $('#fafsaYearHint');
+        if (!val || val < 2024 || val > 2035) { hint.hide(); return; }
+        const taxYear = fafsaTaxYear(val);
+        const awardYear = fafsaAwardYear(val);
+        hint.html(
+            `Fall ${val} enrollment &rarr; <strong>${awardYear} FAFSA</strong> &rarr; uses <strong>${taxYear} tax data</strong>`
+        ).show();
+    }
 
     function fafsaResetSearch() {
         fafsaCurrentStudentId = null;
@@ -3627,6 +3673,7 @@
         $('#fafsaSearchPanel').hide();
         $('#fafsaCreatePanel').hide();
         $('#fafsaFoundPanel').show();
+        updateFafsaDocCount();
     }
 
     function saveFafsaProfile() {
@@ -3670,59 +3717,87 @@
         const files = $('#fafsaFileInput')[0].files;
         if (!files || files.length === 0) { alert('Please choose at least one file to upload.'); return; }
         if (!fafsaCurrentStudentId) { alert('Please search for or create a student profile first.'); return; }
+        if (files.length > 10) { alert('Maximum 10 files per upload. Please select up to 10 documents.'); return; }
 
-        $('#fafsaUploadSpinner').show();
+        const fileArr = Array.from(files);
         $('#fafsaUploadBtn').prop('disabled', true);
 
-        const uploadOne = (file) => {
-            const formData = new FormData();
-            formData.append('file', file);
-            return $.ajax({
-                url: '/api/fafsa/student/' + fafsaCurrentStudentId + '/upload',
-                method: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false
-            });
+        // Render status rows for every file immediately so the user sees the list before anything starts
+        const sseCardMap = {};
+        let statusHtml = '';
+        fileArr.forEach(f => {
+            const key = f.name;
+            statusHtml += `<div class="credit-option-card" data-sse-file="${key.replace(/"/g,'&quot;')}"
+                style="margin-bottom:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;">
+                <span style="font-size:18px;">📄</span>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${key}</div>
+                    <div class="sse-sub" style="font-size:11px;color:var(--muted);">Queued…</div>
+                </div>
+                <span class="sse-badge" style="font-size:11px;color:var(--muted);">⏳</span>
+            </div>`;
+        });
+        $('#fafsaUploadStatusList').html(statusHtml);
+        // Index cards by filename for fast SSE updates
+        $('#fafsaUploadStatusList [data-sse-file]').each(function() {
+            sseCardMap[$(this).attr('data-sse-file')] = this;
+        });
+
+        // Open SSE stream
+        const evtSource = new EventSource('/api/fafsa/student/' + fafsaCurrentStudentId + '/extract-stream');
+        evtSource.addEventListener('status', function(e) {
+            try {
+                const d = JSON.parse(e.data);
+                const card = sseCardMap[d.filename];
+                if (!card) return;
+                const sub   = card.querySelector('.sse-sub');
+                const badge = card.querySelector('.sse-badge');
+                if (d.status === 'uploading') {
+                    sub.textContent   = 'Uploading…';
+                    badge.textContent = '⬆';
+                    badge.style.color = 'var(--muted)';
+                } else if (d.status === 'extracting') {
+                    sub.textContent   = 'Extracting fields…';
+                    badge.textContent = '🔍';
+                    badge.style.color = 'var(--primary)';
+                } else if (d.status === 'done') {
+                    sub.textContent   = (d.kvCount || 0) + ' fields extracted';
+                    badge.innerHTML   = '<span style="color:var(--accent);font-weight:700;">✓ Done</span>';
+                } else if (d.status === 'error') {
+                    sub.textContent   = 'Extraction failed';
+                    badge.innerHTML   = '<span style="color:#c0392b;font-weight:700;">✗ Error</span>';
+                }
+            } catch(ignored) {}
+        });
+        evtSource.onerror = () => evtSource.close();
+
+        // Upload files sequentially; SSE events update the badges as each progresses
+        const uploadOne = file => {
+            const fd = new FormData();
+            fd.append('file', file);
+            return $.ajax({ url: '/api/fafsa/student/' + fafsaCurrentStudentId + '/upload',
+                method: 'POST', data: fd, processData: false, contentType: false });
         };
 
         let chain = Promise.resolve();
-        const results = [];
-        Array.from(files).forEach(file => {
-            chain = chain.then(() => uploadOne(file).then(resp => {
-                if (resp.paywalled) { applyFafsaPaywall(); return; }
-                results.push(resp);
+        fileArr.forEach(file => {
+            chain = chain.then(() => uploadOne(file).then(r => {
+                if (r.paywalled) { applyFafsaPaywall(); return; }
+                if (r.extracted) Object.assign(fafsaExtractedKV, r.extracted);
                 noteFafsaUsage();
-            }));
+            }).catch(() => {}));
         });
 
         chain.then(() => {
-            $('#fafsaUploadSpinner').hide();
+            evtSource.close();
             $('#fafsaUploadBtn').prop('disabled', false);
             $('#fafsaFileInput').val('');
-            if (results.length > 0) {
-                results.forEach(r => {
-                    if (r.extracted) Object.assign(fafsaExtractedKV, r.extracted);
-                    renderFafsaExtractedPreview({ [r.filename]: r.extracted }, true);
-                    // Add to doc list
-                    const kvCount = r.extracted ? Object.keys(r.extracted).length : 0;
-                    const newDoc = `<div class="credit-option-card" style="margin-bottom:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;">
-                        <span style="font-size:18px;">📄</span>
-                        <div style="flex:1;min-width:0;">
-                            <div style="font-weight:600;font-size:13px;">${r.filename}</div>
-                            <div style="font-size:11px;color:var(--muted);">${kvCount} fields extracted · just now</div>
-                        </div>
-                        ${kvCount > 0 ? '<span style="color:var(--accent);font-size:11px;font-weight:700;">✓ Extracted</span>' : '<span style="color:#c0392b;font-size:11px;">⚠ Not extracted</span>'}
-                    </div>`;
-                    $('#fafsaDocList').append(newDoc);
-                });
-                $('#fafsaSummarySection').show();
-                $('#fafsaPostExtractSection').css({opacity:'1','pointer-events':'auto','user-select':'auto'});
-            }
-        }).catch(() => {
-            $('#fafsaUploadSpinner').hide();
-            $('#fafsaUploadBtn').prop('disabled', false);
-            alert('Could not extract one or more documents. Please try again.');
+            // Move completed status cards from the upload area into the persistent doc list
+            const doneCards = $('#fafsaUploadStatusList').html();
+            $('#fafsaUploadStatusList').html('');
+            $('#fafsaDocList').prepend(doneCards);
+            updateFafsaDocCount();
+            $('#fafsaPostExtractSection').css({opacity:'1','pointer-events':'auto','user-select':'auto'});
         });
     }
 
@@ -3995,15 +4070,28 @@
                 if (data.paywalled) { applyFafsaPaywall(); return; }
                 noteFafsaUsage();
                 let html = '';
+                // Tax year discrepancy banner
+                if (data.discrepancy) {
+                    const d = data.discrepancy;
+                    html += `<div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+                        <div style="font-size:13px;font-weight:700;color:#c2410c;margin-bottom:4px;">⚠ Tax Year Mismatch Detected</div>
+                        <div style="font-size:13px;color:#7c2d12;margin-bottom:6px;">${d.message || ''}</div>
+                        ${d.handbookRule ? `<div style="font-size:11px;color:#9a3412;background:rgba(249,115,22,0.08);border-radius:4px;padding:5px 8px;">${d.handbookRule}</div>` : ''}
+                    </div>`;
+                }
+                html += '<div style="display:flex;flex-direction:column;gap:12px;">';
                 (data.opportunities || []).forEach(o => {
-                    html += `<div class="credit-option-card">
-                        <div class="co-name">${o.title || ''}</div>
+                    html += `<div class="credit-option-card" style="padding:14px 16px;">
+                        <div class="co-name" style="margin-bottom:4px;">${o.title || ''}</div>
+                        ${o.fafsa_field ? `<div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">FAFSA field: ${o.fafsa_field}</div>` : ''}
                         <div class="co-detail">${o.rationale || ''}</div>
-                        <div class="co-perk">${o.caveat || ''}</div>
                     </div>`;
                 });
-                html = `<div class="credit-options-grid">${html}</div>`;
-                if (data.generalNote) html += `<p style="font-size:12px;color:var(--muted);margin-top:12px;">${data.generalNote}</p>`;
+                html += '</div>';
+                const srcUrl = data.source_url || 'https://fsapartners.ed.gov/knowledge-center/fsa-handbook';
+                const srcLabel = data.source || 'FSA Handbook, AVG Ch 3';
+                html += `<p style="font-size:12px;color:var(--muted);margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">Confirm with a tax professional to ensure this move complies with tax regulations and aligns with overall financial goals.</p>`;
+                html += `<p style="font-size:11px;color:var(--muted);margin-top:6px;">Source: <a href="${srcUrl}" target="_blank" rel="noopener" style="color:var(--primary);">${srcLabel}</a></p>`;
                 $('#fafsaAssetResult').html(html).show();
             },
             error: function() {
@@ -4053,18 +4141,13 @@
         });
         if (circumstances.length === 0) { alert('Check at least one special circumstance.'); return; }
 
-        const formData = new FormData();
-        formData.append('circumstances', JSON.stringify(circumstances));
         const files = $('#fafsaPjFiles')[0].files;
-        Array.from(files).forEach(f => formData.append('files', f));
-
         $('#fafsaPjSpinner').show();
         $.ajax({
             url: '/api/fafsa/professional-judgment',
             method: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
+            contentType: 'application/json',
+            data: JSON.stringify({ circumstances, extractedData: fafsaExtractedKV }),
             success: function(data) {
                 $('#fafsaPjSpinner').hide();
                 if (data.paywalled) { applyFafsaPaywall(); return; }
@@ -4172,62 +4255,94 @@
         });
     }
 
+    // ── Scholarship tab: target school chips ─────────────────────────────────
+    let scholSelectedSchools = [];
+
+    function scholAddSchool(name) {
+        if (!name || scholSelectedSchools.includes(name)) return;
+        scholSelectedSchools.push(name);
+        renderScholChips();
+        $('#scholSchoolSearch').val('');
+    }
+
+    function scholRemoveSchool(name) {
+        scholSelectedSchools = scholSelectedSchools.filter(s => s !== name);
+        renderScholChips();
+    }
+
+    function renderScholChips() {
+        const container = $('#scholSchoolChips');
+        container.empty();
+        scholSelectedSchools.forEach(name => {
+            container.append(
+                $('<span>').css({
+                    display: 'inline-flex', alignItems: 'center', gap: '5px',
+                    background: 'rgba(201,168,124,0.18)', border: '1px solid var(--primary)',
+                    borderRadius: '14px', padding: '3px 10px 3px 12px', fontSize: '12px',
+                    fontWeight: '600', color: 'var(--primary-dk)'
+                }).text(name).append(
+                    $('<span>').text('×').css({
+                        cursor: 'pointer', fontSize: '14px', lineHeight: '1',
+                        color: 'var(--muted)', marginLeft: '2px'
+                    }).on('click', () => scholRemoveSchool(name))
+                )
+            );
+        });
+    }
+
+    // Wire up scorecard autocomplete on school search input (same endpoint as Award Assist)
+    $('#scholSchoolSearch').autocomplete({
+        source: function(request, response) {
+            $.get('/api/colleges/search?term=' + encodeURIComponent(request.term), function(data) {
+                response(data);
+            }).fail(function() { response([]); });
+        },
+        minLength: 2,
+        select: function(event, ui) {
+            scholAddSchool(ui.item.value);
+            return false;
+        }
+    });
+
     function scholDemographics() {
         return {
-            gpa:            $('#scholGpa').val().trim(),
-            major:          $('#scholMajor').val().trim(),
-            state:          $('#scholState').val(),
-            citizenship:    $('#scholCitizenship').val(),
-            ethnicity:      $('#scholEthnicity').val().trim(),
-            financialNeed:  $('#scholFinancialNeed').val(),
-            firstGen:       $('#scholFirstGen').is(':checked'),
+            gpa:             $('#scholGpa').val().trim(),
+            major:           $('#scholMajor').val().trim(),
+            state:           $('#scholState').val(),
+            citizenship:     $('#scholCitizenship').val(),
+            ethnicity:       $('#scholEthnicity').val().trim(),
+            firstGen:        $('#scholFirstGen').is(':checked'),
             extracurriculars: $('#scholExtracurriculars').val().trim()
         };
     }
 
-    function searchExternalScholarships() {
-        $('#scholSearchSpinner').text('Searching external scholarship databases…').show();
+    function searchScholarships() {
+        $('#scholSearchSpinner').text('Searching scholarships…').show();
+        $('#scholResultsSection').hide();
         $.ajax({
-            url: '/api/scholarship/external',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                studentId:   scholStudentId,
-                demographics: scholDemographics(),
-                comments:    $('#scholComments').val().trim()
-            }),
-            success(data) {
-                $('#scholSearchSpinner').hide();
-                renderScholarshipResults(data.scholarships || [], 'scholExternalResults', 'scholExternalSection', 'scholExternalSubtitle', 'external');
-            },
-            error() {
-                $('#scholSearchSpinner').hide();
-                alert('Could not retrieve external scholarships. Please try again.');
-            }
-        });
-    }
-
-    function searchSchoolScholarships() {
-        const schools = $('#scholTargetSchools').val().split(',').map(s => s.trim()).filter(Boolean);
-        if (!schools.length) { alert('Enter at least one target school above.'); return; }
-        $('#scholSearchSpinner').text('Searching school-specific scholarship pages…').show();
-        $.ajax({
-            url: '/api/scholarship/school-specific',
+            url: '/api/scholarship/search',
             method: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({
                 studentId:    scholStudentId,
                 demographics: scholDemographics(),
                 comments:     $('#scholComments').val().trim(),
-                targetSchools: schools
+                targetSchools: scholSelectedSchools
             }),
             success(data) {
                 $('#scholSearchSpinner').hide();
-                renderScholarshipResults(data.scholarships || [], 'scholSchoolResults', 'scholSchoolSection', 'scholSchoolSubtitle', 'school');
+                const scholarships = data.scholarships || [];
+                if (!scholarships.length) {
+                    $('#scholAllResults').html('<p style="font-size:13px;color:var(--muted);">No matching scholarships found. Try broadening your criteria.</p>');
+                    $('#scholResultsSubtitle').text('');
+                } else {
+                    $('#scholResultsSubtitle').text(scholarships.length + ' matching scholarships found. Select the ones you want to apply to.');
+                    renderScholarshipResults(scholarships, 'scholAllResults', 'scholResultsSection', 'scholResultsSubtitle', 'all');
+                }
             },
             error() {
                 $('#scholSearchSpinner').hide();
-                alert('Could not retrieve school-specific scholarships. Please try again.');
+                alert('Could not retrieve scholarships. Please try again.');
             }
         });
     }
@@ -4302,19 +4417,24 @@
         });
     }
 
+    let lastTimelineItems = [];
+
+    const TIMELINE_CAT_COLORS = {
+        'Prepare':            { bg:'#eef3ff', border:'#b3c5f7', dot:'#4a6cf7', label:'#2a4ac7' },
+        'Write':              { bg:'#fff8e6', border:'#f0d070', dot:'#c49a00', label:'#7a5f00' },
+        'Request':            { bg:'#f0faff', border:'#a0d8f0', dot:'#0a85c2', label:'#065a87' },
+        'Submit':             { bg:'#edfaf0', border:'#90d8a0', dot:'#1a9a3a', label:'#0f6627' },
+        'Follow-up':          { bg:'#fff0f0', border:'#f0a0a0', dot:'#c23a3a', label:'#8a1a1a' },
+        'Award Notification': { bg:'#f5eeff', border:'#c8a0f0', dot:'#7a3ac2', label:'#4a1a87' }
+    };
+
     function renderTimeline(items) {
         if (!Array.isArray(items) || !items.length) {
             $('#scholTimelineOutput').html('<p style="font-size:13px;color:var(--muted);">No timeline items returned.</p>');
+            $('#scholPrintBtn').hide();
             return;
         }
-        const categoryColors = {
-            'Prepare':              { bg:'#eef3ff', border:'#b3c5f7', dot:'#4a6cf7' },
-            'Write':                { bg:'#fff8e6', border:'#f0d070', dot:'#c49a00' },
-            'Request':              { bg:'#f0faff', border:'#a0d8f0', dot:'#0a85c2' },
-            'Submit':               { bg:'#edfaf0', border:'#90d8a0', dot:'#1a9a3a' },
-            'Follow-up':            { bg:'#fff0f0', border:'#f0a0a0', dot:'#c23a3a' },
-            'Award Notification':   { bg:'#f5eeff', border:'#c8a0f0', dot:'#7a3ac2' }
-        };
+        lastTimelineItems = items;
         let currentWeek = '';
         let html = '<div style="margin-top:8px;">';
         items.forEach(item => {
@@ -4324,14 +4444,14 @@
                 html += `<p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:18px 0 6px;">${item.week || ''}</p><div>`;
             }
             const cat = item.category || 'Prepare';
-            const c = categoryColors[cat] || categoryColors['Prepare'];
+            const c = TIMELINE_CAT_COLORS[cat] || TIMELINE_CAT_COLORS['Prepare'];
             const due = item.dueDate ? ` &nbsp;<span style="font-size:11px;color:var(--muted);">Due ${item.dueDate}</span>` : '';
             html += `<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 12px;background:${c.bg};border:1px solid ${c.border};border-radius:7px;margin-bottom:6px;">
               <span style="width:10px;height:10px;background:${c.dot};border-radius:50%;flex-shrink:0;margin-top:3px;"></span>
               <div style="flex:1;">
                 <span style="font-size:13px;color:var(--text);">${item.action || ''}</span>${due}
                 <div style="margin-top:2px;">
-                  <span style="font-size:10px;background:${c.border};color:var(--navy);border-radius:10px;padding:1px 8px;">${cat}</span>
+                  <span style="font-size:10px;background:${c.border};color:${c.label};border-radius:10px;padding:1px 8px;">${cat}</span>
                   ${item.relatedScholarship && item.relatedScholarship !== 'All' ? `<span style="font-size:10px;color:var(--muted);margin-left:6px;">${item.relatedScholarship}</span>` : ''}
                 </div>
               </div>
@@ -4339,6 +4459,93 @@
         });
         html += '</div></div>';
         $('#scholTimelineOutput').html(html);
+        $('#scholPrintBtn').show();
+    }
+
+    function printTimeline() {
+        if (!lastTimelineItems.length) return;
+        const cats = TIMELINE_CAT_COLORS;
+        const generated = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+
+        // Group items by week for page-break-friendly rendering
+        const weeks = [];
+        lastTimelineItems.forEach(item => {
+            const w = item.week || 'Upcoming';
+            let group = weeks.find(g => g.week === w);
+            if (!group) { group = { week: w, items: [] }; weeks.push(group); }
+            group.items.push(item);
+        });
+
+        const catLegend = Object.entries(cats).map(([name, c]) =>
+            `<span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px;">
+               <span style="width:9px;height:9px;border-radius:50%;background:${c.dot};display:inline-block;"></span>
+               <span style="font-size:10px;color:#444;">${name}</span>
+             </span>`
+        ).join('');
+
+        const weeksHtml = weeks.map((g, gi) => {
+            const rows = g.items.map(item => {
+                const cat = item.category || 'Prepare';
+                const c = cats[cat] || cats['Prepare'];
+                const due = item.dueDate ? `<span style="font-size:10px;color:#666;margin-left:8px;">Due: ${item.dueDate}</span>` : '';
+                const rel = item.relatedScholarship && item.relatedScholarship !== 'All'
+                    ? `<span style="font-size:10px;color:#888;margin-left:8px;">— ${item.relatedScholarship}</span>` : '';
+                return `<tr style="page-break-inside:avoid;">
+                  <td style="padding:7px 10px;border-bottom:1px solid #e8e8e8;vertical-align:top;width:130px;">
+                    <span style="display:inline-block;background:${c.bg};border:1px solid ${c.border};color:${c.label};border-radius:10px;padding:2px 8px;font-size:10px;font-weight:600;">${cat}</span>
+                  </td>
+                  <td style="padding:7px 10px;border-bottom:1px solid #e8e8e8;vertical-align:top;font-size:12px;color:#222;line-height:1.5;">
+                    ${item.action || ''}${due}${rel}
+                  </td>
+                </tr>`;
+            }).join('');
+            // Start a new page every 3 weeks (avoids orphaned weeks on long timelines)
+            const pageBreak = gi > 0 && gi % 3 === 0 ? 'page-break-before:always;' : '';
+            return `<div style="${pageBreak}margin-bottom:24px;">
+              <div style="background:#1a2f4a;color:#fff;padding:7px 14px;border-radius:5px 5px 0 0;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;">${g.week}</div>
+              <table style="width:100%;border-collapse:collapse;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 5px 5px;overflow:hidden;">
+                <tbody>${rows}</tbody>
+              </table>
+            </div>`;
+        }).join('');
+
+        const win = window.open('', '_blank', 'width=900,height=700');
+        win.document.write(`<!DOCTYPE html><html><head>
+          <meta charset="utf-8">
+          <title>Scholarship Application Timeline</title>
+          <style>
+            * { box-sizing:border-box; margin:0; padding:0; }
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; color:#222; background:#fff; padding:32px 40px; }
+            @page { size: letter; margin: 0.75in 0.75in 0.75in 0.75in; }
+            @media print {
+              body { padding:0; }
+              .no-print { display:none !important; }
+              h1 { font-size:18px; }
+            }
+          </style>
+        </head><body>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+            <div>
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#b08a50;margin-bottom:3px;">Astra · Callisto Tech</div>
+              <h1 style="font-size:22px;font-weight:800;color:#1a2f4a;">Scholarship Application Timeline</h1>
+            </div>
+            <div style="text-align:right;font-size:11px;color:#888;">Generated ${generated}</div>
+          </div>
+          <div style="border-top:2px solid #1a2f4a;margin:10px 0 18px;"></div>
+          <div style="margin-bottom:18px;padding:8px 12px;background:#f7f7f7;border-radius:5px;">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#888;margin-bottom:6px;">Category Legend</div>
+            <div>${catLegend}</div>
+          </div>
+          ${weeksHtml}
+          <div style="margin-top:32px;padding-top:10px;border-top:1px solid #e0e0e0;font-size:10px;color:#aaa;">
+            Generated by Astra, powered by Callisto Tech · For informational purposes only
+          </div>
+          <div class="no-print" style="margin-top:24px;text-align:center;">
+            <button onclick="window.print()" style="padding:10px 28px;background:#1a2f4a;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;">Print / Save as PDF</button>
+          </div>
+        </body></html>`);
+        win.document.close();
+        win.focus();
     }
 
     // ── ASK ASTRA (CHATBOT) ─────────────────────────────────────────────────
@@ -4464,7 +4671,7 @@
         if (advice.rationale)   aiHtml += `<p>${advice.rationale}</p>`;
         if (advice.keyInsight)  aiHtml += `<p style="margin-top:8px;"><strong>Key Insight:</strong> ${advice.keyInsight}</p>`;
         if (advice.pslfNote)    aiHtml += `<p style="margin-top:8px;color:var(--accent);"><strong>PSLF Strategy:</strong> ${advice.pslfNote}</p>`;
-        if (advice.warningFlag) aiHtml += `<p style="margin-top:8px;color:#c53030;"><strong>Warning:</strong> ${advice.warningFlag}</p>`;
+        if (advice.warningFlag && advice.warningFlag !== 'null') aiHtml += `<p style="margin-top:8px;color:#c53030;"><strong>Warning:</strong> ${advice.warningFlag}</p>`;
         if (!aiHtml)            aiHtml  = '<p>Analysis complete. Review your repayment options below.</p>';
         $('#debtAiAdvice').html(aiHtml);
 
@@ -4609,6 +4816,9 @@
             </div>`;
         }
 
+        // Store for print functions
+        lastCreditData = { btCards, refiLenders, privateBalance, hasPrivate, score };
+
         // ── 0% Balance Transfer Cards ─────────────────────────────────────────
         if (privateBalance > 15000) {
             html += `<p style="font-size:13px;color:var(--muted);margin-bottom:16px;">
@@ -4619,8 +4829,11 @@
                 ? `Transfer your $${Number(privateBalance).toLocaleString()} private balance to a 0% card and pay zero interest during the intro period. Credit union cards have <strong>no transfer fee</strong>.`
                 : `If you have private loans or credit card debt, these cards let you transfer the balance and pay <strong>zero interest</strong> for up to 21 months. Credit union options charge <strong>no transfer fee</strong>.`;
 
-            html += `<p class="debt-section-title" style="margin-bottom:8px;">0% Balance Transfer Cards</p>
-                <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">${btIntro}</p>`;
+            html += `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+                <p class="debt-section-title" style="margin:0;">0% Balance Transfer Cards</p>
+                <button type="button" onclick="printCreditSection('bt')" style="font-size:12px;font-weight:700;padding:5px 14px;border:1.5px solid var(--primary);border-radius:5px;background:#fff;color:var(--primary);cursor:pointer;">Print / Save PDF</button>
+            </div>
+            <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">${btIntro}</p>`;
 
             if (btCards.length === 0) {
                 html += `<p style="font-size:13px;color:var(--muted);margin-bottom:16px;">
@@ -4637,8 +4850,11 @@
             ? `Refinancing your $${Number(privateBalance).toLocaleString()} private balance at a lower rate reduces total interest paid. Rates shown are APR ranges — your actual rate depends on credit and income.`
             : `If you have private loans, refinancing at a lower rate can significantly reduce total interest. Rates below are APR ranges — your actual rate depends on credit history and income.`;
 
-        html += `<p class="debt-section-title" style="margin-top:24px;margin-bottom:8px;">Private Loan Refinancing</p>
-            <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">${refiIntro}</p>`;
+        html += `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:24px;margin-bottom:8px;">
+            <p class="debt-section-title" style="margin:0;">Private Loan Refinancing</p>
+            <button type="button" onclick="printCreditSection('refi')" style="font-size:12px;font-weight:700;padding:5px 14px;border:1.5px solid var(--primary);border-radius:5px;background:#fff;color:var(--primary);cursor:pointer;">Print / Save PDF</button>
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">${refiIntro}</p>`;
 
         if (refiLenders.length === 0) {
             html += `<p style="font-size:13px;color:var(--muted);margin-bottom:16px;">No live refinancing offers found for your credit range right now.</p>`;
@@ -4693,6 +4909,80 @@
             <div class="co-perk">${l.perk}</div>
             <a href="${l.url}" target="_blank" rel="noopener" class="co-apply">Check your rate at ${l.name} →</a>
         </div>`;
+    }
+
+    function printCreditSection(section) {
+        const d = lastCreditData;
+        if (!d || (!d.btCards && !d.refiLenders)) return;
+        const generated = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+        const isBt = section === 'bt';
+        const title = isBt ? '0% Balance Transfer Cards' : 'Private Loan Refinancing Options';
+
+        const cardHtml = (isBt ? (d.btCards || []) : (d.refiLenders || [])).map(item => {
+            if (item.source === 'live') {
+                return `<div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px 16px;margin-bottom:12px;page-break-inside:avoid;">
+                    <div style="font-size:10px;font-weight:700;color:#b08a50;text-transform:uppercase;margin-bottom:4px;">Live Result</div>
+                    <div style="font-size:14px;font-weight:700;color:#1a2f4a;margin-bottom:4px;">${item.name || ''}</div>
+                    <div style="font-size:12px;color:#555;margin-bottom:8px;">${item.snippet || ''}</div>
+                    <div style="font-size:11px;color:#b08a50;">${item.url || ''}</div>
+                </div>`;
+            }
+            if (isBt) {
+                const feeNote = item.transferFee === 'None' ? 'No transfer fee' : `Transfer fee: ${item.transferFee}`;
+                return `<div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px 16px;margin-bottom:12px;page-break-inside:avoid;">
+                    <div style="font-size:10px;font-weight:700;color:${item.type==='cu'?'#2a7a4a':'#1a4a8a'};text-transform:uppercase;margin-bottom:4px;">${item.type==='cu'?'Credit Union':'Bank'}</div>
+                    <div style="font-size:14px;font-weight:700;color:#1a2f4a;margin-bottom:4px;">${item.name}</div>
+                    <div style="font-size:15px;font-weight:800;color:#b08a50;margin-bottom:4px;">${item.introAPR} for ${item.introPeriod} months</div>
+                    <div style="font-size:12px;color:#555;margin-bottom:2px;">${feeNote} · Annual fee: ${item.annualFee}</div>
+                    <div style="font-size:12px;color:#555;margin-bottom:6px;">${item.perk || ''}</div>
+                    ${item.membership ? `<div style="font-size:11px;color:#888;margin-bottom:4px;">Membership: ${item.membership}</div>` : ''}
+                    <div style="font-size:11px;color:#b08a50;">${item.url}</div>
+                </div>`;
+            } else {
+                return `<div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px 16px;margin-bottom:12px;page-break-inside:avoid;">
+                    <div style="font-size:10px;font-weight:700;color:#7a3ac2;text-transform:uppercase;margin-bottom:4px;">Refinancing</div>
+                    <div style="font-size:14px;font-weight:700;color:#1a2f4a;margin-bottom:4px;">${item.name}</div>
+                    <div style="font-size:13px;color:#555;margin-bottom:2px;">Fixed: ${item.fixedFrom} – ${item.fixedTo} &nbsp;|&nbsp; Variable: ${item.varFrom} – ${item.varTo}</div>
+                    <div style="font-size:12px;color:#555;margin-bottom:2px;">Terms: ${item.terms} &nbsp;·&nbsp; Min loan: $${Number(item.minLoan||0).toLocaleString()}</div>
+                    <div style="font-size:12px;color:#555;margin-bottom:6px;">${item.perk || ''}</div>
+                    <div style="font-size:11px;color:#b08a50;">${item.url}</div>
+                </div>`;
+            }
+        }).join('');
+
+        const win = window.open('', '_blank', 'width=860,height=700');
+        win.document.write(`<!DOCTYPE html><html><head>
+            <meta charset="utf-8">
+            <title>${title}</title>
+            <style>
+                * { box-sizing:border-box; margin:0; padding:0; }
+                body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; color:#222; background:#fff; padding:32px 40px; }
+                @page { size:letter; margin:0.75in; }
+                @media print { body { padding:0; } .no-print { display:none !important; } }
+            </style>
+        </head><body>
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+                <div>
+                    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#b08a50;margin-bottom:3px;">Astra · Callisto Tech</div>
+                    <h1 style="font-size:20px;font-weight:800;color:#1a2f4a;">${title}</h1>
+                    ${d.privateBalance > 0 ? `<div style="font-size:12px;color:#666;margin-top:3px;">Private loan balance: $${Number(d.privateBalance).toLocaleString()}</div>` : ''}
+                </div>
+                <div style="text-align:right;font-size:11px;color:#888;">Generated ${generated}</div>
+            </div>
+            <div style="border-top:2px solid #1a2f4a;margin:10px 0 20px;"></div>
+            <div style="background:#fff7ed;border:1px solid #f97316;border-radius:6px;padding:10px 14px;margin-bottom:20px;font-size:11px;color:#7c2d12;">
+                <strong>⚠ Never refinance federal loans into a private loan.</strong> Doing so permanently eliminates income-driven repayment, PSLF, and all federal forgiveness eligibility. These options apply to private loan balances only.
+            </div>
+            ${cardHtml || '<p style="font-size:13px;color:#888;">No offers available for your credit range at this time.</p>'}
+            <div style="margin-top:28px;padding-top:10px;border-top:1px solid #e0e0e0;font-size:10px;color:#aaa;">
+                Rates and offers are informational only. Always verify directly with the lender before applying. Generated by Astra · Callisto Tech.
+            </div>
+            <div class="no-print" style="margin-top:20px;text-align:center;">
+                <button onclick="window.print()" style="padding:10px 28px;background:#1a2f4a;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;">Print / Save as PDF</button>
+            </div>
+        </body></html>`);
+        win.document.close();
+        win.focus();
     }
 
     function copyHardshipLetter() {

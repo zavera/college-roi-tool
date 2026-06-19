@@ -5,6 +5,7 @@ import com.example.collegeroitool.model.AppUser;
 import com.example.collegeroitool.service.CreditOfferSearchService;
 import com.example.collegeroitool.service.DebtManagementService;
 import com.example.collegeroitool.service.GroqService;
+import com.example.collegeroitool.service.TavilySearchClient;
 import com.example.collegeroitool.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,17 +29,40 @@ public class DebtManagementController {
     private final GroqService groqService;
     private final CreditOfferSearchService creditOfferSearchService;
     private final UserService userService;
+    private final TavilySearchClient tavilySearchClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final List<String> STUDENTAID_DOMAINS = List.of("studentaid.gov", "consumerfinance.gov");
 
     @Value("${premium.dev.bypass:false}")
     private boolean devBypass;
 
     public DebtManagementController(DebtManagementService debtService, GroqService groqService,
-                                     CreditOfferSearchService creditOfferSearchService, UserService userService) {
+                                     CreditOfferSearchService creditOfferSearchService,
+                                     UserService userService, TavilySearchClient tavilySearchClient) {
         this.debtService = debtService;
         this.groqService = groqService;
         this.creditOfferSearchService = creditOfferSearchService;
         this.userService = userService;
+        this.tavilySearchClient = tavilySearchClient;
+    }
+
+    /** Fetches live studentaid.gov content relevant to the given query for prompt injection. */
+    private String fetchLiveDebtContent(String... queries) {
+        StringBuilder sb = new StringBuilder();
+        for (String q : queries) {
+            try {
+                var results = tavilySearchClient.searchHandbook(q, 2, STUDENTAID_DOMAINS, 900);
+                for (var r : results) {
+                    sb.append("\n[Source: ").append(r.get("url")).append("]\n");
+                    sb.append(r.get("content")).append("\n");
+                }
+            } catch (Exception ignored) {}
+        }
+        String content = sb.toString().trim();
+        return content.isEmpty()
+            ? "(Live search unavailable — reason from training knowledge of studentaid.gov)"
+            : content;
     }
 
     @PostMapping("/repayment-plans")
@@ -49,7 +73,11 @@ public class DebtManagementController {
             if (req.getEmployerName() != null && !req.getEmployerName().isBlank()) {
                 pslfResult = debtService.checkPslfEligibility(req.getEmployerName());
             }
-            String aiJson = groqService.getRepaymentRecommendation(req, plans, pslfResult);
+            String liveContent = fetchLiveDebtContent(
+                "SAVE IDR income-driven repayment plan 2025 student loan site:studentaid.gov",
+                "PSLF public service loan forgiveness qualifying payments 2025 site:studentaid.gov"
+            );
+            String aiJson = groqService.getRepaymentRecommendation(req, plans, pslfResult, liveContent);
             Object aiParsed;
             try {
                 aiParsed = objectMapper.readValue(aiJson, Object.class);
@@ -114,7 +142,15 @@ public class DebtManagementController {
     @PostMapping("/hardship-letter")
     public ResponseEntity<?> generateHardshipLetter(@RequestBody DebtIntakeRequest req) {
         try {
-            String letter = groqService.getHardshipLetter(req);
+            String hardshipType = req.getHardshipType() != null ? req.getHardshipType() : "general";
+            String servicer = req.getLoanServicer() != null ? req.getLoanServicer() : "";
+            String liveContent = fetchLiveDebtContent(
+                "student loan " + hardshipType + " deferment forbearance requirements 2025 site:studentaid.gov",
+                (servicer.isBlank() ? "" : servicer + " loan servicer hardship forbearance contact")
+                    .strip().isEmpty() ? "federal student loan forbearance deferment how to apply site:studentaid.gov"
+                    : servicer + " student loan hardship forbearance deferment 2025"
+            );
+            String letter = groqService.getHardshipLetter(req, liveContent);
             // Split letter and checklist
             String letterText   = letter;
             String checklistText = "";

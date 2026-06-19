@@ -6,6 +6,7 @@ import com.example.collegeroitool.model.StudentDocument;
 import com.example.collegeroitool.repository.DocumentKvExtractRepository;
 import com.example.collegeroitool.repository.StudentDocumentRepository;
 import com.example.collegeroitool.repository.StudentRepository;
+import org.springframework.context.annotation.Lazy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,18 +24,21 @@ public class StudentDocumentService {
     private final DocumentKvExtractRepository kvExtractRepository;
     private final AzureBlobStorageService blobStorageService;
     private final AzureDocumentIntelligenceService documentIntelligenceService;
+    private final InstitutionService institutionService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public StudentDocumentService(StudentRepository studentRepository,
                                   StudentDocumentRepository documentRepository,
                                   DocumentKvExtractRepository kvExtractRepository,
                                   AzureBlobStorageService blobStorageService,
-                                  AzureDocumentIntelligenceService documentIntelligenceService) {
+                                  AzureDocumentIntelligenceService documentIntelligenceService,
+                                  @Lazy InstitutionService institutionService) {
         this.studentRepository = studentRepository;
         this.documentRepository = documentRepository;
         this.kvExtractRepository = kvExtractRepository;
         this.blobStorageService = blobStorageService;
         this.documentIntelligenceService = documentIntelligenceService;
+        this.institutionService = institutionService;
     }
 
     /**
@@ -70,6 +74,7 @@ public class StudentDocumentService {
                                                     String middleName,
                                                     String lastName,
                                                     LocalDate dateOfBirth) throws Exception {
+        boolean[] created = {false};
         Student student = studentRepository
             .findByUserIdAndFirstNameIgnoreCaseAndLastNameIgnoreCaseAndDateOfBirth(
                 userId, firstName, lastName, dateOfBirth)
@@ -80,8 +85,13 @@ public class StudentDocumentService {
                 s.setMiddleName(middleName);
                 s.setLastName(lastName);
                 s.setDateOfBirth(dateOfBirth);
+                created[0] = true;
                 return studentRepository.save(s);
             });
+        if (created[0]) {
+            try { institutionService.enrollStudentInCounselorInstitution(student, userId); }
+            catch (Exception ignored) {}
+        }
 
         List<Map<String, Object>> docDtos = buildDocDtos(student.getId());
         Map<String, Object> result = new LinkedHashMap<>();
@@ -103,6 +113,15 @@ public class StudentDocumentService {
      * Returns the document metadata + extracted KV.
      */
     public Map<String, Object> uploadDocument(Long studentId, MultipartFile file) throws Exception {
+        return uploadDocument(studentId, file, null);
+    }
+
+    /**
+     * Uploads a document for a student, emitting SSE progress events via onExtractionStart.
+     * onExtractionStart is called right before Azure DI extraction begins so the browser
+     * can transition the status badge from "uploading" to "extracting".
+     */
+    public Map<String, Object> uploadDocument(Long studentId, MultipartFile file, Runnable onExtractionStart) throws Exception {
         String filename = file.getOriginalFilename();
         String blobName = "students/" + studentId + "/" + System.currentTimeMillis() + "_" + filename;
         String blobUrl;
@@ -110,8 +129,6 @@ public class StudentDocumentService {
         if (blobStorageService.isEnabled()) {
             blobUrl = blobStorageService.upload(blobName, file.getBytes(), file.getContentType());
         } else {
-            // Blob storage not configured -- store a placeholder URL.
-            // Documents can still be extracted at upload time from in-memory bytes.
             blobUrl = "blob-not-configured/" + blobName;
         }
 
@@ -120,10 +137,10 @@ public class StudentDocumentService {
         doc.setBlobName(blobName);
         doc.setBlobUrl(blobUrl);
         doc.setOriginalFilename(filename);
-        // uploadedAt defaults to NOW() in the entity constructor
         doc.setActive(true);
         doc = documentRepository.save(doc);
 
+        if (onExtractionStart != null) onExtractionStart.run();
         Map<String, String> extracted = documentIntelligenceService.extractKeyValuePairs(file);
 
         DocumentKvExtract kv = new DocumentKvExtract();

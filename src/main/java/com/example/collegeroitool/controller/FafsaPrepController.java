@@ -5,11 +5,16 @@ import com.example.collegeroitool.model.FafsaProfile;
 import com.example.collegeroitool.repository.FafsaProfileRepository;
 import com.example.collegeroitool.service.AzureDocumentIntelligenceService;
 import com.example.collegeroitool.service.DependencyStatusService;
+import com.example.collegeroitool.service.ExtractionProgressRegistry;
+import com.example.collegeroitool.service.FsaHandbookService;
 import com.example.collegeroitool.service.GroqService;
+import com.example.collegeroitool.service.InstitutionService;
 import com.example.collegeroitool.service.SaiCalculatorService;
 import com.example.collegeroitool.service.StudentDocumentService;
 import com.example.collegeroitool.service.TavilySearchClient;
 import com.example.collegeroitool.service.UserService;
+import com.example.collegeroitool.model.Institution;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -37,28 +42,40 @@ public class FafsaPrepController {
     private final AzureDocumentIntelligenceService azureDocumentIntelligenceService;
     private final GroqService groqService;
     private final TavilySearchClient tavilySearchClient;
+    private final FsaHandbookService fsaHandbookService;
     private final DependencyStatusService dependencyStatusService;
     private final SaiCalculatorService saiCalculatorService;
     private final StudentDocumentService studentDocumentService;
+    private final ExtractionProgressRegistry progressRegistry;
+    private final InstitutionService institutionService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${premium.dev.bypass:false}")
     private boolean devBypass;
 
+    @Value("${demo.mode:false}")
+    private boolean demoMode;
+
     public FafsaPrepController(FafsaProfileRepository fafsaProfileRepository, UserService userService,
                                 AzureDocumentIntelligenceService azureDocumentIntelligenceService,
                                 GroqService groqService, TavilySearchClient tavilySearchClient,
+                                FsaHandbookService fsaHandbookService,
                                 DependencyStatusService dependencyStatusService,
                                 SaiCalculatorService saiCalculatorService,
-                                StudentDocumentService studentDocumentService) {
+                                StudentDocumentService studentDocumentService,
+                                ExtractionProgressRegistry progressRegistry,
+                                InstitutionService institutionService) {
         this.fafsaProfileRepository = fafsaProfileRepository;
         this.userService = userService;
         this.azureDocumentIntelligenceService = azureDocumentIntelligenceService;
         this.groqService = groqService;
         this.tavilySearchClient = tavilySearchClient;
+        this.fsaHandbookService = fsaHandbookService;
         this.dependencyStatusService = dependencyStatusService;
         this.saiCalculatorService = saiCalculatorService;
         this.studentDocumentService = studentDocumentService;
+        this.progressRegistry = progressRegistry;
+        this.institutionService = institutionService;
     }
 
     // ── STUDENT LOOKUP + DOCUMENT UPLOAD ────────────────────────────────────
@@ -97,6 +114,7 @@ public class FafsaPrepController {
      */
     @PostMapping("/student/find-or-create")
     public ResponseEntity<?> findOrCreateStudent(@RequestBody Map<String, String> body, Principal principal) {
+        if (demoMode) return ResponseEntity.status(403).body(Map.of("error", "Student management is disabled in demo mode."));
         AppUser user = resolveCurrentUser(principal).orElse(null);
         if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
         try {
@@ -115,21 +133,44 @@ public class FafsaPrepController {
     }
 
     /**
+     * Opens an SSE stream for real-time extraction progress.
+     * The browser opens this before starting uploads; the upload endpoint pushes events here.
+     */
+    @GetMapping(value = "/student/{studentId}/extract-stream", produces = "text/event-stream")
+    public SseEmitter extractionStream(@PathVariable Long studentId, Principal principal) {
+        AppUser user = resolveCurrentUser(principal).orElse(null);
+        if (user == null) {
+            SseEmitter err = new SseEmitter(0L);
+            err.completeWithError(new RuntimeException("Not authenticated"));
+            return err;
+        }
+        return progressRegistry.create(studentId);
+    }
+
+    /**
      * Uploads a document for an existing student, stores the blob, extracts KV, and
-     * persists a document_kv_extracts record. Returns document metadata + extracted KV.
+     * persists a document_kv_extracts record. Emits SSE events at each stage.
      */
     @PostMapping("/student/{studentId}/upload")
     public ResponseEntity<?> uploadStudentDocument(@PathVariable Long studentId,
                                                     @RequestParam("file") org.springframework.web.multipart.MultipartFile file,
                                                     Principal principal) {
+        if (demoMode) return ResponseEntity.status(403).body(Map.of("error", "Document upload is disabled in demo mode."));
         AppUser user = resolveCurrentUser(principal).orElse(null);
         if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
         if (!isUsageAllowed(user)) return ResponseEntity.ok(Map.of("paywalled", true));
+
+        String filename = file.getOriginalFilename();
+        progressRegistry.send(studentId, Map.of("filename", filename, "status", "uploading"));
         try {
-            Map<String, Object> result = studentDocumentService.uploadDocument(studentId, file);
+            Map<String, Object> result = studentDocumentService.uploadDocument(studentId, file,
+                () -> progressRegistry.send(studentId, Map.of("filename", filename, "status", "extracting")));
+            int kvCount = result.get("extracted") instanceof Map<?,?> m ? m.size() : 0;
+            progressRegistry.send(studentId, Map.of("filename", filename, "status", "done", "kvCount", kvCount));
             userService.incrementFafsaUsageCount(user.getEmail());
             return ResponseEntity.ok(result);
         } catch (Exception e) {
+            progressRegistry.send(studentId, Map.of("filename", filename, "status", "error"));
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
     }
@@ -282,13 +323,6 @@ public class FafsaPrepController {
         if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
         if (!isUsageAllowed(user)) return ResponseEntity.ok(Map.of("paywalled", true));
 
-        // Always derived from the authenticated session above — never trust a client-supplied profile/user id.
-        Optional<FafsaProfile> profileOpt = fafsaProfileRepository.findByUser_Email(user.getEmail());
-        if (profileOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Build your FAFSA Prep profile first."));
-        }
-        FafsaProfile profile = profileOpt.get();
-
         String question = (String) body.get("message");
         if (question == null || question.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Message is required."));
@@ -300,10 +334,18 @@ public class FafsaPrepController {
             .map(m -> m.getOrDefault("role", "user") + ": " + m.getOrDefault("content", ""))
             .collect(Collectors.joining("\n"));
 
+        // Resolve institution from server-side session — never trust a client-supplied institutionId.
+        Institution institution = institutionService.resolveActiveInstitution(user)
+            .orElseGet(institutionService::getDefaultInstitution);
+
+        List<Map<String, Object>> roster =
+            institutionService.buildInstitutionalStudentContext(institution.getId());
+
         try {
-            String answer = groqService.getFafsaChatResponse(profile, historyText, question);
+            String answer = groqService.getInstitutionalChatResponse(
+                institution.getName(), roster, historyText, question);
             userService.incrementFafsaUsageCount(user.getEmail());
-            return ResponseEntity.ok(Map.of("answer", answer));
+            return ResponseEntity.ok(Map.of("answer", answer, "institutionName", institution.getName()));
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                 .body(Map.of("error", "Could not get a response: " + e.getMessage()));
@@ -414,33 +456,59 @@ public class FafsaPrepController {
     // ── Asset Repositioning Advisor (AI, gated) ─────────────────────────────────
 
     @PostMapping("/asset-repositioning")
-    public ResponseEntity<?> getAssetRepositioning(Principal principal) {
+    public ResponseEntity<?> getAssetRepositioning(@RequestBody Map<String, Object> body, Principal principal) {
         AppUser user = resolveCurrentUser(principal).orElse(null);
         if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
         if (!isUsageAllowed(user)) return ResponseEntity.ok(Map.of("paywalled", true));
 
-        Optional<FafsaProfile> profileOpt = fafsaProfileRepository.findByUser_Email(user.getEmail());
-        if (profileOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Save your FAFSA profile first."));
-        }
-        FafsaProfile profile = profileOpt.get();
-
-        // Prefer KV from the new document extraction table; fall back to legacy extractedDataJson
-        String kvJson = buildKvJsonFromStudentDocs(user, profile);
-        if (kvJson == null && profile.getExtractedDataJson() == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Upload a tax document first."));
-        }
-        if (kvJson != null) {
-            profile.setExtractedDataJson(kvJson);
-        }
-
         try {
-            String aiJson = groqService.getAssetRepositioningAdvice(profile);
+            // Use KV from request body (already extracted by Azure DI) — no profile required
+            String kvJson = "{}";
+            Object extractedData = body.get("extractedData");
+            Optional<FafsaProfile> profileOpt = fafsaProfileRepository.findByUser_Email(user.getEmail());
+            if (extractedData != null) {
+                kvJson = objectMapper.writeValueAsString(extractedData);
+            } else {
+                // Fall back to profile-stored KV if no data sent in request
+                if (profileOpt.isPresent()) {
+                    String fromDocs = buildKvJsonFromStudentDocs(user, profileOpt.get());
+                    if (fromDocs != null) kvJson = fromDocs;
+                    else if (profileOpt.get().getExtractedDataJson() != null) kvJson = profileOpt.get().getExtractedDataJson();
+                }
+            }
+
+            Integer planningYear = profileOpt.map(FafsaProfile::getPlanningYear).orElse(null);
+            String awardYear = fsaHandbookService.resolveAwardYear(planningYear);
+            String handbookContent = fsaHandbookService.fetchAssetRepositioningContent(awardYear);
+
+            // Tax year consistency check
+            Integer expectedTaxYear = planningYear != null ? fsaHandbookService.expectedTaxYear(planningYear) : null;
+            Integer extractedTaxYear = fsaHandbookService.detectTaxYearFromKv(kvJson);
+            String taxYearNote;
+            if (expectedTaxYear == null) {
+                taxYearNote = "College start year not set — cannot verify tax year alignment.";
+            } else if (extractedTaxYear == null) {
+                taxYearNote = "Could not detect tax year from uploaded documents. Expected: " + expectedTaxYear + ".";
+            } else if (!extractedTaxYear.equals(expectedTaxYear)) {
+                taxYearNote = "MISMATCH: Uploaded documents appear to be from " + extractedTaxYear
+                    + " but the " + awardYear + " FAFSA requires " + expectedTaxYear
+                    + " tax data. Flag this clearly in the discrepancy field.";
+            } else {
+                taxYearNote = "OK: Uploaded documents (" + extractedTaxYear + ") match the expected tax year for the " + awardYear + " FAFSA.";
+            }
+
+            String aiJson = groqService.getAssetRepositioningAdvice(kvJson, awardYear, handbookContent,
+                expectedTaxYear, extractedTaxYear, taxYearNote);
             Map<String, Object> advice = parseJsonOrWrap(aiJson, "generalNote");
 
-            profile.setAssetRepositioningJson(objectMapper.writeValueAsString(advice));
-            profile.setUpdatedAt(LocalDateTime.now());
-            fafsaProfileRepository.save(profile);
+            // Persist result on profile if one exists
+            fafsaProfileRepository.findByUser_Email(user.getEmail()).ifPresent(p -> {
+                try {
+                    p.setAssetRepositioningJson(objectMapper.writeValueAsString(advice));
+                    p.setUpdatedAt(LocalDateTime.now());
+                    fafsaProfileRepository.save(p);
+                } catch (Exception ignored) {}
+            });
 
             userService.incrementFafsaUsageCount(user.getEmail());
             return ResponseEntity.ok(advice);
@@ -464,7 +532,13 @@ public class FafsaPrepController {
             Object circumstances = body.getOrDefault("circumstances", List.of());
             String circumstancesJson = objectMapper.writeValueAsString(circumstances);
 
-            String letter = groqService.getProfessionalJudgmentAppeal(profile.getStudentName(), circumstancesJson);
+            Object extractedData = body.getOrDefault("extractedData", Map.of());
+            String extractedDataJson = objectMapper.writeValueAsString(extractedData);
+
+            String awardYear = fsaHandbookService.resolveAwardYear(profile.getPlanningYear());
+            String handbookContent = fsaHandbookService.fetchProfessionalJudgmentContent(awardYear);
+
+            String letter = groqService.getProfessionalJudgmentAppeal(profile.getStudentName(), circumstancesJson, extractedDataJson, awardYear, handbookContent);
             String letterText = letter;
             String checklistText = "";
             int splitIdx = letter.indexOf("---CHECKLIST---");
