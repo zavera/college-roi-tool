@@ -74,16 +74,8 @@ public class SecurityConfig {
                     "/sitemap.xml",
                     "/robots.txt",
                     "/BingSiteAuth.xml",
-                    "/error",
-                    "/api/demo/document/**"
+                    "/error"
                 ).permitAll()
-                // FAFSA Prep endpoints are restricted to institution users only
-                // (users whose only membership is the default "callisto-tech" instance are blocked)
-                .requestMatchers("/api/fafsa/**").access((authentication, context) -> {
-                    String principal = authentication.get().getName();
-                    boolean allowed = userService.hasInstitutionAccess(principal);
-                    return new org.springframework.security.authorization.AuthorizationDecision(allowed);
-                })
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
