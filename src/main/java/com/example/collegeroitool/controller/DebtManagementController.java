@@ -170,6 +170,45 @@ public class DebtManagementController {
         return result;
     }
 
+    @PostMapping("/state-assistance")
+    public ResponseEntity<?> getStateAssistance(@RequestBody DebtIntakeRequest req) {
+        String state = req.getState();
+        if (state == null || state.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "State is required."));
+        }
+        try {
+            // Three targeted Tavily searches: forgiveness programs, state banks/refinancing, advocacy
+            List<String> stateDomains = List.of();
+            StringBuilder raw = new StringBuilder();
+
+            String[] queries = {
+                state + " state student loan forgiveness repayment assistance program 2025",
+                state + " state bank credit union student loan refinancing balance transfer low interest",
+                state + " student loan advocacy nonprofit legal aid borrower rights 2025"
+            };
+            for (String q : queries) {
+                try {
+                    var results = tavilySearchClient.searchHandbook(q, 2, stateDomains, 700);
+                    for (var r : results) {
+                        raw.append("[Source: ").append(r.get("url")).append("]\n");
+                        raw.append(r.get("content")).append("\n\n");
+                    }
+                } catch (Exception ignored) {}
+            }
+
+            String liveContent = raw.toString().trim();
+            if (liveContent.isEmpty()) {
+                liveContent = "(Live search returned no results — reason from training knowledge)";
+            }
+
+            String summary = groqService.summarizeStateAssistance(state, liveContent);
+            return ResponseEntity.ok(Map.of("summary", summary, "state", state));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body(Map.of("error", "Could not fetch state assistance info: " + e.getMessage()));
+        }
+    }
+
     @PostMapping("/private-lender-info")
     public ResponseEntity<?> getPrivateLenderInfo(@RequestBody DebtIntakeRequest req) {
         String lender = req.getPrivateLender();

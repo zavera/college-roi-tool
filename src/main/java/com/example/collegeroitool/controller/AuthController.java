@@ -162,6 +162,15 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("debtSearchCount", count));
     }
 
+    @PostMapping("/chat/increment")
+    public ResponseEntity<?> incrementChatCount(Principal principal) {
+        if (devBypass && principal == null) return ResponseEntity.ok(Map.of("chatCount", 1));
+        if (principal == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        String email = resolveEmail(principal);
+        int count = userService.incrementFafsaUsageCount(email);
+        return ResponseEntity.ok(Map.of("chatCount", count));
+    }
+
     @PostMapping("/subscription/toggle")
     public ResponseEntity<?> toggleSubscription(Principal principal) {
         if (devBypass && principal == null) return ResponseEntity.ok(Map.of("subscriptionActive", true));

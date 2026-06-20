@@ -17,6 +17,7 @@ public class DebtIntakeRequest {
     private String privateLender;           // name of private lender (required when privateLoanBalance > 0)
     private String hardshipType;           // economic, unemployment, medical, general
     private String hardshipDetails;
+    private String state;                  // two-letter US state code e.g. "MD"
 
     // Getters and setters
     public Double getFederalLoanBalance() { return federalLoanBalance; }
@@ -66,4 +67,7 @@ public class DebtIntakeRequest {
 
     public String getHardshipDetails() { return hardshipDetails; }
     public void setHardshipDetails(String v) { this.hardshipDetails = v; }
+
+    public String getState() { return state; }
+    public void setState(String v) { this.state = v; }
 }

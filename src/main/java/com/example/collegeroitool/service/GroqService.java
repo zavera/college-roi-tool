@@ -50,6 +50,7 @@ public class GroqService {
     private String fafsaSaiCommentaryPromptTemplate;
     private String fafsaCssExplainerPromptTemplate;
     private String institutionalChatPromptTemplate;
+    private String astraChatPromptTemplate;
 
     private final RestTemplate restTemplate;
 
@@ -116,6 +117,9 @@ public class GroqService {
         institutionalChatPromptTemplate = new String(
             new ClassPathResource("prompts/institutional-chat-prompt.txt").getInputStream().readAllBytes(),
             StandardCharsets.UTF_8);
+        astraChatPromptTemplate = new String(
+            new ClassPathResource("prompts/chat-prompt.txt").getInputStream().readAllBytes(),
+            StandardCharsets.UTF_8);
     }
 
     // ── Free AI Summary ───────────────────────────────────────────────────────
@@ -125,7 +129,7 @@ public class GroqService {
             return buildDevStubAdvice(req);
         }
         String prompt = buildSummaryPrompt(req);
-        return callGroq(prompt, 1800, 0.2);
+        return callGroq(prompt, 2600, 0.2);
     }
 
     private String buildSummaryPrompt(LlmAdviceRequest req) {
@@ -982,6 +986,54 @@ public class GroqService {
             .replace("{{conversationHistory}}", conversationHistory != null ? conversationHistory : "(no prior messages)")
             .replace("{{question}}", question);
         return callGroq(prompt, 800, 0.3);
+    }
+
+    /**
+     * General Astra chatbot for the undergrad-calculator branch.
+     * history: list of {role, content} maps from prior turns.
+     * liveContent: Tavily search results injected before calling Groq.
+     */
+    public String getAstraChatResponse(List<Map<String, Object>> history, String message, String liveContent) {
+        if (DEV_STUB_KEY.equals(apiKey)) {
+            return "I'm Astra! I can help with scholarships, financial aid award letters, and loan repayment. (Dev mode — Groq key not set)";
+        }
+        StringBuilder historyText = new StringBuilder();
+        if (history != null) {
+            for (Map<String, Object> turn : history) {
+                String role    = String.valueOf(turn.getOrDefault("role", "user"));
+                String content = String.valueOf(turn.getOrDefault("content", ""));
+                historyText.append(role.equals("user") ? "Student: " : "Astra: ").append(content).append("\n");
+            }
+        }
+        String live = (liveContent != null && !liveContent.isBlank()) ? liveContent
+            : "(Live search unavailable — reason from training knowledge)";
+        String prompt = astraChatPromptTemplate
+            .replace("{{liveContent}}", live)
+            .replace("{{conversationHistory}}", historyText.isEmpty() ? "(no prior messages)" : historyText.toString().trim())
+            .replace("{{message}}", message);
+        return callGroq(prompt, 700, 0.35);
+    }
+
+    public String summarizeStateAssistance(String state, String liveContent) {
+        if (DEV_STUB_KEY.equals(apiKey)) {
+            return "**State Assistance Programs (" + state + ")** — Dev mode placeholder. In production, Astra will summarize state-specific loan forgiveness, refinancing, and advocacy options from live search results.";
+        }
+        String prompt = """
+            You are a financial aid advisor. A student lives in %s and needs to know about state-specific student loan relief options.
+
+            The following live web content was retrieved from searches about %s student loan assistance:
+            %s
+
+            Based on the live content above, write a concise advisory summary (3-5 paragraphs, plain English) covering:
+            1. State forgiveness or repayment assistance programs — who qualifies, how to apply, amounts available.
+            2. State-chartered banks or credit unions offering student loan refinancing or balance transfer at competitive rates — be specific about institutions and rates if found.
+            3. Nonprofit or legal advocacy organizations in %s that help student loan borrowers — name them, describe what they do, and how to contact them.
+
+            Do not quote the sources verbatim. Synthesize the information as an advisor giving actionable guidance.
+            If a category had no useful results, say so briefly and suggest the student search the state education agency website directly.
+            Format with bold section headers for each of the 3 categories.
+            """.formatted(state, state, liveContent, state);
+        return callGroq(prompt, 900, 0.3);
     }
 
     private static String fmt(double value) {
