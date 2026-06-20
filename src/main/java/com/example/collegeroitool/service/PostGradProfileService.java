@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -24,9 +25,9 @@ public class PostGradProfileService {
     }
 
     /** Always inserts a new row — latest by created_at wins on retrieval. */
-    public PostGradProfile save(Long studentId, DebtIntakeRequest req) {
+    public PostGradProfile save(Long userId, DebtIntakeRequest req) {
         PostGradProfile p = new PostGradProfile();
-        p.setStudentId(studentId);
+        p.setUserId(userId);
         p.setFederalLoanBalance(toBD(req.getFederalLoanBalance()));
         p.setPrivateLoanBalance(toBD(req.getPrivateLoanBalance()));
         p.setPrivateLender(req.getPrivateLender());
@@ -48,18 +49,20 @@ public class PostGradProfileService {
         return repo.save(p);
     }
 
-    /** Most recent saved profile for this student. */
-    public Optional<PostGradProfile> findLatest(Long studentId) {
-        return repo.findTopByStudentIdOrderByCreatedAtDesc(studentId);
+    public Optional<PostGradProfile> findLatest(Long userId) {
+        return repo.findTopByUserIdOrderByCreatedAtDesc(userId);
+    }
+
+    public List<PostGradProfile> findAll(Long userId) {
+        return repo.findAllByUserIdOrderByCreatedAtDesc(userId);
     }
 
     /**
-     * Returns loan balance defaults for the debt relief form:
-     * federalLoanBalance and privateLoanBalance summed from fafsa_aid_packages.
+     * Loan balance defaults for the debt relief form, summed from fafsa_aid_packages.
      * Falls back to latest post_grad_profile values if no aid packages exist.
      */
-    public Map<String, BigDecimal> getDefaultBalances(Long studentId) {
-        Map<String, BigDecimal> aidDefaults = aidPackageService.computeLoanDefaults(studentId);
+    public Map<String, BigDecimal> getDefaultBalances(Long userId) {
+        Map<String, BigDecimal> aidDefaults = aidPackageService.computeLoanDefaults(userId);
         if (!aidDefaults.get("federalLoanTotal").equals(BigDecimal.ZERO)
                 || !aidDefaults.get("privateLoanTotal").equals(BigDecimal.ZERO)) {
             return Map.of(
@@ -67,7 +70,7 @@ public class PostGradProfileService {
                 "privateLoanBalance", aidDefaults.get("privateLoanTotal")
             );
         }
-        return findLatest(studentId)
+        return findLatest(userId)
             .map(p -> Map.of(
                 "federalLoanBalance", p.getFederalLoanBalance() != null ? p.getFederalLoanBalance() : BigDecimal.ZERO,
                 "privateLoanBalance", p.getPrivateLoanBalance() != null ? p.getPrivateLoanBalance() : BigDecimal.ZERO

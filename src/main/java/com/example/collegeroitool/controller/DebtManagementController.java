@@ -71,11 +71,12 @@ public class DebtManagementController {
     }
 
     @PostMapping("/repayment-plans")
-    public ResponseEntity<?> getRepaymentPlans(@RequestBody DebtIntakeRequest req) {
+    public ResponseEntity<?> getRepaymentPlans(@RequestBody DebtIntakeRequest req, Principal principal) {
         try {
-            // Persist post-grad profile when studentId is provided
-            if (req.getStudentId() != null) {
-                try { postGradProfileService.save(req.getStudentId(), req); }
+            // Persist post-grad profile linked to the authenticated user — never trust client-supplied ID
+            Long userId = resolveUserId(principal);
+            if (userId != null) {
+                try { postGradProfileService.save(userId, req); }
                 catch (Exception ignored) {}
             }
             List<Map<String, Object>> plans = debtService.calculateRepaymentPlans(req);
@@ -126,16 +127,26 @@ public class DebtManagementController {
     private boolean isLiveSearchAllowed(Principal principal) {
         if (devBypass && principal == null) return true;
         if (principal == null) return false;
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = (auth.getPrincipal() instanceof OAuth2User oAuth2User)
-            ? oAuth2User.<String>getAttribute("email")
-            : principal.getName();
-        if (email == null) return false;
-
-        AppUser user = userService.findByEmail(email).orElse(null);
+        AppUser user = userService.findByEmail(resolveEmail(principal)).orElse(null);
         if (user == null) return false;
         return user.isSubscriptionActive() || user.getDebtSearchCount() < FREE_LIVE_SEARCHES;
+    }
+
+    private String resolveEmail(Principal principal) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return (auth != null && auth.getPrincipal() instanceof OAuth2User oAuth2User)
+            ? oAuth2User.<String>getAttribute("email")
+            : (principal != null ? principal.getName() : null);
+    }
+
+    private Long resolveUserId(Principal principal) {
+        try {
+            String email = resolveEmail(principal);
+            if (email == null) return null;
+            return userService.findByEmail(email).map(u -> u.getId()).orElse(null);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /** Fetches live web content about a private lender's hardship, repayment, and loan agreement pages. */

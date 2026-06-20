@@ -6,16 +6,16 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "fafsa_aid_packages",
-    uniqueConstraints = @UniqueConstraint(name = "uq_fafsa_aid_student_year",
-        columnNames = {"student_id", "aid_year"}))
+    uniqueConstraints = @UniqueConstraint(name = "uq_fafsa_aid_user_year",
+        columnNames = {"user_id", "aid_year"}))
 public class FafsaAidPackage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "student_id", nullable = false)
-    private Long studentId;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Column(name = "aid_year", nullable = false)
     private Integer aidYear;
@@ -78,8 +78,8 @@ public class FafsaAidPackage {
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     public Long getId()                                  { return id; }
-    public Long getStudentId()                           { return studentId; }
-    public void setStudentId(Long v)                     { this.studentId = v; }
+    public Long getUserId()                              { return userId; }
+    public void setUserId(Long v)                        { this.userId = v; }
     public Integer getAidYear()                          { return aidYear; }
     public void setAidYear(Integer v)                    { this.aidYear = v; }
     public String getCollegeName()                       { return collegeName; }

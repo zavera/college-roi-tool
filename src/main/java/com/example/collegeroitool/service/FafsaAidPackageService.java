@@ -20,12 +20,12 @@ public class FafsaAidPackageService {
         this.repo = repo;
     }
 
-    /** Upsert on (studentId, aidYear). */
-    public FafsaAidPackage upsert(Long studentId, Integer aidYear, LlmAdviceRequest req) {
-        FafsaAidPackage pkg = repo.findByStudentIdAndAidYear(studentId, aidYear)
+    /** Upsert on (userId, aidYear). */
+    public FafsaAidPackage upsert(Long userId, Integer aidYear, LlmAdviceRequest req) {
+        FafsaAidPackage pkg = repo.findByUserIdAndAidYear(userId, aidYear)
             .orElseGet(() -> {
                 FafsaAidPackage p = new FafsaAidPackage();
-                p.setStudentId(studentId);
+                p.setUserId(userId);
                 p.setAidYear(aidYear);
                 return p;
             });
@@ -53,8 +53,8 @@ public class FafsaAidPackageService {
     }
 
     /** Latest row by created_at across all aid years — for form pre-population. */
-    public Optional<FafsaAidPackage> findLatest(Long studentId) {
-        List<FafsaAidPackage> rows = repo.findByStudentIdOrderByCreatedAtDesc(studentId);
+    public Optional<FafsaAidPackage> findLatest(Long userId) {
+        List<FafsaAidPackage> rows = repo.findByUserIdOrderByCreatedAtDesc(userId);
         return rows.isEmpty() ? Optional.empty() : Optional.of(rows.get(0));
     }
 
@@ -62,8 +62,8 @@ public class FafsaAidPackageService {
      * Sum loans across all aid years (latest row per year) to populate post-grad profile defaults.
      * Returns map with "federalLoanTotal" and "privateLoanTotal".
      */
-    public Map<String, BigDecimal> computeLoanDefaults(Long studentId) {
-        List<FafsaAidPackage> rows = repo.findLatestPerAidYear(studentId);
+    public Map<String, BigDecimal> computeLoanDefaults(Long userId) {
+        List<FafsaAidPackage> rows = repo.findLatestPerAidYear(userId);
         BigDecimal federal = BigDecimal.ZERO;
         BigDecimal priv    = BigDecimal.ZERO;
         for (FafsaAidPackage p : rows) {

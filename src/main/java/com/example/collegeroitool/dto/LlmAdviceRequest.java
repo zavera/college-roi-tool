@@ -43,8 +43,7 @@ public class LlmAdviceRequest {
     // Private loan amount for this aid year (stored in fafsa_aid_packages)
     private Double privateLoan;
 
-    // Identifies which student and aid year this package belongs to (for persistence)
-    private Long studentId;
+    // Aid year for persistence — userId is resolved server-side, never from client
     private Integer aidYear;
 
     // Getters and Setters
@@ -131,8 +130,6 @@ public class LlmAdviceRequest {
 
     public Double getPrivateLoan()         { return privateLoan; }
     public void setPrivateLoan(Double v)   { this.privateLoan = v; }
-    public Long getStudentId()             { return studentId; }
-    public void setStudentId(Long v)       { this.studentId = v; }
     public Integer getAidYear()            { return aidYear; }
     public void setAidYear(Integer v)      { this.aidYear = v; }
 }

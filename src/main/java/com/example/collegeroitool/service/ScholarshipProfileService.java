@@ -20,12 +20,11 @@ public class ScholarshipProfileService {
         this.repo = repo;
     }
 
-    /** Upsert: insert on first save, update on every subsequent save for the same student. */
-    public ScholarshipProfile upsert(Long studentId, Map<String, Object> demographics,
-                                     String comments, List<String> targetSchools) {
-        ScholarshipProfile profile = repo.findByStudentId(studentId)
-            .orElseGet(() -> { ScholarshipProfile p = new ScholarshipProfile(); p.setStudentId(studentId); return p; });
-
+    /** Insert a new profile row on every search — one user can have many profiles. */
+    public ScholarshipProfile save(Long userId, Map<String, Object> demographics,
+                                   String comments, List<String> targetSchools) {
+        ScholarshipProfile profile = new ScholarshipProfile();
+        profile.setUserId(userId);
         profile.setGpa(str(demographics, "gpa"));
         profile.setMajor(str(demographics, "major"));
         profile.setStateOfResidency(str(demographics, "state"));
@@ -44,8 +43,12 @@ public class ScholarshipProfileService {
         return repo.save(profile);
     }
 
-    public Optional<ScholarshipProfile> findByStudentId(Long studentId) {
-        return repo.findByStudentId(studentId);
+    public List<ScholarshipProfile> findAllByUserId(Long userId) {
+        return repo.findAllByUserIdOrderByCreatedAtDesc(userId);
+    }
+
+    public Optional<ScholarshipProfile> findLatestByUserId(Long userId) {
+        return repo.findTopByUserIdOrderByCreatedAtDesc(userId);
     }
 
     private String str(Map<String, Object> map, String key) {

@@ -1,12 +1,14 @@
 package com.example.collegeroitool.controller;
 
-import com.example.collegeroitool.model.AppUser;
 import com.example.collegeroitool.service.ScholarshipProfileService;
 import com.example.collegeroitool.service.ScholarshipService;
 import com.example.collegeroitool.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -37,17 +39,20 @@ public class ScholarshipController {
     public ResponseEntity<?> search(@RequestBody Map<String, Object> body, Principal principal) {
         if (principal == null && !devBypass) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
         try {
-            Long studentId = body.get("studentId") != null ? Long.valueOf(body.get("studentId").toString()) : null;
             @SuppressWarnings("unchecked")
             Map<String, Object> demographics = (Map<String, Object>) body.getOrDefault("demographics", Map.of());
             String comments = body.getOrDefault("comments", "").toString();
             @SuppressWarnings("unchecked")
             List<String> schools = (List<String>) body.getOrDefault("targetSchools", List.of());
-            if (studentId != null) {
-                try { scholarshipProfileService.upsert(studentId, demographics, comments, schools); }
+
+            // Resolve userId from server-side session — never from client body
+            Long userId = resolveUserId();
+            if (userId != null) {
+                try { scholarshipProfileService.save(userId, demographics, comments, schools); }
                 catch (Exception ignored) {}
             }
-            String json = scholarshipService.search(studentId, demographics, comments, schools);
+
+            String json = scholarshipService.search(demographics, comments, schools);
             return ResponseEntity.ok(Map.of("scholarships", parseOrRaw(json)));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
@@ -77,6 +82,19 @@ public class ScholarshipController {
             return ResponseEntity.ok(Map.of("timeline", parseOrRaw(json)));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    private Long resolveUserId() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null) return null;
+            String email = (auth.getPrincipal() instanceof OAuth2User oAuth2User)
+                ? (String) oAuth2User.getAttributes().get("email")
+                : auth.getName();
+            return userService.findByEmail(email).map(u -> u.getId()).orElse(null);
+        } catch (Exception e) {
+            return null;
         }
     }
 

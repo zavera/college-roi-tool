@@ -1,9 +1,10 @@
 package com.example.collegeroitool.controller;
 
 import com.example.collegeroitool.model.AppUser;
-import com.example.collegeroitool.model.Institution;
-import com.example.collegeroitool.service.InstitutionService;
 import com.example.collegeroitool.service.UserService;
+import com.example.collegeroitool.service.UserSessionService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,17 +24,16 @@ public class AuthController {
 
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     private final UserService userService;
-    private final InstitutionService institutionService;
+    private final UserSessionService sessionService;
 
     @Value("${premium.dev.bypass:false}")
     private boolean devBypass;
 
-    public AuthController(UserService userService, InstitutionService institutionService) {
+    public AuthController(UserService userService, UserSessionService sessionService) {
         this.userService = userService;
-        this.institutionService = institutionService;
+        this.sessionService = sessionService;
     }
 
-    /** Register a new local account */
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Map<String, String> body) {
         String name     = body.getOrDefault("name", "").trim();
@@ -64,18 +64,20 @@ public class AuthController {
         }
     }
 
-    /** Current logged-in user info + subscription status */
+    /**
+     * Returns current user info. Also registers this session so any previously active session
+     * for the same user is invalidated (soft login-sharing prevention).
+     */
     @GetMapping("/me")
-    public ResponseEntity<?> me(Principal principal) {
-        // Dev bypass: no real session — synthesise an active dev user
+    public ResponseEntity<?> me(Principal principal, HttpServletRequest httpRequest) {
         if (devBypass && principal == null) {
-            String devInstitution = resolveInstitutionName(userService.findOrCreateDevUser());
+            AppUser devUser = userService.findOrCreateDevUser();
             return ResponseEntity.ok(Map.of(
                 "loggedIn",           true,
                 "email",              "dev@local",
                 "name",               "Dev User",
                 "subscriptionActive", true,
-                "institutionName",    devInstitution
+                "institutionName",    "Callisto Tech"
             ));
         }
         if (principal == null) {
@@ -90,11 +92,9 @@ public class AuthController {
         if (auth.getPrincipal() instanceof OAuth2User oAuth2User) {
             email = oAuth2User.getAttribute("email");
             name  = oAuth2User.getAttribute("name");
-            log.info("[/me] OAuth2 principal email={}", email);
         } else {
             email = principal.getName();
             name  = email;
-            log.info("[/me] form-login principal email={}", email);
         }
 
         if (email == null) {
@@ -103,13 +103,25 @@ public class AuthController {
 
         AppUser user = userService.findByEmail(email).orElse(null);
         boolean subscribed = user != null && user.isSubscriptionActive();
-        int searchCount = user != null ? user.getSearchCount() : 0;
-        int debtSearchCount = user != null ? user.getDebtSearchCount() : 0;
-        int fafsaUsageCount = user != null ? user.getFafsaUsageCount() : 0;
+        int searchCount           = user != null ? user.getSearchCount() : 0;
+        int debtSearchCount       = user != null ? user.getDebtSearchCount() : 0;
+        int fafsaUsageCount       = user != null ? user.getFafsaUsageCount() : 0;
         int scholarshipSearchCount = user != null ? user.getScholarshipSearchCount() : 0;
         if (user != null && user.getName() != null) name = user.getName();
 
-        String institutionName = user != null ? resolveInstitutionName(user) : "Callisto Tech";
+        // Register this session — overwrites any prior session token for this user,
+        // kicking out any other logged-in device for the same account.
+        if (user != null) {
+            try {
+                HttpSession session = httpRequest.getSession(false);
+                if (session != null) {
+                    String ip = httpRequest.getHeader("X-Forwarded-For");
+                    if (ip == null) ip = httpRequest.getRemoteAddr();
+                    sessionService.registerLogin(user.getId(), session.getId(), ip);
+                }
+            } catch (Exception ignored) {}
+        }
+
         return ResponseEntity.ok(Map.of(
             "loggedIn",                true,
             "email",                   email,
@@ -119,103 +131,51 @@ public class AuthController {
             "debtSearchCount",         debtSearchCount,
             "fafsaUsageCount",         fafsaUsageCount,
             "scholarshipSearchCount",  scholarshipSearchCount,
-            "institutionName",         institutionName
+            "institutionName",         "Callisto Tech"
         ));
     }
 
-    /** Increment award-assist search count for the calling user and return new count */
     @PostMapping("/search/increment")
     public ResponseEntity<?> incrementSearch(Principal principal) {
-        if (devBypass && principal == null) {
-            return ResponseEntity.ok(Map.of("searchCount", 0));
-        }
-        if (principal == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
-        }
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = (auth.getPrincipal() instanceof OAuth2User oAuth2User)
-            ? oAuth2User.<String>getAttribute("email")
-            : principal.getName();
-
+        if (devBypass && principal == null) return ResponseEntity.ok(Map.of("searchCount", 0));
+        if (principal == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        String email = resolveEmail(principal);
         int count = userService.incrementSearchCount(email);
         return ResponseEntity.ok(Map.of("searchCount", count));
     }
 
-    /** Increment scholarship search count for the calling user and return new count */
     @PostMapping("/scholarship-search/increment")
     public ResponseEntity<?> incrementScholarshipSearch(Principal principal) {
-        if (devBypass && principal == null) {
-            return ResponseEntity.ok(Map.of("scholarshipSearchCount", 0));
-        }
-        if (principal == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
-        }
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = (auth.getPrincipal() instanceof OAuth2User oAuth2User)
-            ? oAuth2User.<String>getAttribute("email")
-            : principal.getName();
-
+        if (devBypass && principal == null) return ResponseEntity.ok(Map.of("scholarshipSearchCount", 0));
+        if (principal == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        String email = resolveEmail(principal);
         int count = userService.incrementScholarshipSearchCount(email);
         return ResponseEntity.ok(Map.of("scholarshipSearchCount", count));
     }
 
-    /** Increment debt-relief search count for the calling user and return new count */
     @PostMapping("/debt-search/increment")
     public ResponseEntity<?> incrementDebtSearch(Principal principal) {
-        if (devBypass && principal == null) {
-            return ResponseEntity.ok(Map.of("debtSearchCount", 0));
-        }
-        if (principal == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
-        }
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = (auth.getPrincipal() instanceof OAuth2User oAuth2User)
-            ? oAuth2User.<String>getAttribute("email")
-            : principal.getName();
-
+        if (devBypass && principal == null) return ResponseEntity.ok(Map.of("debtSearchCount", 0));
+        if (principal == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        String email = resolveEmail(principal);
         int count = userService.incrementDebtSearchCount(email);
         return ResponseEntity.ok(Map.of("debtSearchCount", count));
     }
 
-    /** Toggle the calling user's subscription on/off */
     @PostMapping("/subscription/toggle")
     public ResponseEntity<?> toggleSubscription(Principal principal) {
-        if (devBypass && principal == null) {
-            return ResponseEntity.ok(Map.of("subscriptionActive", true));
-        }
-        if (principal == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
-        }
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = (auth.getPrincipal() instanceof OAuth2User oAuth2User)
-            ? oAuth2User.<String>getAttribute("email")
-            : principal.getName();
-
+        if (devBypass && principal == null) return ResponseEntity.ok(Map.of("subscriptionActive", true));
+        if (principal == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        String email = resolveEmail(principal);
         return userService.toggleSubscription(email)
             .<ResponseEntity<?>>map(active -> ResponseEntity.ok(Map.of("subscriptionActive", active)))
             .orElse(ResponseEntity.badRequest().body(Map.of("error", "User not found")));
     }
 
-    private String resolveInstitutionName(AppUser user) {
-        try {
-            return institutionService.resolveActiveInstitution(user)
-                .map(Institution::getName)
-                .orElse("Callisto Tech");
-        } catch (Exception e) {
-            return "Callisto Tech";
-        }
-    }
-
-    /** Admin endpoint — activate a subscription by email */
     @PostMapping("/admin/activate")
     public ResponseEntity<?> activateSubscription(
             @RequestParam String email,
             @RequestParam String adminKey) {
-
         String expectedKey = System.getenv().getOrDefault("ADMIN_KEY", "local-admin-secret");
         if (!expectedKey.equals(adminKey)) {
             return ResponseEntity.status(403).body(Map.of("error", "Forbidden"));
@@ -224,5 +184,12 @@ public class AuthController {
         return found
             ? ResponseEntity.ok(Map.of("activated", true, "email", email))
             : ResponseEntity.badRequest().body(Map.of("error", "User not found: " + email));
+    }
+
+    private String resolveEmail(Principal principal) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return (auth != null && auth.getPrincipal() instanceof OAuth2User oAuth2User)
+            ? oAuth2User.<String>getAttribute("email")
+            : principal.getName();
     }
 }

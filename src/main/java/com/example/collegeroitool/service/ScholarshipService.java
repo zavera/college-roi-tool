@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class ScholarshipService {
@@ -23,24 +22,20 @@ public class ScholarshipService {
 
     private final TavilySearchClient tavilySearchClient;
     private final GroqService groqService;
-    private final StudentDocumentService studentDocumentService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ScholarshipService(TavilySearchClient tavilySearchClient,
-                               GroqService groqService,
-                               StudentDocumentService studentDocumentService) {
+    public ScholarshipService(TavilySearchClient tavilySearchClient, GroqService groqService) {
         this.tavilySearchClient = tavilySearchClient;
         this.groqService = groqService;
-        this.studentDocumentService = studentDocumentService;
     }
 
     /**
      * Unified search: combines external national/state + school-specific queries into one
      * Groq call, returning a merged de-duplicated list ordered by match quality.
      */
-    public String search(Long studentId, Map<String, Object> demographics,
+    public String search(Map<String, Object> demographics,
                          String comments, List<String> targetSchools) throws Exception {
-        String kvSummary = buildKvSummary(studentId);
+        String kvSummary = "";
         List<String> queries = new ArrayList<>(buildExternalQueries(demographics));
         if (targetSchools != null && !targetSchools.isEmpty()) {
             queries.addAll(buildSchoolQueries(demographics, targetSchools));
@@ -51,14 +46,14 @@ public class ScholarshipService {
     }
 
     /** @deprecated Use {@link #search} */
-    public String searchExternal(Long studentId, Map<String, Object> demographics, String comments) throws Exception {
-        return search(studentId, demographics, comments, List.of());
+    public String searchExternal(Map<String, Object> demographics, String comments) throws Exception {
+        return search(demographics, comments, List.of());
     }
 
     /** @deprecated Use {@link #search} */
-    public String searchSchoolSpecific(Long studentId, Map<String, Object> demographics,
+    public String searchSchoolSpecific(Map<String, Object> demographics,
                                         String comments, List<String> targetSchools) throws Exception {
-        return search(studentId, demographics, comments, targetSchools);
+        return search(demographics, comments, targetSchools);
     }
 
     /**
@@ -88,26 +83,6 @@ public class ScholarshipService {
      * strips any key that matches a known PII pattern — belt-and-suspenders approach.
      * This summary is sent only to Groq (an approved data processor), never to Tavily.
      */
-    private String buildKvSummary(Long studentId) {
-        if (studentId == null) return "";
-        try {
-            Map<String, String> kv = studentDocumentService.getActiveKvPayload(studentId);
-            if (kv.isEmpty()) return "";
-            Map<String, String> filtered = kv.entrySet().stream()
-                .filter(e -> {
-                    String k = e.getKey().toLowerCase();
-                    // Step 1 — explicit PII exclusion (must pass)
-                    boolean hasPii = PII_KEY_FRAGMENTS.stream().anyMatch(k::contains);
-                    if (hasPii) return false;
-                    // Step 2 — whitelist: only retain known financial/academic fields
-                    return ALLOWED_KEY_FRAGMENTS.stream().anyMatch(k::contains);
-                })
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            return filtered.isEmpty() ? "" : objectMapper.writeValueAsString(filtered);
-        } catch (Exception e) {
-            return "";
-        }
-    }
 
     /**
      * FERPA: Tavily search queries contain ONLY demographic/academic attributes (major, state,

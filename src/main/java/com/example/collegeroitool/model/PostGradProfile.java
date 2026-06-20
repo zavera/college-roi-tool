@@ -13,8 +13,8 @@ public class PostGradProfile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "student_id", nullable = false)
-    private Long studentId;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Column(name = "federal_loan_balance", precision = 12, scale = 2)
     private BigDecimal federalLoanBalance;
@@ -65,8 +65,8 @@ public class PostGradProfile {
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     public Long getId()                                  { return id; }
-    public Long getStudentId()                           { return studentId; }
-    public void setStudentId(Long v)                     { this.studentId = v; }
+    public Long getUserId()                              { return userId; }
+    public void setUserId(Long v)                        { this.userId = v; }
     public BigDecimal getFederalLoanBalance()            { return federalLoanBalance; }
     public void setFederalLoanBalance(BigDecimal v)      { this.federalLoanBalance = v; }
     public BigDecimal getPrivateLoanBalance()            { return privateLoanBalance; }

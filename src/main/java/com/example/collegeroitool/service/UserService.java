@@ -1,10 +1,7 @@
 package com.example.collegeroitool.service;
 
 import com.example.collegeroitool.model.AppUser;
-import com.example.collegeroitool.repository.UserInstitutionRepository;
 import com.example.collegeroitool.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,21 +15,13 @@ import java.util.Optional;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
-    private final UserInstitutionRepository userInstitutionRepository;
     private final PasswordEncoder passwordEncoder;
-    private final InstitutionService institutionService;
 
-    public UserService(UserRepository userRepository,
-                       UserInstitutionRepository userInstitutionRepository,
-                       PasswordEncoder passwordEncoder,
-                       @Lazy InstitutionService institutionService) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.userInstitutionRepository = userInstitutionRepository;
         this.passwordEncoder = passwordEncoder;
-        this.institutionService = institutionService;
     }
 
-    /** Called by Spring Security for email/password login */
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         AppUser user = userRepository.findByEmail(email)
@@ -44,7 +33,6 @@ public class UserService implements UserDetailsService {
         );
     }
 
-    /** Register a new local (email/password) user */
     public AppUser registerLocal(String name, String email, String rawPassword) {
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("An account with this email already exists.");
@@ -54,40 +42,30 @@ public class UserService implements UserDetailsService {
         user.setName(name.trim());
         user.setPasswordHash(passwordEncoder.encode(rawPassword));
         user.setProvider("local");
-        AppUser saved = userRepository.save(user);
-        try { institutionService.ensureDefaultEnrollment(saved); } catch (Exception ignored) {}
-        return saved;
+        return userRepository.save(user);
     }
 
-    /** Find or create a user from a Google OAuth2 login */
     public AppUser findOrCreateGoogleUser(OAuth2User oAuth2User) {
         String email = oAuth2User.getAttribute("email");
         String name  = oAuth2User.getAttribute("name");
         if (email == null) throw new IllegalStateException("Google account has no email address.");
 
         Optional<AppUser> existing = userRepository.findByEmail(email.toLowerCase());
-        if (existing.isPresent()) {
-            AppUser u = existing.get();
-            try { institutionService.ensureDefaultEnrollment(u); } catch (Exception ignored) {}
-            return u;
-        }
+        if (existing.isPresent()) return existing.get();
+
         AppUser user = new AppUser();
         user.setEmail(email.toLowerCase());
         user.setName(name != null ? name : email);
         user.setProvider("google");
-        AppUser saved = userRepository.save(user);
-        try { institutionService.ensureDefaultEnrollment(saved); } catch (Exception ignored) {}
-        return saved;
+        return userRepository.save(user);
     }
 
     public Optional<AppUser> findByEmail(String email) {
         return userRepository.findByEmail(email.toLowerCase());
     }
 
-    /** Local-dev-only helper — synthesizes a persistable "dev@local" account so FAFSA Prep
-     *  data can be saved when premium.dev.bypass is on and there's no real session. */
     public AppUser findOrCreateDevUser() {
-        AppUser u = userRepository.findByEmail("dev@local").orElseGet(() -> {
+        return userRepository.findByEmail("dev@local").orElseGet(() -> {
             AppUser nu = new AppUser();
             nu.setEmail("dev@local");
             nu.setName("Dev User");
@@ -95,11 +73,8 @@ public class UserService implements UserDetailsService {
             nu.setSubscriptionActive(true);
             return userRepository.save(nu);
         });
-        try { institutionService.ensureDefaultEnrollment(u); } catch (Exception ignored) {}
-        return u;
     }
 
-    /** Deactivate subscription — called when Stripe subscription is cancelled */
     public boolean deactivateSubscription(String email) {
         return userRepository.findByEmail(email.toLowerCase()).map(u -> {
             u.setSubscriptionActive(false);
@@ -108,7 +83,6 @@ public class UserService implements UserDetailsService {
         }).orElse(false);
     }
 
-    /** Admin helper — activate a subscription by email */
     public boolean activateSubscription(String email) {
         return userRepository.findByEmail(email.toLowerCase()).map(u -> {
             u.setSubscriptionActive(true);
@@ -117,7 +91,6 @@ public class UserService implements UserDetailsService {
         }).orElse(false);
     }
 
-    /** Increment search count; returns new count, or -1 if user not found */
     public int incrementSearchCount(String email) {
         return userRepository.findByEmail(email.toLowerCase()).map(u -> {
             u.setSearchCount(u.getSearchCount() + 1);
@@ -126,7 +99,6 @@ public class UserService implements UserDetailsService {
         }).orElse(-1);
     }
 
-    /** Increment debt search count; returns new count, or -1 if user not found */
     public int incrementDebtSearchCount(String email) {
         return userRepository.findByEmail(email.toLowerCase()).map(u -> {
             u.setDebtSearchCount(u.getDebtSearchCount() + 1);
@@ -135,7 +107,6 @@ public class UserService implements UserDetailsService {
         }).orElse(-1);
     }
 
-    /** Increment scholarship search count; returns new count, or -1 if user not found */
     public int incrementScholarshipSearchCount(String email) {
         return userRepository.findByEmail(email.toLowerCase()).map(u -> {
             u.setScholarshipSearchCount(u.getScholarshipSearchCount() + 1);
@@ -144,7 +115,6 @@ public class UserService implements UserDetailsService {
         }).orElse(-1);
     }
 
-    /** Increment FAFSA Prep module usage count; returns new count, or -1 if user not found */
     public int incrementFafsaUsageCount(String email) {
         return userRepository.findByEmail(email.toLowerCase()).map(u -> {
             u.setFafsaUsageCount(u.getFafsaUsageCount() + 1);
@@ -153,19 +123,7 @@ public class UserService implements UserDetailsService {
         }).orElse(-1);
     }
 
-    /**
-     * Returns true when the user has an active membership at any institution
-     * other than the default "callisto-tech" instance.
-     * Used to gate FAFSA Prep endpoints — institution users only.
-     */
-    public boolean hasInstitutionAccess(String email) {
-        return userRepository.findByEmail(email.toLowerCase()).map(u ->
-            userInstitutionRepository.hasInstitutionAccess(u.getId())
-        ).orElse(false);
-    }
-
-    /** Toggle subscription on/off; returns the new state, or empty if user not found */
-    public java.util.Optional<Boolean> toggleSubscription(String email) {
+    public Optional<Boolean> toggleSubscription(String email) {
         return userRepository.findByEmail(email.toLowerCase()).map(u -> {
             boolean newState = !u.isSubscriptionActive();
             u.setSubscriptionActive(newState);

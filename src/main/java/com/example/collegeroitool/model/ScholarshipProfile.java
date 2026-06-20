@@ -11,8 +11,8 @@ public class ScholarshipProfile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "student_id", nullable = false, unique = true)
-    private Long studentId;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     private String gpa;
     private String major;
@@ -44,8 +44,8 @@ public class ScholarshipProfile {
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     public Long getId()                              { return id; }
-    public Long getStudentId()                       { return studentId; }
-    public void setStudentId(Long v)                 { this.studentId = v; }
+    public Long getUserId()                          { return userId; }
+    public void setUserId(Long v)                    { this.userId = v; }
     public String getGpa()                           { return gpa; }
     public void setGpa(String v)                     { this.gpa = v; }
     public String getMajor()                         { return major; }
