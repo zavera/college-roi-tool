@@ -4,6 +4,7 @@ import com.example.collegeroitool.model.AppUser;
 import com.example.collegeroitool.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -23,17 +24,16 @@ public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JavaMailSender mailSender;
+    @Autowired(required = false)
+    private JavaMailSender mailSender;
 
     @Value("${spring.mail.username:}")
     private String fromAddress;
 
     public UserService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder,
-                       JavaMailSender mailSender) {
+                       PasswordEncoder passwordEncoder) {
         this.userRepository  = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.mailSender      = mailSender;
     }
 
     @Override
@@ -84,11 +84,15 @@ public class UserService implements UserDetailsService {
 
     private void sendWelcomeEmailSync(String email, String name) {
         String from = (fromAddress != null && !fromAddress.isBlank()) ? fromAddress : "zaver.ambreen@gmail.com";
+        log.info("[welcome-email] starting — to={} from={} mailSender={}", email, from, mailSender != null ? "configured" : "NULL");
+        if (mailSender == null) {
+            log.warn("[welcome-email] JavaMailSender is null — check MAIL_PASSWORD env var on Railway");
+            return;
+        }
         try {
             String firstName = (name != null && name.contains(" "))
                 ? name.substring(0, name.indexOf(' ')) : (name != null ? name : "there");
             SimpleMailMessage msg = new SimpleMailMessage();
-            log.info("[welcome-email] attempting send to={} from={}", email, from);
             msg.setFrom(from);
             msg.setTo(email);
             msg.setSubject("Welcome to Astra — you're all set");
@@ -106,7 +110,7 @@ public class UserService implements UserDetailsService {
                 "— Ambreen & the Astra Team"
             );
             mailSender.send(msg);
-            log.info("[welcome-email] sent to email={}", email);
+            log.info("[welcome-email] sent successfully to={}", email);
         } catch (Exception e) {
             log.warn("[welcome-email] failed for email={}: {}", email, e.getMessage());
         }
