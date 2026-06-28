@@ -86,7 +86,8 @@ public class MagicLinkService {
             mailSender.send(msg);
             log.info("[magic-link] sent successfully to={}", email);
         } catch (Exception e) {
-            log.warn("[magic-link] failed to send to={} error={}", email, e.getMessage());
+            log.error("[magic-link] SMTP failure to={} error={} cause={}", email, e.getMessage(),
+                e.getCause() != null ? e.getCause().getMessage() : "none", e);
         }
     }
 
