@@ -5,6 +5,7 @@ import com.example.collegeroitool.repository.MagicLinkTokenRepository;
 import com.example.collegeroitool.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -21,7 +22,9 @@ public class MagicLinkService {
 
     private final MagicLinkTokenRepository tokenRepo;
     private final UserRepository userRepo;
-    private final JavaMailSender mailSender;
+
+    @Autowired(required = false)
+    private JavaMailSender mailSender;
 
     @Value("${app.base-url}")
     private String baseUrl;
@@ -32,22 +35,18 @@ public class MagicLinkService {
     @Value("${spring.mail.username:}")
     private String fromAddress;
 
-    public MagicLinkService(MagicLinkTokenRepository tokenRepo,
-                            UserRepository userRepo,
-                            JavaMailSender mailSender) {
-        this.tokenRepo  = tokenRepo;
-        this.userRepo   = userRepo;
-        this.mailSender = mailSender;
+    public MagicLinkService(MagicLinkTokenRepository tokenRepo, UserRepository userRepo) {
+        this.tokenRepo = tokenRepo;
+        this.userRepo  = userRepo;
     }
 
     /**
-     * Generates a one-time sign-in token and emails the link to the user.
-     * Returns true if the email was found and mail was sent, false if email not registered.
+     * Generates a one-time sign-in token and emails the link asynchronously.
+     * Returns true if the email was found, false if not registered.
      */
     public boolean requestLink(String email) {
         String normalized = email.trim().toLowerCase();
         if (!userRepo.existsByEmail(normalized)) {
-            // Don't reveal whether the email exists — just return false silently
             return false;
         }
 
@@ -59,11 +58,22 @@ public class MagicLinkService {
         tokenRepo.save(mlt);
 
         String link = baseUrl + "/api/auth/magic-link/verify?token=" + token;
+        new Thread(() -> sendMagicLinkEmail(normalized, link), "magic-link-email").start();
 
+        return true;
+    }
+
+    private void sendMagicLinkEmail(String email, String link) {
+        String from = (fromAddress != null && !fromAddress.isBlank()) ? fromAddress : "zaver.ambreen@gmail.com";
+        log.info("[magic-link] sending to={} mailSender={}", email, mailSender != null ? "configured" : "NULL");
+        if (mailSender == null) {
+            log.warn("[magic-link] JavaMailSender is null — check MAIL_PASSWORD on Railway");
+            return;
+        }
         try {
             SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setFrom(fromAddress);
-            msg.setTo(normalized);
+            msg.setFrom(from);
+            msg.setTo(email);
             msg.setSubject("Your Astra sign-in link");
             msg.setText(
                 "Hi,\n\n" +
@@ -74,18 +84,14 @@ public class MagicLinkService {
                 "— The Astra Team"
             );
             mailSender.send(msg);
-            log.info("[magic-link] sent to email={}", normalized);
+            log.info("[magic-link] sent successfully to={}", email);
         } catch (Exception e) {
-            log.error("[magic-link] failed to send email={} error={}", normalized, e.getMessage(), e);
-            throw new RuntimeException("Failed to send sign-in email. Please try again.");
+            log.warn("[magic-link] failed to send to={} error={}", email, e.getMessage());
         }
-
-        return true;
     }
 
     /**
      * Validates the token and returns the associated email if valid and unused.
-     * Marks the token as used on success.
      */
     public Optional<String> consume(String token) {
         return tokenRepo.findByToken(token).flatMap(mlt -> {
@@ -94,7 +100,7 @@ public class MagicLinkService {
                 return Optional.empty();
             }
             if (mlt.getExpiresAt().isBefore(LocalDateTime.now())) {
-                log.warn("[magic-link] token expired for email={}", mlt.getEmail());
+                log.warn("[magic-link] token expired");
                 return Optional.empty();
             }
             mlt.setUsed(true);
