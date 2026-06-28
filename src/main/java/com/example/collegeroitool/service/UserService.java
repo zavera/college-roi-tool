@@ -151,7 +151,7 @@ public class UserService implements UserDetailsService {
      */
     public boolean hasInstitutionAccess(String email) {
         return userRepository.findByEmail(email.toLowerCase()).map(u ->
-            userInstitutionRepository.hasInstitutionAccess(u.getId())
+            u.isSubscriptionActive() || userInstitutionRepository.hasInstitutionAccess(u.getId())
         ).orElse(false);
     }
 
