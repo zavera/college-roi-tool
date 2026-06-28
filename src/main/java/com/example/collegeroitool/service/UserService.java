@@ -79,16 +79,17 @@ public class UserService implements UserDetailsService {
     }
 
     private void sendWelcomeEmail(String email, String name) {
-        if (fromAddress == null || fromAddress.isBlank()) return;
         new Thread(() -> sendWelcomeEmailSync(email, name), "welcome-email").start();
     }
 
     private void sendWelcomeEmailSync(String email, String name) {
+        String from = (fromAddress != null && !fromAddress.isBlank()) ? fromAddress : "zaver.ambreen@gmail.com";
         try {
             String firstName = (name != null && name.contains(" "))
                 ? name.substring(0, name.indexOf(' ')) : (name != null ? name : "there");
             SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setFrom(fromAddress);
+            log.info("[welcome-email] attempting send to={} from={}", email, from);
+            msg.setFrom(from);
             msg.setTo(email);
             msg.setSubject("Welcome to Astra — you're all set");
             msg.setText(
