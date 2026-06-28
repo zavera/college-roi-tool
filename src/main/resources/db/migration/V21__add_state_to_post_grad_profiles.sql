@@ -1,0 +1,1 @@
+ALTER TABLE post_grad_profiles ADD COLUMN IF NOT EXISTS state VARCHAR(2);

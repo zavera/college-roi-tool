@@ -81,6 +81,11 @@
             <artifactId>callisto-extraction-core</artifactId>
             <version>1.0.0</version>
         </dependency>
+        <!-- Magic link emails -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
         <!-- Test dependencies (required for test compilation even when tests are skipped) -->
         <!-- Flyway: manages DB schema migrations so ddl-auto=update is not relied on -->
         <dependency>

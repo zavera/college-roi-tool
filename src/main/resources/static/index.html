@@ -77,11 +77,12 @@
 
   <style>
     :root {
-      --navy:       #2d3040;
-      --navy-lt:    #3a3f55;
-      --primary:    #C9A87C;
-      --primary-dk: #A68A5E;
-      --primary-lt: #EAD9C0;
+      --navy:       #0d1b2a;
+      --navy-lt:    #1e3a5f;
+      --navy-mid:   #162d47;
+      --primary:    #c9a84c;
+      --primary-dk: #a07830;
+      --primary-lt: #e8d49a;
       --accent:     #2d7a4f;
       --bg:         #f0f1f5;
       --card:       #ffffff;
@@ -147,67 +148,181 @@
     }
     .nav-cta:hover { filter: brightness(1.1); }
 
-    /* Hero */
-    .hero {
-      background: linear-gradient(160deg, var(--navy) 0%, var(--navy-lt) 100%);
-      padding: 96px 32px 88px;
-      text-align: center;
+    /* ══ Hero: two-panel layout ══ */
+    .hero-wrap {
+      display: flex;
+      min-height: calc(100vh - 64px);
+    }
+
+    /* ── Slideshow panel (left 55%) ── */
+    .slideshow-panel {
+      width: 55%;
+      background: var(--navy);
       position: relative;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
-    .hero::before {
-      content: '';
+    .slide-brand {
+      display: flex; align-items: center; gap: 12px;
+      padding: 24px 36px; z-index: 10; position: relative;
+    }
+    .slide-brand img { width: 36px; height: 36px; object-fit: cover; border-radius: 8px; }
+    .slide-brand-text .product {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 20px; font-weight: 300;
+      color: var(--primary-lt); letter-spacing: 6px; text-transform: uppercase;
+    }
+    .slide-brand-text .tagline {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 9px; font-weight: 300;
+      color: rgba(255,255,255,0.45); letter-spacing: 3px; text-transform: uppercase;
+      margin-top: 2px;
+    }
+    .slideshow-panel::before {
+      content: ''; position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 80%, rgba(201,168,76,.08) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 80% 20%, rgba(45,122,79,.07) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .slides-track { flex: 1; position: relative; overflow: hidden; }
+    .slide {
       position: absolute; inset: 0;
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 32px 48px 48px;
+      opacity: 0; transform: translateX(40px);
+      transition: opacity .6s ease, transform .6s ease;
+      pointer-events: none;
+    }
+    .slide.active { opacity: 1; transform: translateX(0); pointer-events: auto; }
+    .slide.exit   { opacity: 0; transform: translateX(-40px); }
+    .slide-eyebrow {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 10px; font-weight: 400;
+      color: var(--primary); letter-spacing: 4px; text-transform: uppercase;
+      margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+    }
+    .slide-eyebrow::before {
+      content: ''; display: block;
+      width: 24px; height: 1px; background: var(--primary); flex-shrink: 0;
+    }
+    .slide-heading { font-size: 30px; font-weight: 800; line-height: 1.2; color: #fff; margin-bottom: 14px; }
+    .slide-heading em { color: var(--primary-lt); font-style: normal; }
+    .slide-body { font-size: 15px; line-height: 1.65; color: rgba(255,255,255,0.65); max-width: 420px; margin-bottom: 32px; }
+    .mockup {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px; padding: 20px 22px; max-width: 440px; backdrop-filter: blur(4px);
+    }
+    .mockup-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 14px; }
+    .mockup-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .mockup-dot.red   { background: #e74c3c; }
+    .mockup-dot.amber { background: #f39c12; }
+    .mockup-dot.green { background: #2ecc71; }
+    .mockup-title { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 1px; text-transform: uppercase; margin-left: 4px; }
+    .mock-search {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px; padding: 9px 12px; margin-bottom: 10px;
+    }
+    .mock-search-icon { color: var(--primary); font-size: 14px; }
+    .mock-search-text { font-size: 13px; color: rgba(255,255,255,0.5); flex: 1; }
+    .mock-search-badge { font-size: 10px; font-weight: 700; color: var(--navy); background: var(--primary); border-radius: 4px; padding: 2px 7px; }
+    .mock-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.07); font-size: 12px;
+    }
+    .mock-row:last-child { border-bottom: none; }
+    .mock-row-label { color: rgba(255,255,255,0.55); }
+    .mock-row-val { font-weight: 700; color: #fff; }
+    .mock-row-val.gold  { color: var(--primary-lt); }
+    .mock-row-val.green { color: #6fcf97; }
+    .major-bar-row { margin-bottom: 8px; }
+    .major-bar-label { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .major-bar-label span:first-child { font-size: 11px; color: rgba(255,255,255,0.6); }
+    .major-bar-label span:last-child  { font-size: 11px; font-weight: 700; color: var(--primary-lt); }
+    .major-bar-track { height: 7px; border-radius: 4px; background: rgba(255,255,255,0.08); overflow: hidden; }
+    .major-bar-fill  { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--primary-dk), var(--primary-lt)); transition: width 1s ease .3s; }
+    .roi-score-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    .roi-score-card { flex: 1; background: rgba(255,255,255,0.07); border-radius: 8px; padding: 10px 12px; text-align: center; }
+    .roi-score-card .val  { font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 2px; }
+    .roi-score-card .val.gold  { color: var(--primary-lt); }
+    .roi-score-card .val.green { color: #6fcf97; }
+    .roi-score-card .lbl { font-size: 10px; color: rgba(255,255,255,0.45); }
+    .ai-bubble {
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 10px 14px; font-size: 12px; color: rgba(255,255,255,0.7);
+      line-height: 1.5; margin-bottom: 8px;
+    }
+    .ai-bubble.user { background: rgba(201,168,76,0.12); border-color: rgba(201,168,76,0.2); text-align: right; }
+    .ai-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+    .ai-label.astra { color: var(--primary); }
+    .ai-label.you   { color: rgba(255,255,255,0.4); }
+    .cmp-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .cmp-table th { padding: 6px 8px; text-align: center; font-weight: 700; font-size: 10px; letter-spacing: .5px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.15); color: var(--primary); }
+    .cmp-table th:first-child { text-align: left; color: rgba(255,255,255,0.4); }
+    .cmp-table td { padding: 7px 8px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); color: rgba(255,255,255,0.65); }
+    .cmp-table td:first-child { text-align: left; color: rgba(255,255,255,0.45); }
+    .cmp-table td.best { color: #6fcf97; font-weight: 700; }
+    .cmp-table tr:last-child td { border-bottom: none; }
+    .slide-progress { height: 2px; background: rgba(255,255,255,0.08); position: relative; overflow: hidden; flex-shrink: 0; }
+    .slide-progress-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--primary); transition: width linear; }
+    .slide-dots { display: flex; align-items: center; gap: 8px; padding: 20px 48px; position: relative; z-index: 10; }
+    .slide-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.25); border: none; cursor: pointer; transition: background .2s, transform .2s; padding: 0; }
+    .slide-dot.active { background: var(--primary); transform: scale(1.4); }
+    .slide-dot:hover { background: rgba(255,255,255,0.5); }
+
+    /* ── Hero CTA panel (right 45%) ── */
+    .hero-cta-panel {
+      width: 45%;
+      background: linear-gradient(160deg, var(--navy) 0%, var(--navy-lt) 100%);
+      display: flex; align-items: center; justify-content: center;
+      padding: 56px 40px;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .hero-cta-panel::before {
+      content: ''; position: absolute; inset: 0;
       background: radial-gradient(ellipse at 60% 40%, rgba(201,168,76,0.12) 0%, transparent 65%);
       pointer-events: none;
     }
+    .hero-cta-inner { position: relative; z-index: 1; max-width: 380px; }
     .hero-eyebrow {
       font-family: 'Josefin Sans', sans-serif;
       font-size: 11px; font-weight: 400;
       letter-spacing: 4px; text-transform: uppercase;
       color: var(--primary); margin-bottom: 20px;
     }
-    .hero h1 {
-      font-size: clamp(30px, 5vw, 52px);
+    .hero-cta-inner h1 {
+      font-size: clamp(24px, 3.5vw, 38px);
       font-weight: 800; color: #fff;
-      line-height: 1.15; max-width: 740px;
-      margin: 0 auto 20px; letter-spacing: -0.5px;
+      line-height: 1.15; margin-bottom: 18px; letter-spacing: -0.5px;
     }
-    .hero h1 em { font-style: normal; color: var(--primary); }
+    .hero-cta-inner h1 em { font-style: normal; color: var(--primary); }
     .hero-sub {
-      font-size: clamp(15px, 2vw, 18px);
+      font-size: clamp(14px, 1.5vw, 16px);
       color: rgba(255,255,255,0.72);
-      max-width: 580px; margin: 0 auto 28px; line-height: 1.65;
+      margin-bottom: 28px; line-height: 1.65;
     }
-
-    /* Tech badges in hero */
     .tech-badges {
-      display: flex; gap: 10px; justify-content: center;
-      flex-wrap: wrap; margin-bottom: 32px;
+      display: flex; gap: 8px; justify-content: center;
+      flex-wrap: wrap; margin-bottom: 28px;
     }
     .tech-badge {
       display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.18);
-      border-radius: 20px;
-      padding: 6px 14px;
-      font-size: 12px; font-weight: 700;
-      color: rgba(255,255,255,0.85);
-      letter-spacing: 0.2px;
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 20px; padding: 5px 12px;
+      font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.85);
     }
-    .tech-badge .dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .tech-badge.groq .dot  { background: #f97316; }
+    .tech-badge .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .tech-badge.groq .dot   { background: #f97316; }
     .tech-badge.tavily .dot { background: #38bdf8; }
-
     .hero-cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
     .btn-hero {
       display: inline-flex; align-items: center; gap: 8px;
       background: var(--primary); color: var(--navy);
       font-size: 15px; font-weight: 800;
-      padding: 14px 32px; border-radius: 8px;
+      padding: 14px 28px; border-radius: 8px;
       transition: filter .15s; letter-spacing: 0.2px;
     }
     .btn-hero:hover { filter: brightness(1.1); }
@@ -215,14 +330,27 @@
       display: inline-flex; align-items: center;
       background: transparent; color: rgba(255,255,255,0.85);
       font-size: 14px; font-weight: 600;
-      padding: 14px 28px; border-radius: 8px;
+      padding: 14px 22px; border-radius: 8px;
       border: 1.5px solid rgba(255,255,255,0.3);
       transition: border-color .15s, color .15s;
     }
     .btn-ghost:hover { border-color: rgba(255,255,255,0.6); color: #fff; }
-    .hero-trust {
-      margin-top: 20px; font-size: 12px;
-      color: rgba(255,255,255,0.4); letter-spacing: 0.3px;
+    .hero-trust { margin-top: 20px; font-size: 12px; color: rgba(255,255,255,0.4); letter-spacing: 0.3px; }
+
+    /* Responsive: stack on narrow screens */
+    @media (max-width: 860px) {
+      .hero-wrap { flex-direction: column; }
+      .slideshow-panel { width: 100%; min-height: 400px; }
+      .hero-cta-panel { width: 100%; padding: 52px 28px; }
+      .slide { padding: 24px 28px 32px; }
+      .slide-heading { font-size: 22px; }
+      .slide-dots { padding: 14px 28px; }
+      .slide-brand { padding: 18px 28px; }
+    }
+    @media (max-width: 480px) {
+      .hero-cta-panel { padding: 40px 20px; }
+      .mockup { padding: 14px 16px; }
+      .roi-score-row { flex-direction: column; }
     }
 
     /* Modules section */
@@ -469,31 +597,155 @@
   </div>
 </nav>
 
-<section class="hero" id="main-content" aria-label="Hero">
-  <p class="hero-eyebrow">AI-Assisted Personalized Financial Planning</p>
-  <h1>Scholarships. Aid. Loans. <em>Answered in real time.</em></h1>
-  <p class="hero-sub">
-    Find scholarships, decode your award letter, optimize federal loan repayment, and get private lender hardship help — grounded in live search results, not stale data.
-  </p>
-  <div class="tech-badges">
-    <span class="tech-badge groq">
-      <span class="dot"></span>
-      Groq · llama-3.3-70b
-    </span>
-    <span class="tech-badge tavily">
-      <span class="dot"></span>
-      Tavily Live Search
-    </span>
+<div class="hero-wrap" id="main-content">
+
+  <!-- Slideshow panel -->
+  <section class="slideshow-panel" aria-label="Product feature highlights">
+    <div class="slide-brand" aria-hidden="true">
+      <img src="/callisto_high.png" alt="">
+      <div class="slide-brand-text">
+        <div class="product">Astra</div>
+        <div class="tagline">AI assistant for FAFSA</div>
+      </div>
+    </div>
+
+    <div class="slides-track" id="slidesTrack">
+
+      <!-- SLIDE 1: College Cost Lookup -->
+      <div class="slide active" id="slide-0" role="group" aria-label="Feature 1 of 5: College Cost Lookup">
+        <div class="slide-eyebrow">College Cost Lookup</div>
+        <h2 class="slide-heading">Know the <em>true cost</em><br>before you apply</h2>
+        <p class="slide-body">Search any of 6,000+ colleges and get a full cost-of-attendance breakdown — tuition, room &amp; board, fees, and estimated financial aid — in seconds.</p>
+        <div class="mockup" aria-hidden="true">
+          <div class="mockup-bar">
+            <div class="mockup-dot red"></div><div class="mockup-dot amber"></div><div class="mockup-dot green"></div>
+            <span class="mockup-title">College Search</span>
+          </div>
+          <div class="mock-search">
+            <span class="mock-search-icon">🔍</span>
+            <span class="mock-search-text">University of Michigan — Ann Arbor</span>
+            <span class="mock-search-badge">Found</span>
+          </div>
+          <div class="mock-row"><span class="mock-row-label">Tuition &amp; Fees</span><span class="mock-row-val">$17,786</span></div>
+          <div class="mock-row"><span class="mock-row-label">Room &amp; Board</span><span class="mock-row-val">$13,554</span></div>
+          <div class="mock-row"><span class="mock-row-label">Books &amp; Supplies</span><span class="mock-row-val">$1,048</span></div>
+          <div class="mock-row"><span class="mock-row-label">Avg. Net Price (aid)</span><span class="mock-row-val gold">$14,203</span></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 2: Earnings by Major -->
+      <div class="slide" id="slide-1" role="group" aria-label="Feature 2 of 5: Earnings by Major">
+        <div class="slide-eyebrow">Earnings by Major</div>
+        <h2 class="slide-heading">Pick a major that <em>pays off</em></h2>
+        <p class="slide-body">Browse salary data across 100+ fields of study. See median early-career earnings so you can match your passion with your financial goals.</p>
+        <div class="mockup" aria-hidden="true">
+          <div class="mockup-bar">
+            <div class="mockup-dot red"></div><div class="mockup-dot amber"></div><div class="mockup-dot green"></div>
+            <span class="mockup-title">Earnings by Major</span>
+          </div>
+          <div class="major-bar-row"><div class="major-bar-label"><span>Computer Science</span><span>$92,000</span></div><div class="major-bar-track"><div class="major-bar-fill" style="width:92%"></div></div></div>
+          <div class="major-bar-row"><div class="major-bar-label"><span>Nursing</span><span>$68,000</span></div><div class="major-bar-track"><div class="major-bar-fill" style="width:68%"></div></div></div>
+          <div class="major-bar-row"><div class="major-bar-label"><span>Business Admin</span><span>$55,000</span></div><div class="major-bar-track"><div class="major-bar-fill" style="width:55%"></div></div></div>
+          <div class="major-bar-row"><div class="major-bar-label"><span>Psychology</span><span>$42,000</span></div><div class="major-bar-track"><div class="major-bar-fill" style="width:42%"></div></div></div>
+          <div class="major-bar-row"><div class="major-bar-label"><span>Education</span><span>$38,000</span></div><div class="major-bar-track"><div class="major-bar-fill" style="width:38%"></div></div></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 3: ROI Calculator -->
+      <div class="slide" id="slide-2" role="group" aria-label="Feature 3 of 5: ROI Calculator">
+        <div class="slide-eyebrow">ROI Calculator</div>
+        <h2 class="slide-heading">Is college worth it?<br><em>See the math.</em></h2>
+        <p class="slide-body">We calculate your net cost vs. projected earnings to show your return on investment — so you can choose the school that makes financial sense for your future.</p>
+        <div class="mockup" aria-hidden="true">
+          <div class="mockup-bar">
+            <div class="mockup-dot red"></div><div class="mockup-dot amber"></div><div class="mockup-dot green"></div>
+            <span class="mockup-title">ROI Summary</span>
+          </div>
+          <div class="roi-score-row">
+            <div class="roi-score-card"><div class="val gold">$14,203</div><div class="lbl">Net Price / Year</div></div>
+            <div class="roi-score-card"><div class="val green">$92,000</div><div class="lbl">Median Earnings</div></div>
+            <div class="roi-score-card"><div class="val">6.5×</div><div class="lbl">10-yr ROI</div></div>
+          </div>
+          <div class="mock-row"><span class="mock-row-label">4-Year Total Cost</span><span class="mock-row-val">$56,812</span></div>
+          <div class="mock-row"><span class="mock-row-label">Earnings Premium (10yr)</span><span class="mock-row-val green">+$368,000</span></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 4: AI Financial Advisor -->
+      <div class="slide" id="slide-3" role="group" aria-label="Feature 4 of 5: AI Financial Advisor">
+        <div class="slide-eyebrow">AI Financial Advisor</div>
+        <h2 class="slide-heading">Your personal<br><em>financial guide</em></h2>
+        <p class="slide-body">Ask Astra anything about loans, grants, scholarships, and repayment strategies. Get plain-language advice personalized to your school and major.</p>
+        <div class="mockup" aria-hidden="true">
+          <div class="mockup-bar">
+            <div class="mockup-dot red"></div><div class="mockup-dot amber"></div><div class="mockup-dot green"></div>
+            <span class="mockup-title">Ask Astra</span>
+          </div>
+          <div class="ai-bubble"><div class="ai-label you">You</div>Should I take the $8k Parent PLUS loan or look for more scholarships first?</div>
+          <div class="ai-bubble"><div class="ai-label astra">Astra</div>Before taking on Parent PLUS debt at 8.05% interest, I'd recommend applying to 3–5 local scholarships worth $2–5k each. With your CS major and Michigan's net price, your 10-year ROI is strong — but minimizing loans now saves ~$4,200 in interest over 10 years.</div>
+        </div>
+      </div>
+
+      <!-- SLIDE 5: Compare Colleges -->
+      <div class="slide" id="slide-4" role="group" aria-label="Feature 5 of 5: Compare Colleges">
+        <div class="slide-eyebrow">College Comparison</div>
+        <h2 class="slide-heading">Compare schools<br><em>side by side</em></h2>
+        <p class="slide-body">Add up to four colleges and compare net price, earnings potential, and ROI at a glance. Make a data-driven decision — not just a gut one.</p>
+        <div class="mockup" aria-hidden="true">
+          <div class="mockup-bar">
+            <div class="mockup-dot red"></div><div class="mockup-dot amber"></div><div class="mockup-dot green"></div>
+            <span class="mockup-title">Compare</span>
+          </div>
+          <table class="cmp-table">
+            <thead><tr><th></th><th>Michigan</th><th>Ohio St.</th><th>Penn St.</th></tr></thead>
+            <tbody>
+              <tr><td>Net Price</td><td class="best">$14,203</td><td>$16,480</td><td>$18,100</td></tr>
+              <tr><td>Grad Rate</td><td class="best">91%</td><td>84%</td><td>80%</td></tr>
+              <tr><td>Median Earn.</td><td class="best">$92k</td><td>$85k</td><td>$81k</td></tr>
+              <tr><td>10-yr ROI</td><td class="best">6.5×</td><td>5.2×</td><td>4.5×</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /slides-track -->
+
+    <div class="slide-progress" aria-hidden="true">
+      <div class="slide-progress-fill" id="progressFill"></div>
+    </div>
+    <div class="slide-dots" role="tablist" aria-label="Slide navigation">
+      <button class="slide-dot active" role="tab" aria-selected="true"  aria-label="Slide 1: College Cost Lookup" data-index="0"></button>
+      <button class="slide-dot"        role="tab" aria-selected="false" aria-label="Slide 2: Earnings by Major"    data-index="1"></button>
+      <button class="slide-dot"        role="tab" aria-selected="false" aria-label="Slide 3: ROI Calculator"       data-index="2"></button>
+      <button class="slide-dot"        role="tab" aria-selected="false" aria-label="Slide 4: AI Advisor"           data-index="3"></button>
+      <button class="slide-dot"        role="tab" aria-selected="false" aria-label="Slide 5: Compare Colleges"     data-index="4"></button>
+    </div>
+  </section>
+
+  <!-- Hero CTA panel -->
+  <div class="hero-cta-panel" aria-label="Get started">
+    <div class="hero-cta-inner">
+      <p class="hero-eyebrow">AI-Assisted Personalized Financial Planning</p>
+      <h1>Scholarships. Aid. Loans. <em>Answered in real time.</em></h1>
+      <p class="hero-sub">
+        Find scholarships, decode your award letter, optimize federal loan repayment, and get private lender hardship help — grounded in live search results, not stale data.
+      </p>
+      <div class="tech-badges">
+        <span class="tech-badge groq"><span class="dot"></span>Groq · llama-3.3-70b</span>
+        <span class="tech-badge tavily"><span class="dot"></span>Tavily Live Search</span>
+      </div>
+      <div class="hero-cta-row">
+        <a href="/register.html" class="btn-hero">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Try Free — No Credit Card
+        </a>
+        <a href="/login.html" class="btn-ghost">Sign in</a>
+      </div>
+      <p class="hero-trust">1 free search per tool &middot; No credit card required &middot; Cancel anytime</p>
+    </div>
   </div>
-  <div class="hero-cta-row">
-    <a href="/register.html" class="btn-hero">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-      Try Free — No Credit Card
-    </a>
-    <a href="/login.html" class="btn-ghost">Sign in</a>
-  </div>
-  <p class="hero-trust">1 free search per tool &middot; No credit card required &middot; Cancel anytime</p>
-</section>
+
+</div><!-- /hero-wrap -->
 
 <section class="modules" id="features" aria-labelledby="modules-title">
   <div class="modules-inner">
@@ -626,7 +878,7 @@
         </div>
         <div class="pricing-feature">
           <span class="pricing-lock">⚡</span>
-          <span><strong>Ask Astra chatbot</strong> — subscription only, never free</span>
+          <span>Ask Astra chatbot only</span>
         </div>
         <div class="pricing-feature">
           <span class="pricing-check">✓</span>
@@ -654,5 +906,65 @@
   <p class="footer-copy">&copy; 2026 Astra | AI-powered financial planning for scholarships, college costs, and student loan repayment.</p>
 </footer>
 
+<script>
+(function () {
+  'use strict';
+  const SLIDE_DURATION = 6000;
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const dots   = Array.from(document.querySelectorAll('.slide-dot'));
+  const progressFill = document.getElementById('progressFill');
+  let current = 0, timer = null, paused = false;
+
+  function goTo(index) {
+    const prev = current;
+    current = (index + slides.length) % slides.length;
+    slides[prev].classList.remove('active');
+    slides[prev].classList.add('exit');
+    slides[current].classList.add('active');
+    setTimeout(() => slides[prev].classList.remove('exit'), 700);
+    dots[prev].classList.remove('active');
+    dots[prev].setAttribute('aria-selected', 'false');
+    dots[current].classList.add('active');
+    dots[current].setAttribute('aria-selected', 'true');
+  }
+
+  function startProgress() {
+    progressFill.style.transition = 'none';
+    progressFill.style.width = '0%';
+    progressFill.getBoundingClientRect();
+    progressFill.style.transition = 'width ' + SLIDE_DURATION + 'ms linear';
+    progressFill.style.width = '100%';
+  }
+
+  function startAutoplay() {
+    if (timer) clearInterval(timer);
+    timer = setInterval(() => { goTo(current + 1); startProgress(); }, SLIDE_DURATION);
+    startProgress();
+  }
+
+  function stopAutoplay() {
+    clearInterval(timer); timer = null;
+    progressFill.style.transition = 'none';
+  }
+
+  dots.forEach((dot, i) => {
+    dot.addEventListener('click', () => { if (i === current) return; stopAutoplay(); goTo(i); startAutoplay(); });
+    dot.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); dots[(i + 1) % dots.length].click(); }
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); dots[(i - 1 + dots.length) % dots.length].click(); }
+    });
+  });
+
+  const panel = document.querySelector('.slideshow-panel');
+  panel.addEventListener('mouseenter', () => { paused = true;  stopAutoplay(); });
+  panel.addEventListener('mouseleave', () => { paused = false; startAutoplay(); });
+  panel.addEventListener('focusin',    () => { paused = true;  stopAutoplay(); });
+  panel.addEventListener('focusout',   () => { paused = false; startAutoplay(); });
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (!reduceMotion.matches) startAutoplay();
+  reduceMotion.addEventListener('change', e => { if (e.matches) stopAutoplay(); else if (!paused) startAutoplay(); });
+})();
+</script>
 </body>
 </html>

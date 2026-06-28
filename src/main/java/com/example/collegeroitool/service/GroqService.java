@@ -841,6 +841,58 @@ public class GroqService {
         return "[" + String.join(",", scholarships) + "]";
     }
 
+    // ── FAFSA Prep: asset repositioning analysis ──────────────────────────────
+
+    public String getFafsaPrepAnalysis(com.example.collegeroitool.model.FafsaPrepEntry e) {
+        String dep = "dependent".equalsIgnoreCase(e.getDependencyStatus()) ? "dependent" : "independent";
+        int hh   = e.getHouseholdSize()   != null ? e.getHouseholdSize()   : 4;
+        int nic  = e.getNumberInCollege() != null ? e.getNumberInCollege() : 1;
+
+        String fmt = e.getDependencyStatus() != null
+            ? "Student dependency status: " + dep + "\n" : "";
+        fmt += "Household size: " + hh + ", number in college: " + nic + "\n\n";
+
+        fmt += "=== STUDENT ===\n";
+        if (e.getStudentAgi()            != null) fmt += "AGI: $" + e.getStudentAgi() + "\n";
+        if (e.getStudentTaxesPaid()      != null) fmt += "Income taxes paid: $" + e.getStudentTaxesPaid() + "\n";
+        if (e.getStudentUntaxedIncome()  != null) fmt += "Untaxed income: $" + e.getStudentUntaxedIncome() + "\n";
+        if (e.getStudentWorkStudy()      != null) fmt += "Work-study: $" + e.getStudentWorkStudy() + "\n";
+        if (e.getStudentCashSavings()    != null) fmt += "Cash / savings: $" + e.getStudentCashSavings() + "\n";
+        if (e.getStudentInvestments()    != null) fmt += "Investments (excl. retirement): $" + e.getStudentInvestments() + "\n";
+        if (e.getStudentBusinessNetWorth() != null) fmt += "Business / farm net worth: $" + e.getStudentBusinessNetWorth() + "\n";
+
+        if ("dependent".equals(dep)) {
+            fmt += "\n=== PARENT ===\n";
+            if (e.getParentAgi()              != null) fmt += "AGI: $" + e.getParentAgi() + "\n";
+            if (e.getParentTaxesPaid()        != null) fmt += "Income taxes paid: $" + e.getParentTaxesPaid() + "\n";
+            if (e.getParentUntaxedIncome()    != null) fmt += "Untaxed income: $" + e.getParentUntaxedIncome() + "\n";
+            if (e.getParentMaritalStatus()    != null) fmt += "Marital status: " + e.getParentMaritalStatus() + "\n";
+            if (e.getParentAge()              != null) fmt += "Age (eldest parent): " + e.getParentAge() + "\n";
+            if (e.getParentCashSavings()      != null) fmt += "Cash / savings: $" + e.getParentCashSavings() + "\n";
+            if (e.getParentInvestments()      != null) fmt += "Investments (excl. retirement): $" + e.getParentInvestments() + "\n";
+            if (e.getParentHomeEquity()       != null) fmt += "Home equity: $" + e.getParentHomeEquity() + " (not counted on FAFSA)\n";
+            if (e.getParentRetirementSavings() != null) fmt += "Retirement savings: $" + e.getParentRetirementSavings() + " (not counted on FAFSA)\n";
+            if (e.getParentBusinessNetWorth() != null) fmt += "Business / farm net worth: $" + e.getParentBusinessNetWorth() + "\n";
+            if (e.getParent529Balance()       != null) fmt += "529 plan balance: $" + e.getParent529Balance() + "\n";
+        }
+
+        String prompt =
+            "You are a certified financial aid advisor. A family has provided the following FAFSA financial data:\n\n" +
+            fmt + "\n" +
+            "Task: Provide a structured asset repositioning analysis with these sections:\n\n" +
+            "1. ESTIMATED SAI RANGE — Give a rough estimated Student Aid Index range based on the data above.\n\n" +
+            "2. LEGAL STRATEGIES TO REDUCE SAI — List 4–6 specific, actionable legal strategies this family can implement " +
+            "BEFORE the FAFSA filing date to reduce their SAI. For each strategy: name it, explain why it works under FAFSA rules, " +
+            "estimate the potential SAI impact, and note any caveats.\n\n" +
+            "3. ASSET PROTECTION NOTES — Call out which assets are already sheltered (retirement, home equity if dependent) " +
+            "and any risks to watch for.\n\n" +
+            "4. TIMING TIPS — Mention the FAFSA filing date impact and what actions must happen before vs. after.\n\n" +
+            "Be specific and grounded in current FAFSA/SAI formula rules (2024-25 simplified needs test, asset conversion rates). " +
+            "Do not give vague advice. Format with clear section headers.";
+
+        return callGroq(prompt, 1400, 0.2);
+    }
+
     // ── Shared Groq caller ────────────────────────────────────────────────────
 
     private String callGroq(String prompt, int maxTokens, double temperature) {
@@ -862,8 +914,23 @@ public class GroqService {
             apiUrl, new HttpEntity<>(body, headers), Map.class);
 
         List<Map<String, Object>> choices = (List<Map<String, Object>>) response.getBody().get("choices");
-        Map<String, Object> msg = (Map<String, Object>) choices.get(0).get("message");
-        return (String) msg.get("content");
+        Map<String, Object> choice = choices.get(0);
+        String finishReason = (String) choice.get("finish_reason");
+        if ("content_filter".equals(finishReason)) {
+            throw new RuntimeException("Groq content filter triggered — try rephrasing or reducing injected content.");
+        }
+        Map<String, Object> msg = (Map<String, Object>) choice.get("message");
+        String content = (String) msg.get("content");
+        if (content == null || content.isBlank()) {
+            throw new RuntimeException("Groq returned empty content (finish_reason: " + finishReason + ").");
+        }
+        return content;
+    }
+
+    /** Caps live-search content to prevent content-filter triggers from noisy scraped text. */
+    public static String truncateLiveContent(String content, int maxChars) {
+        if (content == null || content.length() <= maxChars) return content;
+        return content.substring(0, maxChars) + "\n[content truncated for length]";
     }
 
     private String buildHardshipLetterStub(com.example.collegeroitool.dto.DebtIntakeRequest req) {

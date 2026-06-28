@@ -2,6 +2,11 @@ package com.example.collegeroitool.service;
 
 import com.example.collegeroitool.model.AppUser;
 import com.example.collegeroitool.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,12 +19,21 @@ import java.util.Optional;
 @Service
 public class UserService implements UserDetailsService {
 
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JavaMailSender mailSender;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
+    @Value("${spring.mail.username:}")
+    private String fromAddress;
+
+    public UserService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder,
+                       JavaMailSender mailSender) {
+        this.userRepository  = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.mailSender      = mailSender;
     }
 
     @Override
@@ -42,7 +56,9 @@ public class UserService implements UserDetailsService {
         user.setName(name.trim());
         user.setPasswordHash(passwordEncoder.encode(rawPassword));
         user.setProvider("local");
-        return userRepository.save(user);
+        AppUser saved = userRepository.save(user);
+        sendWelcomeEmail(saved.getEmail(), saved.getName());
+        return saved;
     }
 
     public AppUser findOrCreateGoogleUser(OAuth2User oAuth2User) {
@@ -57,7 +73,38 @@ public class UserService implements UserDetailsService {
         user.setEmail(email.toLowerCase());
         user.setName(name != null ? name : email);
         user.setProvider("google");
-        return userRepository.save(user);
+        AppUser saved = userRepository.save(user);
+        sendWelcomeEmail(saved.getEmail(), saved.getName());
+        return saved;
+    }
+
+    private void sendWelcomeEmail(String email, String name) {
+        if (fromAddress == null || fromAddress.isBlank()) return;
+        try {
+            String firstName = (name != null && name.contains(" "))
+                ? name.substring(0, name.indexOf(' ')) : (name != null ? name : "there");
+            SimpleMailMessage msg = new SimpleMailMessage();
+            msg.setFrom(fromAddress);
+            msg.setTo(email);
+            msg.setSubject("Welcome to Astra — you're all set");
+            msg.setText(
+                "Hi " + firstName + ",\n\n" +
+                "Welcome to Astra! Your account is ready.\n\n" +
+                "Here's what you can do:\n" +
+                "  • Find scholarships matched to your major, state, and background\n" +
+                "  • Decode your financial aid award letter\n" +
+                "  • Compare colleges side by side\n" +
+                "  • Optimize your student loan repayment plan\n\n" +
+                "You get 1 free search per tool — no credit card needed to start.\n\n" +
+                "Sign in anytime at https://astra-ed.org/login.html\n\n" +
+                "Questions? Reply to this email or reach us at ambreen@callistotech.org\n\n" +
+                "— Ambreen & the Astra Team"
+            );
+            mailSender.send(msg);
+            log.info("[welcome-email] sent to email={}", email);
+        } catch (Exception e) {
+            log.warn("[welcome-email] failed for email={}: {}", email, e.getMessage());
+        }
     }
 
     public Optional<AppUser> findByEmail(String email) {

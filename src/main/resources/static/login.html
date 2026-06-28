@@ -42,6 +42,9 @@
     background: var(--bg);
     min-height: 100vh;
     display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
   }
 
   /* ── Skip link ── */
@@ -57,266 +60,7 @@
     outline: 3px solid var(--primary); outline-offset: 2px; border-radius: 3px;
   }
 
-  /* ══════════════════════════════════════
-     LEFT PANEL — Slideshow
-  ══════════════════════════════════════ */
-  .slideshow-panel {
-    width: 55%;
-    background: var(--navy);
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* Brand bar at top of slideshow */
-  .slide-brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 24px 36px;
-    z-index: 10;
-    position: relative;
-  }
-  .slide-brand img {
-    width: 36px; height: 36px;
-    object-fit: cover; border-radius: 8px;
-  }
-  .slide-brand-text .product {
-    font-family: 'Josefin Sans', sans-serif;
-    font-size: 20px; font-weight: 300;
-    color: var(--primary-lt); letter-spacing: 6px; text-transform: uppercase;
-  }
-  .slide-brand-text .tagline {
-    font-family: 'Josefin Sans', sans-serif;
-    font-size: 9px; font-weight: 300;
-    color: rgba(255,255,255,0.45); letter-spacing: 3px; text-transform: uppercase;
-    margin-top: 2px;
-  }
-
-  /* Background gradient accents */
-  .slideshow-panel::before {
-    content: '';
-    position: absolute; inset: 0;
-    background:
-      radial-gradient(ellipse 60% 50% at 20% 80%, rgba(201,168,76,.08) 0%, transparent 60%),
-      radial-gradient(ellipse 50% 40% at 80% 20%, rgba(45,122,79,.07) 0%, transparent 60%);
-    pointer-events: none;
-  }
-
-  /* Slides container */
-  .slides-track {
-    flex: 1;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .slide {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column;
-    justify-content: center;
-    padding: 32px 48px 48px;
-    opacity: 0;
-    transform: translateX(40px);
-    transition: opacity .6s ease, transform .6s ease;
-    pointer-events: none;
-  }
-  .slide.active {
-    opacity: 1; transform: translateX(0); pointer-events: auto;
-  }
-  .slide.exit {
-    opacity: 0; transform: translateX(-40px);
-  }
-
-  .slide-eyebrow {
-    font-family: 'Josefin Sans', sans-serif;
-    font-size: 10px; font-weight: 400;
-    color: var(--primary); letter-spacing: 4px; text-transform: uppercase;
-    margin-bottom: 14px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .slide-eyebrow::before {
-    content: ''; display: block;
-    width: 24px; height: 1px; background: var(--primary); flex-shrink: 0;
-  }
-
-  .slide-heading {
-    font-size: 30px; font-weight: 800; line-height: 1.2;
-    color: #fff; margin-bottom: 14px;
-  }
-  .slide-heading em { color: var(--primary-lt); font-style: normal; }
-
-  .slide-body {
-    font-size: 15px; line-height: 1.65;
-    color: rgba(255,255,255,0.65);
-    max-width: 420px; margin-bottom: 32px;
-  }
-
-  /* ── Mini UI mockups inside each slide ── */
-  .mockup {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 14px;
-    padding: 20px 22px;
-    max-width: 440px;
-    backdrop-filter: blur(4px);
-  }
-  .mockup-bar {
-    display: flex; align-items: center; gap: 6px; margin-bottom: 14px;
-  }
-  .mockup-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-  }
-  .mockup-dot.red   { background: #e74c3c; }
-  .mockup-dot.amber { background: #f39c12; }
-  .mockup-dot.green { background: #2ecc71; }
-  .mockup-title {
-    font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4);
-    letter-spacing: 1px; text-transform: uppercase; margin-left: 4px;
-  }
-
-  /* Search mockup row */
-  .mock-search {
-    display: flex; align-items: center; gap: 8px;
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 8px; padding: 9px 12px; margin-bottom: 10px;
-  }
-  .mock-search-icon { color: var(--primary); font-size: 14px; }
-  .mock-search-text { font-size: 13px; color: rgba(255,255,255,0.5); flex: 1; }
-  .mock-search-badge {
-    font-size: 10px; font-weight: 700; color: var(--navy);
-    background: var(--primary); border-radius: 4px; padding: 2px 7px;
-  }
-
-  /* Cost breakdown rows */
-  .mock-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.07);
-    font-size: 12px;
-  }
-  .mock-row:last-child { border-bottom: none; }
-  .mock-row-label { color: rgba(255,255,255,0.55); }
-  .mock-row-val { font-weight: 700; color: #fff; }
-  .mock-row-val.gold { color: var(--primary-lt); }
-  .mock-row-val.green { color: #6fcf97; }
-
-  /* Major earnings bars */
-  .major-bar-row { margin-bottom: 8px; }
-  .major-bar-label { display: flex; justify-content: space-between; margin-bottom: 4px; }
-  .major-bar-label span:first-child { font-size: 11px; color: rgba(255,255,255,0.6); }
-  .major-bar-label span:last-child  { font-size: 11px; font-weight: 700; color: var(--primary-lt); }
-  .major-bar-track {
-    height: 7px; border-radius: 4px;
-    background: rgba(255,255,255,0.08);
-    overflow: hidden;
-  }
-  .major-bar-fill {
-    height: 100%; border-radius: 4px;
-    background: linear-gradient(90deg, var(--primary-dk), var(--primary-lt));
-    transition: width 1s ease .3s;
-  }
-
-  /* ROI score mockup */
-  .roi-score-row {
-    display: flex; gap: 10px; margin-bottom: 10px;
-  }
-  .roi-score-card {
-    flex: 1; background: rgba(255,255,255,0.07);
-    border-radius: 8px; padding: 10px 12px; text-align: center;
-  }
-  .roi-score-card .val  { font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 2px; }
-  .roi-score-card .val.gold  { color: var(--primary-lt); }
-  .roi-score-card .val.green { color: #6fcf97; }
-  .roi-score-card .lbl { font-size: 10px; color: rgba(255,255,255,0.45); }
-
-  /* AI chat bubble */
-  .ai-bubble {
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 10px; padding: 10px 14px;
-    font-size: 12px; color: rgba(255,255,255,0.7);
-    line-height: 1.5; margin-bottom: 8px;
-    position: relative;
-  }
-  .ai-bubble.user { background: rgba(201,168,76,0.12); border-color: rgba(201,168,76,0.2); text-align: right; }
-  .ai-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
-  .ai-label.astra { color: var(--primary); }
-  .ai-label.you   { color: rgba(255,255,255,0.4); }
-
-  /* Compare table mockup */
-  .cmp-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-  .cmp-table th {
-    padding: 6px 8px; text-align: center;
-    font-weight: 700; font-size: 10px; letter-spacing: .5px; text-transform: uppercase;
-    border-bottom: 1px solid rgba(255,255,255,0.15);
-    color: var(--primary);
-  }
-  .cmp-table th:first-child { text-align: left; color: rgba(255,255,255,0.4); }
-  .cmp-table td {
-    padding: 7px 8px; text-align: center;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    color: rgba(255,255,255,0.65);
-  }
-  .cmp-table td:first-child { text-align: left; color: rgba(255,255,255,0.45); }
-  .cmp-table td.best { color: #6fcf97; font-weight: 700; }
-  .cmp-table tr:last-child td { border-bottom: none; }
-
-  /* Premium badge mockup */
-  .prem-badges { display: flex; flex-wrap: wrap; gap: 7px; }
-  .prem-badge {
-    background: rgba(201,168,76,0.12);
-    border: 1px solid rgba(201,168,76,0.25);
-    border-radius: 20px; padding: 5px 12px;
-    font-size: 11px; font-weight: 600; color: var(--primary-lt);
-    display: flex; align-items: center; gap: 5px;
-  }
-  .prem-badge-icon { font-size: 12px; }
-
-  /* ── Progress bar ── */
-  .slide-progress {
-    height: 2px; background: rgba(255,255,255,0.08);
-    position: relative; overflow: hidden;
-    flex-shrink: 0;
-  }
-  .slide-progress-fill {
-    position: absolute; left: 0; top: 0; bottom: 0;
-    background: var(--primary);
-    transition: width linear;
-  }
-
-  /* ── Dot nav ── */
-  .slide-dots {
-    display: flex; align-items: center; gap: 8px;
-    padding: 20px 48px;
-    position: relative; z-index: 10;
-  }
-  .slide-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: rgba(255,255,255,0.25);
-    border: none; cursor: pointer;
-    transition: background .2s, transform .2s;
-    padding: 0;
-  }
-  .slide-dot.active {
-    background: var(--primary); transform: scale(1.4);
-  }
-  .slide-dot:hover { background: rgba(255,255,255,0.5); }
-
-  /* ══════════════════════════════════════
-     RIGHT PANEL — Login form
-  ══════════════════════════════════════ */
-  .login-panel {
-    width: 45%;
-    background: var(--bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 24px;
-    overflow-y: auto;
-  }
-
-  .auth-wrap { width: 100%; max-width: 380px; }
+  .auth-wrap { width: 100%; max-width: 420px; }
 
   .auth-brand {
     display: flex; align-items: center; gap: 12px;
@@ -427,243 +171,68 @@
   }
   .privacy-note a { color: var(--primary-dk); font-weight: 600; text-decoration: none; }
 
-  /* ── Responsive: stack vertically on narrow screens ── */
-  @media (max-width: 860px) {
-    body { flex-direction: column; }
-    .slideshow-panel { width: 100%; min-height: 360px; }
-    .login-panel { width: 100%; }
-    .slide { padding: 24px 28px 32px; }
-    .slide-heading { font-size: 22px; }
-    .slide-dots { padding: 14px 28px; }
-    .slide-brand { padding: 18px 28px; }
+  .magic-link-btn {
+    width: 100%; padding: 11px 16px; margin-top: 12px;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    background: #fff; font-size: 14px; font-weight: 600; color: var(--muted);
+    cursor: pointer; transition: border-color .15s, color .15s;
+    font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px;
   }
+  .magic-link-btn:hover { border-color: var(--primary); color: var(--primary-dk); }
+
+  /* Modal */
+  .modal-backdrop {
+    display: none; position: fixed; inset: 0;
+    background: rgba(13,27,42,.55); z-index: 9000;
+    align-items: center; justify-content: center;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: #fff; border-radius: 14px; padding: 32px 28px 28px;
+    width: 100%; max-width: 400px; box-shadow: 0 8px 40px rgba(0,0,0,.18);
+    position: relative;
+  }
+  .modal h2 { font-size: 17px; font-weight: 800; color: var(--navy); margin-bottom: 6px; }
+  .modal p  { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+  .modal-close {
+    position: absolute; top: 14px; right: 16px;
+    background: none; border: none; font-size: 20px; color: var(--muted);
+    cursor: pointer; line-height: 1; padding: 2px 6px;
+  }
+  .modal-close:hover { color: var(--text); }
+  .modal .field { margin-bottom: 16px; }
+  .modal .field label { display: block; font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 5px; }
+  .modal .field input {
+    width: 100%; padding: 10px 12px;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    font-size: 14px; color: var(--text); background: var(--bg);
+    font-family: inherit; transition: border-color .15s;
+  }
+  .modal .field input:focus { border-color: var(--primary); background: #fff; outline: none; }
+  .modal-submit {
+    width: 100%; padding: 12px; background: var(--navy); color: #fff;
+    border: none; border-radius: 8px; font-size: 14px; font-weight: 700;
+    cursor: pointer; font-family: inherit; transition: background .15s;
+  }
+  .modal-submit:hover { background: var(--navy-lt); }
+  .modal-submit:disabled { opacity: .6; cursor: default; }
+  .modal-msg { font-size: 13px; border-radius: 7px; padding: 10px 12px; margin-bottom: 14px; display: none; }
+  .modal-msg.success { background: #f0fdf4; border: 1px solid #86efac; color: #166534; }
+  .modal-msg.error   { background: #fef2f2; border: 1px solid #fca5a5; color: var(--error); }
 
   @media (max-width: 480px) {
+    body { padding: 16px; }
+    .auth-brand { margin-bottom: 22px; }
     .auth-card { padding: 24px 18px 22px; }
     .auth-brand-text .product { font-size: 18px; letter-spacing: 4px; }
-    .mockup { padding: 14px 16px; }
-    .roi-score-row { flex-direction: column; }
+    .modal { padding: 24px 18px 20px; }
   }
 </style>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
 
-<!-- ══ LEFT: SLIDESHOW ══ -->
-<section class="slideshow-panel" aria-label="Product feature highlights">
-
-  <div class="slide-brand" aria-hidden="true">
-    <img src="/callisto_high.png" alt="">
-    <div class="slide-brand-text">
-      <div class="product">Astra</div>
-      <div class="tagline">AI assistant for FAFSA</div>
-    </div>
-  </div>
-
-  <div class="slides-track" id="slidesTrack">
-
-    <!-- SLIDE 1: College Cost Lookup -->
-    <div class="slide active" id="slide-0" role="group" aria-label="Feature 1 of 5: College Cost Lookup">
-      <div class="slide-eyebrow">College Cost Lookup</div>
-      <h2 class="slide-heading">Know the <em>true cost</em><br>before you apply</h2>
-      <p class="slide-body">Search any of 6,000+ colleges and get a full cost-of-attendance breakdown — tuition, room &amp; board, fees, and estimated financial aid — in seconds.</p>
-      <div class="mockup" aria-hidden="true">
-        <div class="mockup-bar">
-          <div class="mockup-dot red"></div>
-          <div class="mockup-dot amber"></div>
-          <div class="mockup-dot green"></div>
-          <span class="mockup-title">College Search</span>
-        </div>
-        <div class="mock-search">
-          <span class="mock-search-icon">🔍</span>
-          <span class="mock-search-text">University of Michigan — Ann Arbor</span>
-          <span class="mock-search-badge">Found</span>
-        </div>
-        <div class="mock-row">
-          <span class="mock-row-label">Tuition &amp; Fees</span>
-          <span class="mock-row-val">$17,786</span>
-        </div>
-        <div class="mock-row">
-          <span class="mock-row-label">Room &amp; Board</span>
-          <span class="mock-row-val">$13,554</span>
-        </div>
-        <div class="mock-row">
-          <span class="mock-row-label">Books &amp; Supplies</span>
-          <span class="mock-row-val">$1,048</span>
-        </div>
-        <div class="mock-row">
-          <span class="mock-row-label">Avg. Net Price (aid)</span>
-          <span class="mock-row-val gold">$14,203</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- SLIDE 2: Earnings by Major -->
-    <div class="slide" id="slide-1" role="group" aria-label="Feature 2 of 5: Earnings by Major">
-      <div class="slide-eyebrow">Earnings by Major</div>
-      <h2 class="slide-heading">Pick a major that <em>pays off</em></h2>
-      <p class="slide-body">Browse salary data across 100+ fields of study. See median early-career earnings so you can match your passion with your financial goals.</p>
-      <div class="mockup" aria-hidden="true">
-        <div class="mockup-bar">
-          <div class="mockup-dot red"></div>
-          <div class="mockup-dot amber"></div>
-          <div class="mockup-dot green"></div>
-          <span class="mockup-title">Earnings by Major</span>
-        </div>
-        <div class="major-bar-row">
-          <div class="major-bar-label"><span>Computer Science</span><span>$92,000</span></div>
-          <div class="major-bar-track"><div class="major-bar-fill" style="width:92%"></div></div>
-        </div>
-        <div class="major-bar-row">
-          <div class="major-bar-label"><span>Nursing</span><span>$68,000</span></div>
-          <div class="major-bar-track"><div class="major-bar-fill" style="width:68%"></div></div>
-        </div>
-        <div class="major-bar-row">
-          <div class="major-bar-label"><span>Business Admin</span><span>$55,000</span></div>
-          <div class="major-bar-track"><div class="major-bar-fill" style="width:55%"></div></div>
-        </div>
-        <div class="major-bar-row">
-          <div class="major-bar-label"><span>Psychology</span><span>$42,000</span></div>
-          <div class="major-bar-track"><div class="major-bar-fill" style="width:42%"></div></div>
-        </div>
-        <div class="major-bar-row">
-          <div class="major-bar-label"><span>Education</span><span>$38,000</span></div>
-          <div class="major-bar-track"><div class="major-bar-fill" style="width:38%"></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- SLIDE 3: ROI Calculator -->
-    <div class="slide" id="slide-2" role="group" aria-label="Feature 3 of 5: ROI Calculator">
-      <div class="slide-eyebrow">ROI Calculator</div>
-      <h2 class="slide-heading">Is college worth it?<br><em>See the math.</em></h2>
-      <p class="slide-body">We calculate your net cost vs. projected earnings to show your return on investment — so you can choose the school that makes financial sense for your future.</p>
-      <div class="mockup" aria-hidden="true">
-        <div class="mockup-bar">
-          <div class="mockup-dot red"></div>
-          <div class="mockup-dot amber"></div>
-          <div class="mockup-dot green"></div>
-          <span class="mockup-title">ROI Summary</span>
-        </div>
-        <div class="roi-score-row">
-          <div class="roi-score-card">
-            <div class="val gold">$14,203</div>
-            <div class="lbl">Net Price / Year</div>
-          </div>
-          <div class="roi-score-card">
-            <div class="val green">$92,000</div>
-            <div class="lbl">Median Earnings</div>
-          </div>
-          <div class="roi-score-card">
-            <div class="val">6.5×</div>
-            <div class="lbl">10-yr ROI</div>
-          </div>
-        </div>
-        <div class="mock-row">
-          <span class="mock-row-label">4-Year Total Cost</span>
-          <span class="mock-row-val">$56,812</span>
-        </div>
-        <div class="mock-row">
-          <span class="mock-row-label">Earnings Premium (10yr)</span>
-          <span class="mock-row-val green">+$368,000</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- SLIDE 4: AI Financial Advisor -->
-    <div class="slide" id="slide-3" role="group" aria-label="Feature 4 of 5: AI Financial Advisor">
-      <div class="slide-eyebrow">AI Financial Advisor</div>
-      <h2 class="slide-heading">Your personal<br><em>financial guide</em></h2>
-      <p class="slide-body">Ask Astra anything about loans, grants, scholarships, and repayment strategies. Get plain-language advice personalized to your school and major.</p>
-      <div class="mockup" aria-hidden="true">
-        <div class="mockup-bar">
-          <div class="mockup-dot red"></div>
-          <div class="mockup-dot amber"></div>
-          <div class="mockup-dot green"></div>
-          <span class="mockup-title">Ask Astra</span>
-        </div>
-        <div class="ai-bubble">
-          <div class="ai-label you">You</div>
-          Should I take the $8k Parent PLUS loan or look for more scholarships first?
-        </div>
-        <div class="ai-bubble">
-          <div class="ai-label astra">Astra</div>
-          Before taking on Parent PLUS debt at 8.05% interest, I'd recommend applying to 3–5 local scholarships worth $2–5k each. With your CS major and Michigan's net price, your 10-year ROI is strong — but minimizing loans now saves ~$4,200 in interest over 10 years.
-        </div>
-      </div>
-    </div>
-
-    <!-- SLIDE 5: Compare Colleges -->
-    <div class="slide" id="slide-4" role="group" aria-label="Feature 5 of 5: Compare Colleges">
-      <div class="slide-eyebrow">College Comparison</div>
-      <h2 class="slide-heading">Compare schools<br><em>side by side</em></h2>
-      <p class="slide-body">Add up to four colleges and compare net price, earnings potential, and ROI at a glance. Make a data-driven decision — not just a gut one.</p>
-      <div class="mockup" aria-hidden="true">
-        <div class="mockup-bar">
-          <div class="mockup-dot red"></div>
-          <div class="mockup-dot amber"></div>
-          <div class="mockup-dot green"></div>
-          <span class="mockup-title">Compare</span>
-        </div>
-        <table class="cmp-table">
-          <thead>
-            <tr>
-              <th></th>
-              <th>Michigan</th>
-              <th>Ohio St.</th>
-              <th>Penn St.</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Net Price</td>
-              <td class="best">$14,203</td>
-              <td>$16,480</td>
-              <td>$18,100</td>
-            </tr>
-            <tr>
-              <td>Grad Rate</td>
-              <td class="best">91%</td>
-              <td>84%</td>
-              <td>80%</td>
-            </tr>
-            <tr>
-              <td>Median Earn.</td>
-              <td class="best">$92k</td>
-              <td>$85k</td>
-              <td>$81k</td>
-            </tr>
-            <tr>
-              <td>10-yr ROI</td>
-              <td class="best">6.5×</td>
-              <td>5.2×</td>
-              <td>4.5×</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-  </div><!-- /slides-track -->
-
-  <!-- Progress bar -->
-  <div class="slide-progress" aria-hidden="true">
-    <div class="slide-progress-fill" id="progressFill"></div>
-  </div>
-
-  <!-- Dot navigation -->
-  <div class="slide-dots" role="tablist" aria-label="Slide navigation">
-    <button class="slide-dot active" role="tab" aria-selected="true"  aria-label="Slide 1: College Cost Lookup" data-index="0"></button>
-    <button class="slide-dot"        role="tab" aria-selected="false" aria-label="Slide 2: Earnings by Major"    data-index="1"></button>
-    <button class="slide-dot"        role="tab" aria-selected="false" aria-label="Slide 3: ROI Calculator"       data-index="2"></button>
-    <button class="slide-dot"        role="tab" aria-selected="false" aria-label="Slide 4: AI Advisor"           data-index="3"></button>
-    <button class="slide-dot"        role="tab" aria-selected="false" aria-label="Slide 5: Compare Colleges"     data-index="4"></button>
-  </div>
-
-</section>
-
-<!-- ══ RIGHT: LOGIN FORM ══ -->
-<main id="main-content" class="login-panel">
+<main id="main-content">
   <div class="auth-wrap">
 
     <div class="auth-brand">
@@ -706,6 +275,11 @@
         <button type="submit" class="submit-btn" id="submitBtn">Sign In</button>
       </form>
 
+      <button type="button" class="magic-link-btn" id="magicLinkBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        Sign in with a link
+      </button>
+
       <div class="auth-footer">
         No account? <a href="/register.html">Create one free</a>
       </div>
@@ -715,7 +289,35 @@
       By signing in you agree to our <a href="/privacy-policy.html">Privacy Policy</a>.
     </p>
   </div>
+
+  <!-- Contact card -->
+  <div style="margin-top:20px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);">
+    <div style="width:38px;height:38px;border-radius:9px;background:var(--navy);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+    </div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Questions? Contact us</div>
+      <div style="font-size:14px;font-weight:700;color:var(--navy);user-select:all;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">ambreen@callistotech.org</div>
+    </div>
+    <button onclick="navigator.clipboard.writeText('ambreen@callistotech.org').then(()=>{this.textContent='Copied!';setTimeout(()=>{this.textContent='Copy'},1800)})" style="flex-shrink:0;font-size:12px;font-weight:700;color:var(--primary-dk);background:transparent;border:1.5px solid var(--border);border-radius:6px;padding:5px 12px;cursor:pointer;font-family:inherit;transition:background .15s;" onmouseover="this.style.background='#fdf8f2'" onmouseout="this.style.background='transparent'">Copy</button>
+  </div>
+</div>
 </main>
+
+<!-- Magic link modal -->
+<div class="modal-backdrop" id="magicModal" role="dialog" aria-modal="true" aria-labelledby="magicModalTitle">
+  <div class="modal">
+    <button class="modal-close" id="magicModalClose" aria-label="Close">&times;</button>
+    <h2 id="magicModalTitle">Sign in with a link</h2>
+    <p>Enter your email and we'll send you a one-time sign-in link — no password needed. It expires in 15 minutes.</p>
+    <div class="modal-msg" id="magicMsg" role="alert" aria-live="assertive"></div>
+    <div class="field">
+      <label for="magicEmail">Email address</label>
+      <input type="email" id="magicEmail" placeholder="you@example.com" autocomplete="email">
+    </div>
+    <button type="button" class="modal-submit" id="magicSubmit">Send sign-in link</button>
+  </div>
+</div>
 
 <script>
 (function () {
@@ -766,94 +368,73 @@
       });
   });
 
-  /* ══════════════════════════════
-     Slideshow logic
-  ══════════════════════════════ */
-  const SLIDE_DURATION = 6000; // ms per slide
-  const slides = Array.from(document.querySelectorAll('.slide'));
-  const dots   = Array.from(document.querySelectorAll('.slide-dot'));
-  const progressFill = document.getElementById('progressFill');
 
-  let current  = 0;
-  let timer    = null;
-  let startedAt = null;
-  let paused   = false;
+  /* ── Magic link modal ── */
+  const modal       = document.getElementById('magicModal');
+  const magicBtn    = document.getElementById('magicLinkBtn');
+  const closeBtn    = document.getElementById('magicModalClose');
+  const magicSubmit = document.getElementById('magicSubmit');
+  const magicEmail  = document.getElementById('magicEmail');
+  const magicMsg    = document.getElementById('magicMsg');
 
-  function goTo(index, direction) {
-    const prev = current;
-    current = (index + slides.length) % slides.length;
-
-    slides[prev].classList.remove('active');
-    slides[prev].classList.add('exit');
-    slides[current].classList.add('active');
-
-    // Clean up exit class after transition
-    setTimeout(() => slides[prev].classList.remove('exit'), 700);
-
-    dots[prev].classList.remove('active');
-    dots[prev].setAttribute('aria-selected', 'false');
-    dots[current].classList.add('active');
-    dots[current].setAttribute('aria-selected', 'true');
+  function openModal() {
+    magicEmail.value = document.getElementById('email').value || '';
+    magicMsg.style.display = 'none';
+    magicMsg.className = 'modal-msg';
+    magicSubmit.disabled = false;
+    magicSubmit.textContent = 'Send sign-in link';
+    modal.classList.add('open');
+    magicEmail.focus();
+  }
+  function closeModal() {
+    modal.classList.remove('open');
+    magicBtn.focus();
   }
 
-  function startProgress() {
-    startedAt = Date.now();
-    progressFill.style.transition = 'none';
-    progressFill.style.width = '0%';
-    // Force reflow
-    progressFill.getBoundingClientRect();
-    progressFill.style.transition = 'width ' + SLIDE_DURATION + 'ms linear';
-    progressFill.style.width = '100%';
-  }
+  magicBtn.addEventListener('click', openModal);
+  closeBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
 
-  function nextSlide() {
-    goTo(current + 1);
-    startProgress();
-  }
+  magicSubmit.addEventListener('click', () => {
+    const email = magicEmail.value.trim();
+    if (!email) {
+      magicMsg.textContent = 'Please enter your email address.';
+      magicMsg.className = 'modal-msg error';
+      magicMsg.style.display = 'block';
+      return;
+    }
+    magicSubmit.disabled = true;
+    magicSubmit.textContent = 'Sending…';
+    magicMsg.style.display = 'none';
 
-  function startAutoplay() {
-    if (timer) clearInterval(timer);
-    timer = setInterval(nextSlide, SLIDE_DURATION);
-    startProgress();
-  }
-
-  function stopAutoplay() {
-    clearInterval(timer);
-    timer = null;
-    progressFill.style.transition = 'none';
-    progressFill.style.width = progressFill.style.width; // freeze
-  }
-
-  // Dot clicks
-  dots.forEach((dot, i) => {
-    dot.addEventListener('click', () => {
-      if (i === current) return;
-      stopAutoplay();
-      goTo(i);
-      startAutoplay();
-    });
-    dot.addEventListener('keydown', e => {
-      if (e.key === 'ArrowRight') { e.preventDefault(); dots[(i + 1) % dots.length].click(); }
-      if (e.key === 'ArrowLeft')  { e.preventDefault(); dots[(i - 1 + dots.length) % dots.length].click(); }
-    });
+    fetch('/api/auth/magic-link/request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    })
+      .then(r => r.json())
+      .then(() => {
+        magicMsg.textContent = 'Check your inbox — a sign-in link is on its way.';
+        magicMsg.className = 'modal-msg success';
+        magicMsg.style.display = 'block';
+        magicSubmit.textContent = 'Link sent';
+      })
+      .catch(() => {
+        magicMsg.textContent = 'Something went wrong. Please try again.';
+        magicMsg.className = 'modal-msg error';
+        magicMsg.style.display = 'block';
+        magicSubmit.disabled = false;
+        magicSubmit.textContent = 'Send sign-in link';
+      });
   });
 
-  // Pause on hover / focus within the panel
-  const panel = document.querySelector('.slideshow-panel');
-  panel.addEventListener('mouseenter', () => { paused = true; stopAutoplay(); });
-  panel.addEventListener('mouseleave', () => { paused = false; startAutoplay(); });
-  panel.addEventListener('focusin',    () => { paused = true; stopAutoplay(); });
-  panel.addEventListener('focusout',   () => { paused = false; startAutoplay(); });
-
-  // Respect prefers-reduced-motion
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  if (!reduceMotion.matches) {
-    startAutoplay();
+  /* Show error if returning from a bad/expired magic link */
+  if (params.get('error') === 'magic-link') {
+    const err = document.getElementById('errorBox');
+    err.textContent = 'That sign-in link has expired or already been used. Request a new one below.';
+    err.style.display = 'block';
   }
-  reduceMotion.addEventListener('change', e => {
-    if (e.matches) stopAutoplay();
-    else if (!paused) startAutoplay();
-  });
 
 })();
 </script>

@@ -1,21 +1,28 @@
 package com.example.collegeroitool.controller;
 
 import com.example.collegeroitool.model.AppUser;
+import com.example.collegeroitool.service.MagicLinkService;
 import com.example.collegeroitool.service.UserService;
 import com.example.collegeroitool.service.UserSessionService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -25,13 +32,17 @@ public class AuthController {
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     private final UserService userService;
     private final UserSessionService sessionService;
+    private final MagicLinkService magicLinkService;
 
     @Value("${premium.dev.bypass:false}")
     private boolean devBypass;
 
-    public AuthController(UserService userService, UserSessionService sessionService) {
-        this.userService = userService;
-        this.sessionService = sessionService;
+    public AuthController(UserService userService,
+                          UserSessionService sessionService,
+                          MagicLinkService magicLinkService) {
+        this.userService      = userService;
+        this.sessionService   = sessionService;
+        this.magicLinkService = magicLinkService;
     }
 
     @PostMapping("/register")
@@ -193,6 +204,52 @@ public class AuthController {
         return found
             ? ResponseEntity.ok(Map.of("activated", true, "email", email))
             : ResponseEntity.badRequest().body(Map.of("error", "User not found: " + email));
+    }
+
+    // ── Magic link endpoints ──────────────────────────────────────────────────
+
+    @PostMapping("/magic-link/request")
+    public ResponseEntity<?> requestMagicLink(@RequestBody Map<String, String> body) {
+        String email = body.getOrDefault("email", "").trim();
+        if (email.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Email is required."));
+        }
+        try {
+            magicLinkService.requestLink(email);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.internalServerError().body(Map.of("error", ex.getMessage()));
+        }
+        // Always return success to avoid leaking whether the email is registered
+        return ResponseEntity.ok(Map.of("sent", true));
+    }
+
+    @GetMapping("/magic-link/verify")
+    public void verifyMagicLink(@RequestParam String token,
+                                HttpServletRequest request,
+                                HttpServletResponse response) throws Exception {
+        magicLinkService.consume(token).ifPresentOrElse(email -> {
+            try {
+                // Manually authenticate the user and persist to session
+                var authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+                var auth = new UsernamePasswordAuthenticationToken(email, null, authorities);
+                SecurityContext ctx = SecurityContextHolder.createEmptyContext();
+                ctx.setAuthentication(auth);
+                SecurityContextHolder.setContext(ctx);
+
+                HttpSession session = request.getSession(true);
+                session.setAttribute(
+                    HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, ctx);
+
+                log.info("[magic-link] verified and logged in email={}", email);
+                response.sendRedirect("/app.html");
+            } catch (Exception e) {
+                log.error("[magic-link] session setup failed: {}", e.getMessage(), e);
+                try { response.sendRedirect("/login.html?error=magic-link"); } catch (Exception ignored) {}
+            }
+        }, () -> {
+            log.warn("[magic-link] invalid or expired token");
+            try { response.sendRedirect("/login.html?error=magic-link"); } catch (Exception ignored) {}
+        });
     }
 
     private String resolveEmail(Principal principal) {

@@ -68,6 +68,8 @@ public class SecurityConfig {
                     "/", "/index.html", "/landing.html", "/app.html",
                     "/login.html", "/register.html", "/privacy-policy.html",
                     "/api/auth/register",
+                    "/api/auth/magic-link/request",
+                    "/api/auth/magic-link/verify",
                     "/api/stripe/webhook",
                     "/astra-logo.jpg",
                     "/callisto_high.png",
