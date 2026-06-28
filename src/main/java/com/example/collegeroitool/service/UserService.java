@@ -80,6 +80,10 @@ public class UserService implements UserDetailsService {
 
     private void sendWelcomeEmail(String email, String name) {
         if (fromAddress == null || fromAddress.isBlank()) return;
+        new Thread(() -> sendWelcomeEmailSync(email, name), "welcome-email").start();
+    }
+
+    private void sendWelcomeEmailSync(String email, String name) {
         try {
             String firstName = (name != null && name.contains(" "))
                 ? name.substring(0, name.indexOf(' ')) : (name != null ? name : "there");
