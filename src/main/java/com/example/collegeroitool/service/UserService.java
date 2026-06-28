@@ -4,10 +4,6 @@ import com.example.collegeroitool.model.AppUser;
 import com.example.collegeroitool.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,16 +20,14 @@ public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    @Autowired(required = false)
-    private JavaMailSender mailSender;
-
-    @Value("${spring.mail.username:}")
-    private String fromAddress;
+    private final ResendEmailService emailService;
 
     public UserService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder) {
+                       PasswordEncoder passwordEncoder,
+                       ResendEmailService emailService) {
         this.userRepository  = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService    = emailService;
     }
 
     @Override
@@ -79,41 +73,22 @@ public class UserService implements UserDetailsService {
     }
 
     private void sendWelcomeEmail(String email, String name) {
-        new Thread(() -> sendWelcomeEmailSync(email, name), "welcome-email").start();
-    }
-
-    private void sendWelcomeEmailSync(String email, String name) {
-        String from = (fromAddress != null && !fromAddress.isBlank()) ? fromAddress : "zaver.ambreen@gmail.com";
-        log.info("[welcome-email] starting — to={} from={} mailSender={}", email, from, mailSender != null ? "configured" : "NULL");
-        if (mailSender == null) {
-            log.warn("[welcome-email] JavaMailSender is null — check MAIL_PASSWORD env var on Railway");
-            return;
-        }
-        try {
-            String firstName = (name != null && name.contains(" "))
-                ? name.substring(0, name.indexOf(' ')) : (name != null ? name : "there");
-            SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setFrom(from);
-            msg.setTo(email);
-            msg.setSubject("Welcome to Astra — you're all set");
-            msg.setText(
-                "Hi " + firstName + ",\n\n" +
-                "Welcome to Astra! Your account is ready.\n\n" +
-                "Here's what you can do:\n" +
-                "  • Find scholarships matched to your major, state, and background\n" +
-                "  • Decode your financial aid award letter\n" +
-                "  • Compare colleges side by side\n" +
-                "  • Optimize your student loan repayment plan\n\n" +
-                "You get 1 free search per tool — no credit card needed to start.\n\n" +
-                "Sign in anytime at https://astra-ed.org/login.html\n\n" +
-                "Questions? Reply to this email or reach us at ambreen@callistotech.org\n\n" +
-                "— Ambreen & the Astra Team"
-            );
-            mailSender.send(msg);
-            log.info("[welcome-email] sent successfully to={}", email);
-        } catch (Exception e) {
-            log.warn("[welcome-email] failed for email={}: {}", email, e.getMessage());
-        }
+        String firstName = (name != null && name.contains(" "))
+            ? name.substring(0, name.indexOf(' ')) : (name != null ? name : "there");
+        emailService.send(email,
+            "Welcome to Astra — you're all set",
+            "Hi " + firstName + ",\n\n" +
+            "Welcome to Astra! Your account is ready.\n\n" +
+            "Here's what you can do:\n" +
+            "  • Prep your FAFSA with AI-powered asset repositioning\n" +
+            "  • Find scholarships matched to your major, state, and background\n" +
+            "  • Decode your financial aid award letter\n" +
+            "  • Optimize your student loan repayment plan\n\n" +
+            "You get 1 free analysis per tool — no credit card needed to start.\n\n" +
+            "Sign in anytime at https://astra-ed.org/login.html\n\n" +
+            "Questions? Reply to this email or reach us at ambreen@callistotech.org\n\n" +
+            "— Ambreen & the Astra Team"
+        );
     }
 
     public Optional<AppUser> findByEmail(String email) {
