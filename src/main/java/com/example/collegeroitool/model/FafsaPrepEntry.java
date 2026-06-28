@@ -48,6 +48,7 @@ public class FafsaPrepEntry {
     private BigDecimal parentHomeEquity;
     private BigDecimal parentRetirementSavings;
     private BigDecimal parentBusinessNetWorth;
+    @Column(name = "parent_529_balance")
     private BigDecimal parent529Balance;
 
     // Computed / AI
