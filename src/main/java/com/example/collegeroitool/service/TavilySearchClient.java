@@ -130,6 +130,53 @@ public class TavilySearchClient {
         }
     }
 
+    /**
+     * Official-sources scholarship search: advanced depth + raw content, restricted to
+     * authoritative domains (.gov, .edu, official scholarship platforms).
+     * Returns {title, content (up to contentMaxLen chars), url} for prompt injection.
+     */
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> searchOfficialSources(String query, int maxResults,
+                                                            List<String> includeDomains,
+                                                            int contentMaxLen) {
+        try {
+            Map<String, Object> body = new HashMap<>();
+            body.put("api_key", apiKey);
+            body.put("query", query);
+            body.put("max_results", maxResults);
+            body.put("search_depth", "advanced");
+            body.put("include_raw_content", true);
+            if (includeDomains != null && !includeDomains.isEmpty()) {
+                body.put("include_domains", includeDomains);
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                TAVILY_URL, new HttpEntity<>(body, headers), Map.class);
+
+            Map<String, Object> responseBody = response.getBody();
+            if (responseBody == null) return List.of();
+            List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
+            if (results == null) return List.of();
+
+            List<Map<String, Object>> parsed = new ArrayList<>();
+            for (Map<String, Object> r : results) {
+                String raw = r.get("raw_content") instanceof String rc ? rc : (String) r.get("content");
+                Map<String, Object> item = new HashMap<>();
+                item.put("title", r.get("title"));
+                item.put("content", truncate(cleanHandbookText(raw), contentMaxLen));
+                item.put("url", r.get("url"));
+                item.put("source", "live-official");
+                parsed.add(item);
+            }
+            return parsed;
+        } catch (Exception e) {
+            return List.of();
+        }
+    }
+
     /** Strip markdown artifacts/links and truncate raw search content to a display-friendly snippet. */
     private static String cleanSnippet(String raw) {
         if (raw == null) return "";

@@ -773,7 +773,7 @@ public class GroqService {
         if (DEV_STUB_KEY.equals(apiKey)) {
             return buildScholarshipStub(studentContext);
         }
-        // Parse state and target schools out of context to inject as hard requirements
+        // Parse state and target schools from context for targeted instructions
         String state = "";
         List<String> schools = new ArrayList<>();
         for (String line : studentContext.split("\n")) {
@@ -786,48 +786,53 @@ public class GroqService {
             }
         }
 
-        boolean hasSearchResults = searchResults != null && !searchResults.isBlank() && !searchResults.equals("[]");
-        String searchSection = hasSearchResults
-            ? "LIVE SEARCH RESULTS (use these as primary source for real names/amounts/URLs/deadlines):\n" + searchResults + "\n"
-            : "No live search results — use your training knowledge, but flag uncertainty on amounts/deadlines.\n";
+        boolean hasLive = searchResults != null && !searchResults.isBlank()
+            && !searchResults.equals("[]") && !searchResults.equals("(no live results retrieved)");
 
         StringBuilder prompt = new StringBuilder();
-        prompt.append("You are a scholarship advisor. Analyze this student's profile and return the best-matching real scholarships.\n\n");
-        prompt.append("STUDENT PROFILE:\n").append(studentContext).append("\n");
-        prompt.append(searchSection).append("\n");
-        prompt.append("REQUIRED COMPOSITION — you MUST include ALL of these categories:\n");
+        prompt.append("You are a scholarship matching expert with access to live official scholarship data.\n");
+        prompt.append("Reason through the live source content below to identify every real scholarship program ");
+        prompt.append("that this specific student qualifies for, then return a ranked JSON list.\n\n");
 
+        prompt.append("=== STUDENT PROFILE ===\n").append(studentContext).append("\n");
+
+        if (hasLive) {
+            prompt.append("=== LIVE OFFICIAL SOURCE CONTENT ===\n");
+            prompt.append("The following content was retrieved in real-time from official government sites, .edu financial aid pages, ");
+            prompt.append("and accredited scholarship platforms. Treat this as your PRIMARY source.\n");
+            prompt.append("Extract real program names, dollar amounts, deadlines, eligibility criteria, and URLs directly from this text.\n\n");
+            prompt.append(searchResults).append("\n");
+        } else {
+            prompt.append("=== NOTE: No live content retrieved — reason from training knowledge. Flag uncertainty on amounts/deadlines. ===\n\n");
+        }
+
+        prompt.append("=== REASONING INSTRUCTIONS ===\n");
+        prompt.append("Step 1 — From the source content above, identify every named scholarship/grant program.\n");
+        prompt.append("Step 2 — For each program, check eligibility against the student profile. Discard mismatches.\n");
+        prompt.append("Step 3 — Group matches:\n");
         if (!state.isEmpty()) {
-            prompt.append("1. STATE-SPECIFIC (MANDATORY — at least 2): Real grants or scholarships from ")
-                  .append(state).append(" — state grant programs (e.g. ").append(state)
-                  .append(" Need-Based Grant, ").append(state).append(" Bright Futures, lottery-funded scholarships), ")
-                  .append(state).append("-based community foundations, and state professional associations. ")
-                  .append("Type = \"state\". If you cannot find real programs, say so in eligibility.\n");
+            prompt.append("  • STATE (type=\"state\"): programs specific to ").append(state)
+                  .append(" — state need/merit grants, state lottery scholarships, ").append(state)
+                  .append("-based foundations. Require at least 2.\n");
         }
         if (!schools.isEmpty()) {
-            prompt.append(!state.isEmpty() ? "2" : "1").append(". SCHOOL-SPECIFIC (MANDATORY — at least ")
-                  .append(schools.size()).append(" total, 1+ per school): Institutional merit and need-based awards ")
-                  .append("offered directly by ").append(String.join(", ", schools))
-                  .append(". Include the school's own named merit scholarships, departmental awards in the student's major, ")
-                  .append("and alumni-foundation awards. Use the school's real financial aid page URL. Type = \"school-specific\".\n");
+            prompt.append("  • SCHOOL-SPECIFIC (type=\"school-specific\"): institutional awards from ")
+                  .append(String.join(", ", schools))
+                  .append(". Use the URL from the source content where available. Require at least 1 per school.\n");
         }
-        int natNum = (!state.isEmpty() && !schools.isEmpty()) ? 3 : (!state.isEmpty() || !schools.isEmpty()) ? 2 : 1;
-        prompt.append(natNum).append(". NATIONAL/EXTERNAL (at least 3): Field-specific, demographic, or merit-based national scholarships ")
-              .append("matching this student's major, ethnicity, first-gen status, GPA, and extracurriculars. Type = \"external\".\n\n");
+        prompt.append("  • NATIONAL/EXTERNAL (type=\"external\"): field, demographic, or merit-based national programs. At least 3.\n");
+        prompt.append("Step 4 — Order: state first, school-specific second, national third. Within each group, rank by match quality.\n\n");
 
-        prompt.append("RULES:\n");
-        prompt.append("- Every entry must be a REAL, verifiable scholarship with a real sponsor name.\n");
-        prompt.append("- Use actual dollar amounts and deadlines from search results where available; mark \"varies\" if uncertain.\n");
-        prompt.append("- Order results: state-specific first, then school-specific, then national — within each group, best match first.\n");
-        prompt.append("- Total: 10-14 scholarships.\n");
-        prompt.append("- Do NOT include generic placeholders or made-up names.\n\n");
-        prompt.append("Return ONLY a JSON array (no markdown, no explanation). Each element:\n");
-        prompt.append("  name (string), amount (string or null), deadline (string or null),\n");
-        prompt.append("  eligibility (1-2 sentence summary explaining why this matches the student),\n");
-        prompt.append("  link (URL or null), source (domain or \"groq-knowledge\"),\n");
-        prompt.append("  type (one of: \"state\", \"school-specific\", \"external\").");
+        prompt.append("=== OUTPUT RULES ===\n");
+        prompt.append("- Every entry MUST be a real, named program. No fabricated names.\n");
+        prompt.append("- Prefer amounts/deadlines/URLs from the live source content over training knowledge.\n");
+        prompt.append("- If amount or deadline is not in the source content, use \"varies\" or null — do not guess.\n");
+        prompt.append("- eligibility field: 1-2 sentences explaining WHY this student qualifies (reference their specific GPA, major, state, etc.).\n");
+        prompt.append("- Total: 10-14 scholarships.\n\n");
+        prompt.append("Return ONLY a JSON array (no markdown, no preamble). Each element:\n");
+        prompt.append("  name, amount, deadline, eligibility, link, source (domain or \"groq-knowledge\"), type");
 
-        return callGroq(prompt.toString(), 3000, 0.2);
+        return callGroq(prompt.toString(), 4000, 0.1);
     }
 
     /** @deprecated Use {@link #getScholarshipRecommendations(String, String)} */

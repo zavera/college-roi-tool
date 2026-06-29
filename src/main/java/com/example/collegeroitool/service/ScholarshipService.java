@@ -9,17 +9,17 @@ import java.util.stream.Collectors;
 @Service
 public class ScholarshipService {
 
-    private static final List<String> SCHOLARSHIP_ALLOWED_DOMAINS = List.of(
-        "fastweb.com", "scholarships.com", "scholarships360.org", "bold.org",
-        "niche.com", "cappex.com", "goingmerry.com", "collegescholarships.org",
-        "studentaid.gov", "unigo.com", "collegexpress.com", "petersons.com",
-        "collegeboard.org", "salliemae.com"
+    // Official sources only — government, accredited scholarship platforms, .edu
+    private static final List<String> OFFICIAL_SCHOLARSHIP_DOMAINS = List.of(
+        "studentaid.gov", "collegeboard.org", "scholarships.com", "scholarships360.org",
+        "fastweb.com", "goingmerry.com", "bold.org", "cappex.com",
+        "hsf.net", "thegatesscholarship.org", "jkcf.org", "questbridge.org",
+        "elks.org", "dellscholars.org", "afcea.org", "smartscholarship.org"
     );
 
-    // Domains Tavily should NOT search for general scholarships
-    private static final List<String> EXCLUDED_GENERAL = List.of(
-        "reddit.com", "quora.com", "yahoo.com", "pinterest.com"
-    );
+    private static final List<String> OFFICIAL_STATE_TLD = List.of(".gov", ".edu");
+
+    private static final int CONTENT_MAX_LEN = 1800; // chars per result injected into prompt
 
     private final TavilySearchClient tavilySearchClient;
     private final GroqService groqService;
@@ -41,13 +41,49 @@ public class ScholarshipService {
     public String search(Long studentId, Map<String, Object> demographics,
                          String comments, List<String> targetSchools) throws Exception {
         String kvSummary = buildKvSummary(studentId);
-        List<String> queries = new ArrayList<>(buildExternalQueries(demographics));
-        if (targetSchools != null && !targetSchools.isEmpty()) {
-            queries.addAll(buildSchoolQueries(demographics, targetSchools));
+        String state  = str(demographics, "state");
+        String major  = str(demographics, "major");
+
+        // Build queries for each category — official sources first
+        List<SearchQuery> queries = new ArrayList<>();
+
+        // State-specific: target the state's official higher-ed / grant sites
+        if (!state.isEmpty()) {
+            queries.add(new SearchQuery(
+                state + " state grants scholarships undergraduate students site:.gov OR site:.edu",
+                buildStateDomains(state), 3));
+            queries.add(new SearchQuery(
+                state + " higher education commission scholarships financial aid programs",
+                OFFICIAL_SCHOLARSHIP_DOMAINS, 2));
         }
-        String searchResults = runSearches(queries, EXCLUDED_GENERAL);
+
+        // School-specific: target each school's .edu financial aid pages
+        if (targetSchools != null) {
+            for (String school : targetSchools) {
+                String domain = schoolDomain(school);
+                queries.add(new SearchQuery(
+                    school + " scholarships merit financial aid " + major,
+                    List.of(domain), 3));
+            }
+        }
+
+        // National/major/demographic official sources
+        if (!major.isEmpty())
+            queries.add(new SearchQuery("scholarships " + major + " undergraduate " + java.time.Year.now().getValue(),
+                OFFICIAL_SCHOLARSHIP_DOMAINS, 3));
+        queries.add(new SearchQuery("national scholarships undergraduate financial aid " + java.time.Year.now().getValue(),
+            OFFICIAL_SCHOLARSHIP_DOMAINS, 3));
+        if (bool(demographics, "firstGen"))
+            queries.add(new SearchQuery("first generation college student scholarships grants",
+                OFFICIAL_SCHOLARSHIP_DOMAINS, 2));
+        String eth = str(demographics, "ethnicity");
+        if (!eth.isEmpty())
+            queries.add(new SearchQuery(eth + " student scholarships grants",
+                OFFICIAL_SCHOLARSHIP_DOMAINS, 2));
+
+        String liveContent = runOfficialSearches(queries);
         String context = buildContext(demographics, kvSummary, comments, targetSchools);
-        return groqService.getScholarshipRecommendations(context, searchResults);
+        return groqService.getScholarshipRecommendations(context, liveContent);
     }
 
     /** @deprecated Use {@link #search} */
@@ -114,55 +150,46 @@ public class ScholarshipService {
      * ethnicity, firstGen). Student name, DOB, SSN, and all PII are never included in any
      * query string sent to Tavily.
      */
-    private List<String> buildExternalQueries(Map<String, Object> demographics) {
-        List<String> queries = new ArrayList<>();
-        String year = String.valueOf(java.time.Year.now().getValue());
-        String major = str(demographics, "major");
-        String state = str(demographics, "state");
-        String ethnicity = str(demographics, "ethnicity");
-        boolean firstGen = bool(demographics, "firstGen");
+    private record SearchQuery(String query, List<String> domains, int maxResults) {}
 
-        if (!major.isEmpty()) queries.add("scholarships for " + major + " students " + year);
-        if (!state.isEmpty()) queries.add(state + " scholarships undergraduate students " + year);
-        if (!ethnicity.isEmpty()) queries.add(ethnicity + " student scholarships " + year);
-        if (firstGen) queries.add("first generation college student scholarships " + year);
-        queries.add("national merit undergraduate scholarships " + year);
-        return queries;
+    private List<String> buildStateDomains(String state) {
+        // Include known state higher-ed domain patterns + official scholarship platforms
+        String slug = state.toLowerCase().replaceAll("[^a-z]", "");
+        List<String> domains = new ArrayList<>(OFFICIAL_SCHOLARSHIP_DOMAINS);
+        // Add likely state higher-ed commission domains
+        domains.add(slug + "hed.gov");
+        domains.add(slug + "highered.gov");
+        domains.add(slug + ".gov");
+        return domains;
     }
 
-    private List<String> buildSchoolQueries(Map<String, Object> demographics, List<String> schools) {
-        List<String> queries = new ArrayList<>();
-        String major = str(demographics, "major");
-        for (String school : schools) {
-            String s = school.trim();
-            if (s.isEmpty()) continue;
-            queries.add(s + " scholarships " + major + " students site:" + schoolDomain(s));
-            queries.add(s + " financial aid merit scholarships undergraduate");
-        }
-        if (queries.isEmpty()) queries.add("university merit scholarships undergraduate " + major);
-        return queries;
-    }
-
-    private String runSearches(List<String> queries, List<String> excluded) {
-        List<Map<String, Object>> all = new ArrayList<>();
-        int perQuery = Math.max(2, 8 / Math.max(1, queries.size()));
-        for (String q : queries.subList(0, Math.min(queries.size(), 5))) {
+    /**
+     * Runs each query against official sources using advanced depth + raw content.
+     * Returns a formatted string of live source content for prompt injection.
+     */
+    private String runOfficialSearches(List<SearchQuery> queries) {
+        Map<String, Map<String, Object>> deduped = new LinkedHashMap<>();
+        for (SearchQuery sq : queries.subList(0, Math.min(queries.size(), 6))) {
             try {
-                all.addAll(tavilySearchClient.search(q, perQuery, excluded));
+                List<Map<String, Object>> results = tavilySearchClient.searchOfficialSources(
+                    sq.query(), sq.maxResults(), sq.domains(), CONTENT_MAX_LEN);
+                for (Map<String, Object> r : results) {
+                    String url = String.valueOf(r.getOrDefault("url", ""));
+                    deduped.putIfAbsent(url, r);
+                }
             } catch (Exception ignored) {}
         }
-        // Deduplicate by URL
-        Map<String, Map<String, Object>> deduped = new LinkedHashMap<>();
-        for (Map<String, Object> r : all) {
-            String url = String.valueOf(r.getOrDefault("url", ""));
-            deduped.putIfAbsent(url, r);
+        if (deduped.isEmpty()) return "(no live results retrieved)";
+
+        // Format as readable text blocks for prompt injection (not just JSON snippets)
+        StringBuilder sb = new StringBuilder();
+        int i = 1;
+        for (Map<String, Object> r : deduped.values()) {
+            sb.append("--- SOURCE ").append(i++).append(": ").append(r.get("title")).append(" ---\n");
+            sb.append("URL: ").append(r.get("url")).append("\n");
+            sb.append(r.get("content")).append("\n\n");
         }
-        try {
-            return objectMapper.writeValueAsString(new ArrayList<>(deduped.values()).subList(
-                0, Math.min(deduped.size(), 12)));
-        } catch (Exception e) {
-            return "[]";
-        }
+        return sb.toString();
     }
 
     /**
