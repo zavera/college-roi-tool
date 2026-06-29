@@ -2138,7 +2138,7 @@
     let fafsaCurrentStudentId = null;
 
     function applyPaywall() {
-        if (searchCount >= FREE_SEARCHES) {
+        if (searchCount >= FREE_SEARCHES && !premiumActive) {
             $("#paywallSection > :not(#searchPaywall)").css({ filter: "blur(5px)", opacity: "0.35", "user-select": "none", "pointer-events": "none" });
             $("#searchPaywall").css("display", "flex");
         }
@@ -2931,7 +2931,7 @@
     // ── AI Financial Summary ──────────────────────────────────────────────────
     $("#aiButton").on("click", function() {
         // Paywall: block on 4th+ click of "Get AI Summary" per account
-        if (searchCount >= FREE_SEARCHES) {
+        if (searchCount >= FREE_SEARCHES && !premiumActive) {
             applyPaywall();
             return;
         }

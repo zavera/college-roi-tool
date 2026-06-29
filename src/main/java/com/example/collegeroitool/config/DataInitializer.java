@@ -195,7 +195,59 @@ public class DataInitializer implements CommandLineRunner {
                 .findByUserIdAndFirstNameIgnoreCaseAndLastNameIgnoreCaseAndDateOfBirth(
                     counselor.getId(), ds.firstName, ds.lastName, ds.dob)
                 .isPresent();
-            if (exists) continue;
+            if (exists) {
+                // Patch: ensure Priya's extra docs exist even if student was seeded before this fix
+                if (ds.slug.equals("priya-sharma")) {
+                    studentRepository
+                        .findByUserIdAndFirstNameIgnoreCaseAndLastNameIgnoreCaseAndDateOfBirth(
+                            counselor.getId(), ds.firstName, ds.lastName, ds.dob)
+                        .ifPresent(s -> {
+                            String[][] extraDocs = {
+                                {"priya-sharma-schedule-c-2023.pdf",  "schedule_c_2023.pdf",
+                                 """
+                                 {
+                                   "Form": "Schedule C",
+                                   "Tax Year": "2023",
+                                   "Business Name": "Sharma Tutoring Services",
+                                   "Business Activity": "Educational Tutoring",
+                                   "Gross Receipts": "6200",
+                                   "Total Expenses": "1400",
+                                   "Net Profit": "4800",
+                                   "Home Office Deduction": "0",
+                                   "Vehicle Business Use": "No",
+                                   "Business Start Year": "2021"
+                                 }"""},
+                                {"priya-sharma-schedule-se-2023.pdf", "schedule_se_2023.pdf",
+                                 """
+                                 {
+                                   "Form": "Schedule SE",
+                                   "Tax Year": "2023",
+                                   "Net Earnings from Self-Employment": "4800",
+                                   "Self-Employment Tax": "680",
+                                   "Deductible Part of SE Tax": "340",
+                                   "Method": "Short Schedule SE"
+                                 }"""},
+                            };
+                            for (String[] extra : extraDocs) {
+                                boolean docExists = documentRepository.findByStudentId(s.getId())
+                                    .stream().anyMatch(d -> d.getBlobName().contains(extra[0]));
+                                if (!docExists) {
+                                    StudentDocument ed = new StudentDocument();
+                                    ed.setStudentId(s.getId());
+                                    ed.setBlobName("demo/" + extra[0]);
+                                    ed.setBlobUrl("/api/demo/document/" + extra[0]);
+                                    ed.setOriginalFilename(extra[1]);
+                                    ed = documentRepository.save(ed);
+                                    DocumentKvExtract ekv = new DocumentKvExtract();
+                                    ekv.setDocumentId(ed.getId());
+                                    ekv.setKvJson(extra[2].strip());
+                                    kvRepository.save(ekv);
+                                }
+                            }
+                        });
+                }
+                continue;
+            }
 
             Student student = new Student();
             student.setUserId(counselor.getId());
@@ -218,6 +270,48 @@ public class DataInitializer implements CommandLineRunner {
             kv.setDocumentId(doc.getId());
             kv.setKvJson(ds.kvJson.strip());
             kvRepository.save(kv);
+
+            // Priya Sharma gets additional Schedule C and Schedule SE docs with KV extracts
+            if (ds.slug.equals("priya-sharma")) {
+                String[][] extraDocs = {
+                    {"priya-sharma-schedule-c-2023.pdf",  "schedule_c_2023.pdf",
+                     """
+                     {
+                       "Form": "Schedule C",
+                       "Tax Year": "2023",
+                       "Business Name": "Sharma Tutoring Services",
+                       "Business Activity": "Educational Tutoring",
+                       "Gross Receipts": "6200",
+                       "Total Expenses": "1400",
+                       "Net Profit": "4800",
+                       "Home Office Deduction": "0",
+                       "Vehicle Business Use": "No",
+                       "Business Start Year": "2021"
+                     }"""},
+                    {"priya-sharma-schedule-se-2023.pdf", "schedule_se_2023.pdf",
+                     """
+                     {
+                       "Form": "Schedule SE",
+                       "Tax Year": "2023",
+                       "Net Earnings from Self-Employment": "4800",
+                       "Self-Employment Tax": "680",
+                       "Deductible Part of SE Tax": "340",
+                       "Method": "Short Schedule SE"
+                     }"""},
+                };
+                for (String[] extra : extraDocs) {
+                    StudentDocument ed = new StudentDocument();
+                    ed.setStudentId(student.getId());
+                    ed.setBlobName("demo/" + extra[0]);
+                    ed.setBlobUrl("/api/demo/document/" + extra[0]);
+                    ed.setOriginalFilename(extra[1]);
+                    ed = documentRepository.save(ed);
+                    DocumentKvExtract ekv = new DocumentKvExtract();
+                    ekv.setDocumentId(ed.getId());
+                    ekv.setKvJson(extra[2].strip());
+                    kvRepository.save(ekv);
+                }
+            }
         }
     }
 
