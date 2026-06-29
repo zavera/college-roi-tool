@@ -614,11 +614,18 @@ public class GroqService {
     public String getAssetRepositioningAdvice(com.example.collegeroitool.model.FafsaProfile profile) {
         return getAssetRepositioningAdvice(
             profile.getExtractedDataJson() != null ? profile.getExtractedDataJson() : "{}",
-            null, null, null, null, null);
+            null, null, null, null, null, profile.getDependencyStatus());
     }
 
     public String getAssetRepositioningAdvice(String kvJson, String awardYear, String handbookContent,
                                                Integer expectedTaxYear, Integer extractedTaxYear, String taxYearNote) {
+        return getAssetRepositioningAdvice(kvJson, awardYear, handbookContent,
+            expectedTaxYear, extractedTaxYear, taxYearNote, null);
+    }
+
+    public String getAssetRepositioningAdvice(String kvJson, String awardYear, String handbookContent,
+                                               Integer expectedTaxYear, Integer extractedTaxYear, String taxYearNote,
+                                               String dependencyStatus) {
         String year = awardYear != null ? awardYear : "2026-2027";
         if (DEV_STUB_KEY.equals(apiKey)) {
             String discrepancy = "null";
@@ -629,15 +636,24 @@ public class GroqService {
                     + " tax data. Please re-upload the correct year's tax documents.\""
                     + ",\"handbookRule\":\"FSA Handbook AVG Ch 2 (" + year + "): FAFSA uses Prior-Prior Year (PPY) tax data — always 2 years before the academic year start.\"}";
             }
-            return "{\"discrepancy\":" + discrepancy + ",\"opportunities\":[{\"title\":\"Move $12,000 in taxable savings into a 401(k) before FAFSA filing\",\"fafsa_field\":\"Parent assets — net worth of investments (AVG Ch 3, " + year + ")\",\"rationale\":\"Taxable savings count toward the parent asset contribution rate of 12%; shifting $12,000 into a 401(k) removes it from the SAI calculation entirely.\"},{\"title\":\"Pay down $5,000 in credit card debt using liquid savings\",\"fafsa_field\":\"Parent assets — cash, savings and checking accounts (AVG Ch 3, " + year + ")\",\"rationale\":\"Consumer debt is not deducted from assets on FAFSA; reducing reportable cash by $5,000 directly lowers the net worth figure assessed at 12%.\"}],\"source\":\"FSA Handbook, AVG Ch 3 (" + year + ")\",\"source_url\":\"https://fsapartners.ed.gov/knowledge-center/fsa-handbook/" + year + "/application-and-verification-guide/ch3-student-aid-index-sai-and-pell-grant-eligibility\"}";
+            boolean isIndependent = "independent".equalsIgnoreCase(dependencyStatus);
+            String depNote = isIndependent
+                ? "Student is independent (FSA Handbook AVG Ch 3, " + year + "): only the student's own assets are assessed at 20% above the asset protection allowance — parental assets are not counted."
+                : "Student is dependent (FSA Handbook AVG Ch 3, " + year + "): both parental assets (up to 5.64%) and student assets (20%) are assessed — repositioning student assets into parent-owned vehicles yields the greatest SAI reduction.";
+            if (isIndependent) {
+                return "{\"discrepancy\":" + discrepancy + ",\"dependencyNote\":\"" + depNote + "\",\"opportunities\":[{\"title\":\"Contribute $3,500 of student savings to a Roth IRA before FAFSA filing\",\"fafsa_field\":\"Student assets — net worth of investments, AVG Ch 3 (" + year + ")\",\"rationale\":\"Student savings are assessed at 20%; moving $3,500 into a Roth IRA removes it from the SAI calculation and reduces assessed assets by $700.\"},{\"title\":\"Pay down $2,000 in outstanding student debt using liquid checking balance\",\"fafsa_field\":\"Student assets — cash, savings and checking accounts, AVG Ch 3 (" + year + ")\",\"rationale\":\"Consumer debt is not deducted from student assets on FAFSA; reducing reportable cash by $2,000 directly lowers the 20%-assessed net worth figure.\"}],\"source\":\"FSA Handbook, AVG Ch 3 (" + year + ")\",\"source_url\":\"https://fsapartners.ed.gov/knowledge-center/fsa-handbook/" + year + "/application-and-verification-guide/ch3-student-aid-index-sai-and-pell-grant-eligibility\"}";
+            }
+            return "{\"discrepancy\":" + discrepancy + ",\"dependencyNote\":\"" + depNote + "\",\"opportunities\":[{\"title\":\"Transfer $8,000 from student savings into a parent-owned 529 before FAFSA filing\",\"fafsa_field\":\"Student assets — net worth of investments vs. Parent assets — net worth of investments (AVG Ch 3, " + year + ")\",\"rationale\":\"Student assets are assessed at 20% vs. parent assets at up to 5.64%; moving $8,000 from a student account to a parent-owned 529 reduces the student's SAI contribution by approximately $1,155.\"},{\"title\":\"Move $12,000 in parent taxable savings into a 401(k) before FAFSA filing\",\"fafsa_field\":\"Parent assets — net worth of investments (AVG Ch 3, " + year + ")\",\"rationale\":\"Taxable savings count toward the parental asset assessment rate of up to 5.64%; shifting $12,000 into a retirement account removes it from the SAI calculation entirely.\"},{\"title\":\"Pay down $5,000 in parent credit card debt using liquid savings\",\"fafsa_field\":\"Parent assets — cash, savings and checking accounts (AVG Ch 3, " + year + ")\",\"rationale\":\"Consumer debt is not deducted from assets on FAFSA; reducing reportable parent cash by $5,000 directly lowers the net worth figure assessed at up to 5.64%.\"}],\"source\":\"FSA Handbook, AVG Ch 3 (" + year + ")\",\"source_url\":\"https://fsapartners.ed.gov/knowledge-context/fsa-handbook/" + year + "/application-and-verification-guide/ch3-student-aid-index-sai-and-pell-grant-eligibility\"}";
         }
         String handbook = handbookContent != null ? handbookContent : "(No live content retrieved — reason from training knowledge of FSA Handbook AVG Ch 3 " + year + ")";
+        String depStatus = (dependencyStatus != null && !dependencyStatus.isBlank()) ? dependencyStatus : "unknown";
         String prompt = fafsaAssetRepositioningPromptTemplate
             .replace("{{awardYear}}", year)
             .replace("{{expectedTaxYear}}", expectedTaxYear != null ? expectedTaxYear.toString() : "unknown")
             .replace("{{extractedTaxYear}}", extractedTaxYear != null ? extractedTaxYear.toString() : "not detected")
             .replace("{{taxYearNote}}", taxYearNote != null ? taxYearNote : "")
             .replace("{{handbookContent}}", handbook)
+            .replace("{{dependencyStatus}}", depStatus)
             .replace("{{extractedDataJson}}", kvJson != null ? kvJson : "{}");
         return callGroq(prompt, 1200, 0.3);
     }

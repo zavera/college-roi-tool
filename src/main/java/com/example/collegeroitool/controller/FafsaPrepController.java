@@ -497,8 +497,9 @@ public class FafsaPrepController {
                 taxYearNote = "OK: Uploaded documents (" + extractedTaxYear + ") match the expected tax year for the " + awardYear + " FAFSA.";
             }
 
+            String dependencyStatus = profileOpt.map(FafsaProfile::getDependencyStatus).orElse(null);
             String aiJson = groqService.getAssetRepositioningAdvice(kvJson, awardYear, handbookContent,
-                expectedTaxYear, extractedTaxYear, taxYearNote);
+                expectedTaxYear, extractedTaxYear, taxYearNote, dependencyStatus);
             Map<String, Object> advice = parseJsonOrWrap(aiJson, "generalNote");
 
             // Persist result on profile if one exists
