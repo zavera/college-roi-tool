@@ -870,10 +870,19 @@ public class GroqService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(apiKey);
 
-        ResponseEntity<Map> response = restTemplate.postForEntity(
-            apiUrl, new HttpEntity<>(body, headers), Map.class);
+        ResponseEntity<Map> response;
+        try {
+            response = restTemplate.postForEntity(apiUrl, new HttpEntity<>(body, headers), Map.class);
+        } catch (org.springframework.web.client.HttpClientErrorException ex) {
+            String groqError = ex.getResponseBodyAsString();
+            throw new RuntimeException("Groq API error (model=" + model + " status=" + ex.getStatusCode() + "): " + groqError, ex);
+        }
 
-        List<Map<String, Object>> choices = (List<Map<String, Object>>) response.getBody().get("choices");
+        Map<String, Object> responseBody = response.getBody();
+        if (responseBody == null) throw new RuntimeException("Empty response from Groq (model=" + model + ")");
+        if (responseBody.containsKey("error")) throw new RuntimeException("Groq error: " + responseBody.get("error"));
+
+        List<Map<String, Object>> choices = (List<Map<String, Object>>) responseBody.get("choices");
         Map<String, Object> msg = (Map<String, Object>) choices.get(0).get("message");
         return (String) msg.get("content");
     }
