@@ -773,23 +773,61 @@ public class GroqService {
         if (DEV_STUB_KEY.equals(apiKey)) {
             return buildScholarshipStub(studentContext);
         }
+        // Parse state and target schools out of context to inject as hard requirements
+        String state = "";
+        List<String> schools = new ArrayList<>();
+        for (String line : studentContext.split("\n")) {
+            if (line.startsWith("State of residence:")) state = line.replace("State of residence:", "").trim();
+            if (line.startsWith("Target schools:")) {
+                for (String s : line.replace("Target schools:", "").split(",")) {
+                    String t = s.trim();
+                    if (!t.isEmpty()) schools.add(t);
+                }
+            }
+        }
+
         boolean hasSearchResults = searchResults != null && !searchResults.isBlank() && !searchResults.equals("[]");
         String searchSection = hasSearchResults
-            ? "Live search results (JSON):\n" + searchResults + "\n\nFrom these results and your training knowledge, identify"
-            : "No live search results available. Using your training knowledge, identify";
-        String prompt = "You are a scholarship advisor. Return a single unified list covering both national/state/private external scholarships AND school-specific institutional awards — do not separate them.\n\n"
-            + "Student profile:\n" + studentContext + "\n"
-            + searchSection + " the best matching scholarships for this student.\n"
-            + "Rules:\n"
-            + "- Include a mix: national merit/demographic awards, state grants, major-specific awards, and (if target schools are listed) institutional awards from those schools.\n"
-            + "- Every scholarship must be real and verifiable — real name, real sponsor, real URL where possible.\n"
-            + "- Order by match quality (best fit first).\n"
-            + "- Include 8-12 scholarships total.\n"
-            + "Return ONLY a JSON array (no markdown, no explanation). Each element must have:\n"
-            + "  name (string), amount (string or null), deadline (string or null),\n"
-            + "  eligibility (1-2 sentence summary), link (URL or null), source (domain or \"groq-knowledge\"),\n"
-            + "  type (one of: \"external\", \"school-specific\", \"state\").";
-        return callGroq(prompt, 2000, 0.2);
+            ? "LIVE SEARCH RESULTS (use these as primary source for real names/amounts/URLs/deadlines):\n" + searchResults + "\n"
+            : "No live search results — use your training knowledge, but flag uncertainty on amounts/deadlines.\n";
+
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("You are a scholarship advisor. Analyze this student's profile and return the best-matching real scholarships.\n\n");
+        prompt.append("STUDENT PROFILE:\n").append(studentContext).append("\n");
+        prompt.append(searchSection).append("\n");
+        prompt.append("REQUIRED COMPOSITION — you MUST include ALL of these categories:\n");
+
+        if (!state.isEmpty()) {
+            prompt.append("1. STATE-SPECIFIC (MANDATORY — at least 2): Real grants or scholarships from ")
+                  .append(state).append(" — state grant programs (e.g. ").append(state)
+                  .append(" Need-Based Grant, ").append(state).append(" Bright Futures, lottery-funded scholarships), ")
+                  .append(state).append("-based community foundations, and state professional associations. ")
+                  .append("Type = \"state\". If you cannot find real programs, say so in eligibility.\n");
+        }
+        if (!schools.isEmpty()) {
+            prompt.append(!state.isEmpty() ? "2" : "1").append(". SCHOOL-SPECIFIC (MANDATORY — at least ")
+                  .append(schools.size()).append(" total, 1+ per school): Institutional merit and need-based awards ")
+                  .append("offered directly by ").append(String.join(", ", schools))
+                  .append(". Include the school's own named merit scholarships, departmental awards in the student's major, ")
+                  .append("and alumni-foundation awards. Use the school's real financial aid page URL. Type = \"school-specific\".\n");
+        }
+        int natNum = (!state.isEmpty() && !schools.isEmpty()) ? 3 : (!state.isEmpty() || !schools.isEmpty()) ? 2 : 1;
+        prompt.append(natNum).append(". NATIONAL/EXTERNAL (at least 3): Field-specific, demographic, or merit-based national scholarships ")
+              .append("matching this student's major, ethnicity, first-gen status, GPA, and extracurriculars. Type = \"external\".\n\n");
+
+        prompt.append("RULES:\n");
+        prompt.append("- Every entry must be a REAL, verifiable scholarship with a real sponsor name.\n");
+        prompt.append("- Use actual dollar amounts and deadlines from search results where available; mark \"varies\" if uncertain.\n");
+        prompt.append("- Order results: state-specific first, then school-specific, then national — within each group, best match first.\n");
+        prompt.append("- Total: 10-14 scholarships.\n");
+        prompt.append("- Do NOT include generic placeholders or made-up names.\n\n");
+        prompt.append("Return ONLY a JSON array (no markdown, no explanation). Each element:\n");
+        prompt.append("  name (string), amount (string or null), deadline (string or null),\n");
+        prompt.append("  eligibility (1-2 sentence summary explaining why this matches the student),\n");
+        prompt.append("  link (URL or null), source (domain or \"groq-knowledge\"),\n");
+        prompt.append("  type (one of: \"state\", \"school-specific\", \"external\").");
+
+        return callGroq(prompt.toString(), 3000, 0.2);
     }
 
     /** @deprecated Use {@link #getScholarshipRecommendations(String, String)} */
