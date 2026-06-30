@@ -43,7 +43,11 @@ public class LlmController {
             }
             String advice = groqService.getFinancialAdvice(request);
             try {
-                Object parsed = objectMapper.readValue(advice, Object.class);
+                String json = advice.trim();
+                if (json.startsWith("```")) {
+                    json = json.replaceAll("^```[a-zA-Z]*\\n?", "").replaceAll("```$", "").trim();
+                }
+                Object parsed = objectMapper.readValue(json, Object.class);
                 return ResponseEntity.ok(Map.of("data", parsed));
             } catch (Exception jsonEx) {
                 return ResponseEntity.ok(Map.of("advice", advice));
