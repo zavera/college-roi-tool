@@ -5,12 +5,12 @@
 Always commit using the **zavera** account for this project — never any other account (e.g. work/JHU accounts).
 
 - `git config user.name` = `zavera`
-- `git config user.email` = `zaver.ambreen@gmail.com`
+- `git config user.email` = `z.averambreen@gmail.com`
 
 This is set locally in this repo's `.gitconfig` already. If commits ever show a different author, re-run:
 ```
 git config --local user.name "zavera"
-git config --local user.email "zaver.ambreen@gmail.com"
+git config --local user.email "z.averambreen@gmail.com"
 ```
 
 This applies to all GitHub operations, deployments, API keys, and account-specific actions for this project.
