@@ -2,6 +2,8 @@ package com.example.collegeroitool.controller;
 
 import com.example.collegeroitool.dto.DebtIntakeRequest;
 import com.example.collegeroitool.model.AppUser;
+import com.example.collegeroitool.model.SearchUsage;
+import com.example.collegeroitool.service.AppConfigService;
 import com.example.collegeroitool.service.CreditOfferSearchService;
 import com.example.collegeroitool.service.DebtManagementService;
 import com.example.collegeroitool.service.GroqService;
@@ -29,8 +31,6 @@ import java.util.Map;
 @RequestMapping("/api/debt")
 public class DebtManagementController {
 
-    private static final int FREE_LIVE_SEARCHES = 3;
-
     private final DebtManagementService debtService;
     private final GroqService groqService;
     private final CreditOfferSearchService creditOfferSearchService;
@@ -38,6 +38,7 @@ public class DebtManagementController {
     private final TavilySearchClient tavilySearchClient;
     private final SubscriptionService subscriptionService;
     private final SearchUsageService searchUsageService;
+    private final AppConfigService appConfigService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final List<String> STUDENTAID_DOMAINS = List.of("studentaid.gov", "consumerfinance.gov");
@@ -50,7 +51,8 @@ public class DebtManagementController {
                                      CreditOfferSearchService creditOfferSearchService,
                                      UserService userService, TavilySearchClient tavilySearchClient,
                                      SubscriptionService subscriptionService,
-                                     SearchUsageService searchUsageService) {
+                                     SearchUsageService searchUsageService,
+                                     AppConfigService appConfigService) {
         this.debtService = debtService;
         this.groqService = groqService;
         this.creditOfferSearchService = creditOfferSearchService;
@@ -58,6 +60,7 @@ public class DebtManagementController {
         this.tavilySearchClient = tavilySearchClient;
         this.subscriptionService = subscriptionService;
         this.searchUsageService = searchUsageService;
+        this.appConfigService = appConfigService;
     }
 
     /** Fetches live studentaid.gov content relevant to the given query for prompt injection. */
@@ -80,9 +83,17 @@ public class DebtManagementController {
 
     @PostMapping("/repayment-plans")
     public ResponseEntity<?> getRepaymentPlans(@RequestBody DebtIntakeRequest req, Principal principal) {
+        AppUser user = resolveUser(principal);
+        if (user != null) {
+            SearchUsage usage = searchUsageService.getOrCreateForUser(user);
+            if (!subscriptionService.hasAccess(user) && usage.getPostgrad() >= appConfigService.getFreeSearchesLimit()) {
+                return ResponseEntity.status(403).body(Map.of("error", "Free search limit reached for this tab"));
+            }
+        }
+
         try {
             // TODO(follow-up): persist this intake into the new `postgrad` input-log table
-            // (see schema redesign plan) — deferred pending the tab increment/model_response wiring.
+            // (see schema redesign plan) — deferred pending model_response wiring for this tab.
             List<Map<String, Object>> plans = debtService.calculateRepaymentPlans(req);
             Map<String, Object> pslfResult = null;
             if (req.getEmployerName() != null && !req.getEmployerName().isBlank()) {
@@ -99,6 +110,11 @@ public class DebtManagementController {
             } catch (Exception e) {
                 aiParsed = Map.of("rationale", aiJson);
             }
+
+            if (user != null) {
+                searchUsageService.incrementPostgrad(user);
+            }
+
             return ResponseEntity.ok(Map.of(
                 "plans",      plans,
                 "pslf",       pslfResult != null ? pslfResult : Map.of(),
@@ -127,14 +143,19 @@ public class DebtManagementController {
         }
     }
 
-    /** Live (paid) search is capped at FREE_LIVE_SEARCHES per user unless their subscription is active. */
+    /** Live (paid) search is capped at the configurable free-search limit unless the user has access. */
     private boolean isLiveSearchAllowed(Principal principal) {
         if (devBypass && principal == null) return true;
-        if (principal == null) return false;
-        AppUser user = userService.findByEmail(resolveEmail(principal)).orElse(null);
+        AppUser user = resolveUser(principal);
         if (user == null) return false;
         return subscriptionService.hasAccess(user)
-            || searchUsageService.getOrCreateForUser(user).getPostgrad() < FREE_LIVE_SEARCHES;
+            || searchUsageService.getOrCreateForUser(user).getPostgrad() < appConfigService.getFreeSearchesLimit();
+    }
+
+    private AppUser resolveUser(Principal principal) {
+        String email = resolveEmail(principal);
+        if (email == null) return devBypass ? userService.findOrCreateDevUser() : null;
+        return userService.findByEmail(email).orElse(null);
     }
 
     private String resolveEmail(Principal principal) {

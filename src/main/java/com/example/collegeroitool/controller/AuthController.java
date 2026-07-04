@@ -2,6 +2,7 @@ package com.example.collegeroitool.controller;
 
 import com.example.collegeroitool.model.AppUser;
 import com.example.collegeroitool.model.SearchUsage;
+import com.example.collegeroitool.service.AppConfigService;
 import com.example.collegeroitool.service.MagicLinkService;
 import com.example.collegeroitool.service.SearchUsageService;
 import com.example.collegeroitool.service.SubscriptionService;
@@ -38,6 +39,7 @@ public class AuthController {
     private final MagicLinkService magicLinkService;
     private final SubscriptionService subscriptionService;
     private final SearchUsageService searchUsageService;
+    private final AppConfigService appConfigService;
 
     @Value("${premium.dev.bypass:false}")
     private boolean devBypass;
@@ -46,12 +48,14 @@ public class AuthController {
                           UserSessionService sessionService,
                           MagicLinkService magicLinkService,
                           SubscriptionService subscriptionService,
-                          SearchUsageService searchUsageService) {
+                          SearchUsageService searchUsageService,
+                          AppConfigService appConfigService) {
         this.userService      = userService;
         this.sessionService   = sessionService;
         this.magicLinkService = magicLinkService;
         this.subscriptionService = subscriptionService;
         this.searchUsageService  = searchUsageService;
+        this.appConfigService    = appConfigService;
     }
 
     @PostMapping("/register")
@@ -152,6 +156,7 @@ public class AuthController {
             "scholarshipSearchCount",  scholarshipCount,
             "coaSearchCount",          coaCount,
             "postgradSearchCount",     postgradCount,
+            "freeSearchLimit",         appConfigService.getFreeSearchesLimit(),
             "institutionName",         "Callisto Tech"
         ));
     }
@@ -164,7 +169,9 @@ public class AuthController {
         if (devBypass && principal == null) return ResponseEntity.ok(Map.of("searchCount", 0));
         if (principal == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
         AppUser user = userService.findByEmail(resolveEmail(principal)).orElse(null);
-        int count = user != null ? searchUsageService.getOrCreateForUser(user).getFafsa() : 0;
+        // "search" here is the Award Assist / COA tab — the actual increment happens
+        // server-side in LlmController on a successful /api/llm/advice call; this just reports it.
+        int count = user != null ? searchUsageService.getOrCreateForUser(user).getCoa() : 0;
         return ResponseEntity.ok(Map.of("searchCount", count));
     }
 

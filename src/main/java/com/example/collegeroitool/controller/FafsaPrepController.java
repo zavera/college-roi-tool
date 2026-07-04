@@ -4,9 +4,13 @@ import com.example.collegeroitool.model.AppUser;
 import com.example.collegeroitool.model.Fafsa;
 import com.example.collegeroitool.model.InputPayloadType;
 import com.example.collegeroitool.model.ModelResponse;
+import com.example.collegeroitool.model.SearchUsage;
 import com.example.collegeroitool.repository.FafsaRepository;
 import com.example.collegeroitool.repository.ModelResponseRepository;
+import com.example.collegeroitool.service.AppConfigService;
 import com.example.collegeroitool.service.GroqService;
+import com.example.collegeroitool.service.SearchUsageService;
+import com.example.collegeroitool.service.SubscriptionService;
 import com.example.collegeroitool.service.TavilySearchClient;
 import com.example.collegeroitool.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -42,18 +49,27 @@ public class FafsaPrepController {
     private final UserService userService;
     private final GroqService groqService;
     private final TavilySearchClient tavilySearchClient;
+    private final SubscriptionService subscriptionService;
+    private final SearchUsageService searchUsageService;
+    private final AppConfigService appConfigService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public FafsaPrepController(FafsaRepository fafsaRepository,
                                 ModelResponseRepository modelResponseRepository,
                                 UserService userService,
                                 GroqService groqService,
-                                TavilySearchClient tavilySearchClient) {
+                                TavilySearchClient tavilySearchClient,
+                                SubscriptionService subscriptionService,
+                                SearchUsageService searchUsageService,
+                                AppConfigService appConfigService) {
         this.fafsaRepository = fafsaRepository;
         this.modelResponseRepository = modelResponseRepository;
         this.userService = userService;
         this.groqService = groqService;
         this.tavilySearchClient = tavilySearchClient;
+        this.subscriptionService = subscriptionService;
+        this.searchUsageService = searchUsageService;
+        this.appConfigService = appConfigService;
     }
 
     /** List all FAFSA prep entries for the current user, newest first. */
@@ -72,6 +88,11 @@ public class FafsaPrepController {
     public ResponseEntity<?> save(@RequestBody Map<String, Object> body, Principal principal) {
         AppUser user = resolveUser(principal);
         if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+
+        SearchUsage usage = searchUsageService.getOrCreateForUser(user);
+        if (!subscriptionService.hasAccess(user) && usage.getFafsa() >= appConfigService.getFreeSearchesLimit()) {
+            return ResponseEntity.status(403).body(Map.of("error", "Free search limit reached for this tab"));
+        }
 
         String payloadJson;
         try { payloadJson = objectMapper.writeValueAsString(body); }
@@ -102,6 +123,9 @@ public class FafsaPrepController {
             status = 500;
         }
         logModelResponse(entry, rawAnalysis, status);
+        if (status == 200) {
+            searchUsageService.incrementFafsa(user);
+        }
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("id", entry.getId());
@@ -175,7 +199,16 @@ public class FafsaPrepController {
     }
 
     private AppUser resolveUser(Principal principal) {
-        if (principal == null) return devBypass ? userService.findOrCreateDevUser() : null;
-        return userService.findByEmail(principal.getName()).orElse(null);
+        String email = resolveEmail(principal);
+        if (email == null) return devBypass ? userService.findOrCreateDevUser() : null;
+        return userService.findByEmail(email).orElse(null);
+    }
+
+    private String resolveEmail(Principal principal) {
+        if (principal == null) return null;
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return (auth != null && auth.getPrincipal() instanceof OAuth2User oAuth2User)
+            ? oAuth2User.<String>getAttribute("email")
+            : principal.getName();
     }
 }

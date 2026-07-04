@@ -22,4 +22,28 @@ public class SearchUsageService {
             return repo.save(usage);
         });
     }
+
+    public SearchUsage incrementFafsa(AppUser user) {
+        SearchUsage usage = getOrCreateForUser(user);
+        usage.setFafsa(usage.getFafsa() + 1);
+        return repo.save(usage);
+    }
+
+    public SearchUsage incrementScholarship(AppUser user) {
+        SearchUsage usage = getOrCreateForUser(user);
+        usage.setScholarship(usage.getScholarship() + 1);
+        return repo.save(usage);
+    }
+
+    public SearchUsage incrementCoa(AppUser user) {
+        SearchUsage usage = getOrCreateForUser(user);
+        usage.setCoa(usage.getCoa() + 1);
+        return repo.save(usage);
+    }
+
+    public SearchUsage incrementPostgrad(AppUser user) {
+        SearchUsage usage = getOrCreateForUser(user);
+        usage.setPostgrad(usage.getPostgrad() + 1);
+        return repo.save(usage);
+    }
 }

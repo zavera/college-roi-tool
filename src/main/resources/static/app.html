@@ -1338,6 +1338,7 @@
     </div>
     <div class="hdr-user">
         <span class="hdr-user-name" id="hdrUserName" style="display:none;"></span>
+        <button type="button" id="hdrSubToggle" onclick="toggleSubscription()" style="display:none;border:none;border-radius:14px;padding:4px 12px;font-size:11px;font-weight:700;letter-spacing:.3px;cursor:pointer;margin-right:4px;"></button>
         <a class="hdr-logout" id="hdrLogout" style="display:none;" href="#">Sign Out</a>
     </div>
 </header>
@@ -1360,7 +1361,7 @@
 <div id="scholPaywall" style="display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(255,255,255,0.84);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
     <div style="text-align:center;max-width:360px;">
         <div style="font-size:36px;margin-bottom:12px;">🎓</div>
-        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your 1 free scholarship search</h3>
+        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your <span class="paywall-limit-num">3</span> free scholarship searches</h3>
         <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock unlimited scholarship searches, award letter analyses, and loan repayment tools.</p>
         <button type="button" class="btn-unlock btn-primary" onclick="handleUnlock()" style="padding:13px 28px;font-size:15px;">
             Unlock for <strong>$99.99/mo</strong>
@@ -1685,7 +1686,7 @@
     <div id="searchPaywall" style="display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(255,255,255,0.82);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
         <div style="max-width:420px;text-align:center;">
             <div style="font-size:36px;margin-bottom:12px;">🔒</div>
-            <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your 1 free scholarship search</h3>
+            <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your <span class="paywall-limit-num">3</span> free AI financial summaries</h3>
             <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock unlimited college searches, financial gap analysis, and AI summaries.</p>
             <div style="background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px;">
                 <div style="font-size:28px;font-weight:800;color:var(--navy);">$99.99<span style="font-size:14px;font-weight:400;color:var(--muted)"> / month</span></div>
@@ -1710,7 +1711,7 @@
 <div id="debtPaywall" style="display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(255,255,255,0.84);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
     <div style="text-align:center;max-width:360px;">
         <div style="font-size:36px;margin-bottom:12px;">🎓</div>
-        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your 1 free analysis</h3>
+        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your <span class="paywall-limit-num">3</span> free analyses</h3>
         <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock unlimited student loan repayment analyses, PSLF checks, and hardship letter generation.</p>
         <button type="button" class="btn-unlock btn-primary" onclick="handleUnlock()" style="padding:13px 28px;font-size:15px;">
             Unlock for <strong>$99.99/mo</strong>
@@ -2027,7 +2028,7 @@
 <div id="chatPaywall" style="display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(255,255,255,0.84);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
     <div style="text-align:center;max-width:360px;">
         <div style="font-size:36px;margin-bottom:12px;">💬</div>
-        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your 1 free Ask Astra message</h3>
+        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your <span class="paywall-limit-num">3</span> free Ask Astra messages</h3>
         <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock unlimited chat with Astra about scholarships, financial aid, and loan repayment.</p>
         <button type="button" class="btn-unlock btn-primary" onclick="handleUnlock()" style="padding:13px 28px;font-size:15px;">
             Unlock for <strong>$99.99/mo</strong>
@@ -2060,7 +2061,7 @@
   <div id="fafsaPaywall" style="display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(255,255,255,0.84);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
     <div style="text-align:center;max-width:360px;">
       <div style="font-size:36px;margin-bottom:12px;">📋</div>
-      <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your 1 free FAFSA analysis</h3>
+      <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your <span class="paywall-limit-num">3</span> free FAFSA analyses</h3>
       <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock unlimited FAFSA prep analyses, scholarship searches, award letter tools, and more.</p>
       <button type="button" class="btn-unlock btn-primary" onclick="handleUnlock()" style="padding:13px 28px;font-size:15px;">
         Unlock for <strong>$99.99/mo</strong>
@@ -2263,14 +2264,14 @@
 
 <script>
     // ── STATE ──────────────────────────────────────────────────────────────────
-    let searchCount      = 0;
-    let debtSearchCount  = 0;
-    let scholSearchCount = 0;
-    let chatCount        = 0;
-    let fafsaCount       = 0;
+    let searchCount      = 0;  // Award Assist (COA) tab
+    let debtSearchCount  = 0;  // Post-Grad Debt Relief tab
+    let scholSearchCount = 0;  // Scholarships tab
+    let chatCount        = 0;  // Ask Astra — not yet tracked server-side, session-local only
+    let fafsaCount       = 0;  // FAFSA Prep tab
     let lastCreditData   = {};
     let premiumActive    = false;
-    const FREE_SEARCHES  = 1;
+    let FREE_SEARCHES    = 3;  // default; overwritten from /api/auth/me's config-driven freeSearchLimit
     let chatHistory = [];
 
     function applyPaywall() {
@@ -3071,11 +3072,6 @@
             applyPaywall();
             return;
         }
-        // Increment now; update local count from server response
-        $.post("/api/auth/search/increment", function(res) {
-            searchCount = res.searchCount || (searchCount + 1);
-        });
-
         recalculateGap();
         const inCompareMode = compareList.length >= 2;
         $("#aiButton").prop("disabled", true);
@@ -3111,6 +3107,10 @@
                             $("#aiAdviceBox").html(renderCompareReport(allGroqData, allProfiles)).show();
                             $("#exportRow").show();
                             $("#aiButton").prop("disabled", false);
+                            // Server increments this tab's count per successful search — refresh the local copy.
+                            $.post("/api/auth/search/increment", function(res) {
+                                searchCount = res.searchCount != null ? res.searchCount : searchCount;
+                            });
                         }
                     }
                 });
@@ -3174,6 +3174,10 @@
                     }
                     $("#exportRow").show();
                     $("#aiButton").prop("disabled", false);
+                    // Server increments this tab's count on a successful search — refresh the local copy.
+                    $.post("/api/auth/search/increment", function(res) {
+                        searchCount = res.searchCount != null ? res.searchCount : searchCount;
+                    });
                 },
                 error: function(xhr) {
                     $("#aiSpinner").hide();
@@ -3584,11 +3588,14 @@
                 const displayName = data.name || data.email || '';
                 $("#hdrUserName").text(displayName).show();
                 $("#hdrLogout").show();
-                searchCount      = data.searchCount             || 0;
-                debtSearchCount  = data.debtSearchCount         || 0;
+                searchCount      = data.coaSearchCount          || 0;
+                debtSearchCount  = data.postgradSearchCount     || 0;
                 scholSearchCount = data.scholarshipSearchCount  || 0;
-                chatCount        = data.fafsaUsageCount         || 0;
+                fafsaCount       = data.fafsaSearchCount        || 0;
                 premiumActive    = data.subscriptionActive      || false;
+                FREE_SEARCHES    = data.freeSearchLimit         || FREE_SEARCHES;
+                $(".paywall-limit-num").text(FREE_SEARCHES);
+                updateSubToggleUI();
                 // Paywalls fire on next search attempt, not on page load
                 renderPjCategories();
             } else {
@@ -3609,6 +3616,24 @@
             window.location.href = "/login.html";
         });
     });
+
+    // Subscription self-toggle — dev/testing lever; real purchases go through Stripe checkout.
+    function updateSubToggleUI() {
+        const $btn = $("#hdrSubToggle");
+        if (premiumActive) {
+            $btn.text("Premium").css({ background: "var(--accent)", color: "#fff" });
+        } else {
+            $btn.text("Free — Upgrade").css({ background: "#e2e8f0", color: "var(--text)" });
+        }
+        $btn.show();
+    }
+
+    function toggleSubscription() {
+        $.post("/api/auth/subscription/toggle", function(res) {
+            premiumActive = !!res.subscriptionActive;
+            updateSubToggleUI();
+        });
+    }
 
     function pf(val) {
         const f = parseFloat(val);
@@ -4020,9 +4045,6 @@
             applyScholPaywall();
             return;
         }
-        $.post('/api/auth/scholarship-search/increment', function(res) {
-            scholSearchCount = res.scholarshipSearchCount || (scholSearchCount + 1);
-        });
         $('#scholSearchSpinner').text('Searching scholarships…').show();
         $('#scholResultsSection').hide();
         $.ajax({
@@ -4044,6 +4066,10 @@
                     $('#scholResultsSubtitle').text(scholarships.length + ' matching scholarships found. Select the ones you want to apply to.');
                     renderScholarshipResults(scholarships, 'scholAllResults', 'scholResultsSection', 'scholResultsSubtitle', 'all');
                 }
+                // Server increments this tab's count on a successful search — refresh the local copy.
+                $.post('/api/auth/scholarship-search/increment', function(res) {
+                    scholSearchCount = res.scholarshipSearchCount != null ? res.scholarshipSearchCount : scholSearchCount;
+                });
                 // paywall fires on next click attempt, not after rendering results
             },
             error() {
@@ -4077,6 +4103,7 @@
                 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px;">
                   ${deadline} ${source}
                   ${s.link ? `<a href="${s.link}" target="_blank" rel="noopener" style="font-size:11px;color:var(--primary-dk);text-decoration:none;font-weight:600;">View &rarr;</a>` : ''}
+                  ${(s.linkVerified === false) ? `<span style="font-size:10px;color:var(--muted);font-style:italic;">link not independently verified — search by name</span>` : ''}
                 </div>
               </label>
             </div>`;
@@ -4429,7 +4456,7 @@
                 }
                 // Increment counter; show paywall on next attempt if limit reached
                 $.post('/api/auth/debt-search/increment', function(res) {
-                    debtSearchCount = res.debtSearchCount || (debtSearchCount + 1);
+                    debtSearchCount = res.debtSearchCount != null ? res.debtSearchCount : debtSearchCount;
                     if (debtSearchCount >= FREE_SEARCHES && !premiumActive) {
                         $('#debtAnalyzeBtn').text('Upgrade to Run More Analyses');
                     }

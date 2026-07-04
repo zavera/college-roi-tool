@@ -324,7 +324,9 @@
       "Bash(echo \"EXIT_CODE=$?\")",
       "Bash(lsof -nP -iTCP:8080 -sTCP:LISTEN)",
       "Bash(echo \"exit=$?\")",
-      "Bash(grep -n \"\\\\$\\('#debtResultsCard'\\).hide\\(\\);\" src/main/resources/static/app.html)"
+      "Bash(grep -n \"\\\\$\\('#debtResultsCard'\\).hide\\(\\);\" src/main/resources/static/app.html)",
+      "Bash(grep -n '\\\\$\\(\"#hdrLogout\"\\).on\\(\"click\"' src/main/resources/static/app.html)",
+      "Bash(git status *)"
     ]
   }
 }

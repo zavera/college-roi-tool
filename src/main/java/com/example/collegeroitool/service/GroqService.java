@@ -725,7 +725,9 @@ public class GroqService {
             + "  name (string), amount (string or null), deadline (string or null),\n"
             + "  eligibility (1-2 sentence summary), link (URL or null), source (domain or \"groq-knowledge\"),\n"
             + "  type (one of: \"external\", \"school-specific\", \"state\").";
-        return callGroq(prompt, 2000, 0.2);
+        // gpt-oss-120b's internal reasoning eats into this budget before the JSON body is
+        // written; 8-12 objects with 7 fields each needs real headroom above the old 2000 limit.
+        return callGroq(prompt, 3500, 0.2);
     }
 
     /** @deprecated Use {@link #getScholarshipRecommendations(String, String)} */
