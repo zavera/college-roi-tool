@@ -28,6 +28,7 @@ public class FsaHandbookService {
 
     private static final Logger log = LoggerFactory.getLogger(FsaHandbookService.class);
     private static final List<String> FSA_DOMAINS = List.of("fsapartners.ed.gov");
+    private static final List<String> STUDENTAID_DOMAINS = List.of("studentaid.gov");
     private static final int CONTENT_MAX_LEN = 1200;
     private static final Pattern FOUR_DIGIT_YEAR = Pattern.compile("\\b(20[12]\\d)\\b");
 
@@ -135,41 +136,83 @@ public class FsaHandbookService {
      * Returns formatted text ready for prompt injection, or a fallback URL note if Tavily unavailable.
      */
     public String fetchAssetRepositioningContent(String awardYear) {
+        String handbookBlock;
         if (!tavilyClient.isLiveSearchConfigured()) {
-            return fallback(awardYear, "avg", "ch3-student-aid-index-sai-and-pell-grant-eligibility",
+            handbookBlock = fallback(awardYear, "ch3-student-aid-index-sai-and-pell-grant-eligibility",
                 "AVG Ch 3 — Student Aid Index (SAI) & Asset Assessment");
+        } else {
+            String query = "FSA Handbook " + awardYear
+                + " Application and Verification Guide Chapter 3 SAI Student Aid Index asset assessment parent student net worth";
+            handbookBlock = fetchAndFormat(query, awardYear,
+                "AVG Ch 3 — SAI Asset Assessment (" + awardYear + ")",
+                "ch3-student-aid-index-sai-and-pell-grant-eligibility", FSA_DOMAINS);
         }
-        String query = "FSA Handbook " + awardYear
-            + " Application and Verification Guide Chapter 3 SAI Student Aid Index asset assessment parent student net worth";
-        return fetchAndFormat(query, awardYear,
-            "AVG Ch 3 — SAI Asset Assessment (" + awardYear + ")",
-            "avg", "ch3-student-aid-index-sai-and-pell-grant-eligibility");
+        return handbookBlock + "\n\n" + fetchStudentAidAssetDefinitions();
     }
 
     /**
-     * Fetches Vol. 3 Ch. 5 (Professional Judgment / Special Circumstances) content.
+     * Fetches studentaid.gov's plain-English asset definitions (e.g. "Current Net Worth
+     * of Investments") to complement the FSA Handbook's formal SAI formula content.
+     */
+    private String fetchStudentAidAssetDefinitions() {
+        String label = "Asset Definitions (Current Net Worth of Investments)";
+        if (!tavilyClient.isLiveSearchConfigured()) {
+            return studentAidFallback(label);
+        }
+        String query = "current net worth of investments cash savings checking accounts "
+            + "net worth of business or investment farm what counts as an asset FAFSA";
+        try {
+            List<Map<String, Object>> results = tavilyClient.searchHandbook(query, 2, STUDENTAID_DOMAINS, CONTENT_MAX_LEN);
+            if (results.isEmpty()) {
+                log.warn("studentaid.gov asset definition search returned no results for query: {}", query);
+                return studentAidFallback(label);
+            }
+            StringBuilder sb = new StringBuilder();
+            sb.append("=== LIVE STUDENTAID.GOV CONTENT: ").append(label).append(" ===\n");
+            for (Map<String, Object> r : results) {
+                sb.append("\n[Source: ").append(r.get("url")).append("]\n");
+                sb.append(r.get("content")).append("\n");
+            }
+            sb.append("=== END STUDENTAID.GOV CONTENT ===");
+            return sb.toString();
+        } catch (Exception e) {
+            log.warn("studentaid.gov asset definition fetch failed, using fallback: {}", e.getMessage());
+            return studentAidFallback(label);
+        }
+    }
+
+    private String studentAidFallback(String label) {
+        return "=== STUDENTAID.GOV REFERENCE ===\n"
+            + label + "\n"
+            + "Full text: https://studentaid.gov/help/current-net-worth\n"
+            + "Live content unavailable — reason from your training knowledge of what counts as a reportable asset.\n"
+            + "=== END STUDENTAID.GOV REFERENCE ===";
+    }
+
+    /**
+     * Fetches AVG Ch 5 (Special Cases — Professional Judgment / dependency overrides) content.
      */
     public String fetchProfessionalJudgmentContent(String awardYear) {
         if (!tavilyClient.isLiveSearchConfigured()) {
-            return fallback(awardYear, "vol3", "ch5-professional-judgment",
-                "Vol. 3, Ch. 5 — Professional Judgment");
+            return fallback(awardYear, "ch5-special-cases",
+                "AVG Ch 5 — Special Cases (Professional Judgment)");
         }
         String query = "FSA Handbook " + awardYear
-            + " Volume 3 Chapter 5 professional judgment special circumstances income loss adjustment";
+            + " Application and Verification Guide Chapter 5 Special Cases professional judgment dependency override special circumstances income loss adjustment";
         return fetchAndFormat(query, awardYear,
-            "Vol. 3, Ch. 5 — Professional Judgment (" + awardYear + ")",
-            "vol3", "ch5-professional-judgment");
+            "AVG Ch 5 — Special Cases (Professional Judgment) (" + awardYear + ")",
+            "ch5-special-cases", FSA_DOMAINS);
     }
 
     // ── private helpers ──────────────────────────────────────────────────────
 
     private String fetchAndFormat(String query, String awardYear, String label,
-                                   String volSlug, String chSlug) {
+                                   String chSlug, List<String> domains) {
         try {
-            List<Map<String, Object>> results = tavilyClient.searchHandbook(query, 3, FSA_DOMAINS, CONTENT_MAX_LEN);
+            List<Map<String, Object>> results = tavilyClient.searchHandbook(query, 3, domains, CONTENT_MAX_LEN);
             if (results.isEmpty()) {
                 log.warn("FSA Handbook search returned no results for query: {}", query);
-                return fallback(awardYear, volSlug, chSlug, label);
+                return fallback(awardYear, chSlug, label);
             }
             StringBuilder sb = new StringBuilder();
             sb.append("=== LIVE FSA HANDBOOK CONTENT: ").append(label).append(" ===\n");
@@ -181,13 +224,13 @@ public class FsaHandbookService {
             return sb.toString();
         } catch (Exception e) {
             log.warn("FSA Handbook fetch failed, using fallback: {}", e.getMessage());
-            return fallback(awardYear, volSlug, chSlug, label);
+            return fallback(awardYear, chSlug, label);
         }
     }
 
-    private String fallback(String awardYear, String volSlug, String chSlug, String label) {
+    private String fallback(String awardYear, String chSlug, String label) {
         String url = "https://fsapartners.ed.gov/knowledge-center/fsa-handbook/"
-            + awardYear + "/federal-student-aid-handbook/" + volSlug + "-" + chSlug;
+            + awardYear + "/application-and-verification-guide/" + chSlug;
         return "=== FSA HANDBOOK REFERENCE (" + awardYear + ") ===\n"
             + label + "\n"
             + "Full text: " + url + "\n"

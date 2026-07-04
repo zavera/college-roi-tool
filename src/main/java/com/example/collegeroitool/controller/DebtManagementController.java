@@ -5,16 +5,21 @@ import com.example.collegeroitool.model.AppUser;
 import com.example.collegeroitool.service.CreditOfferSearchService;
 import com.example.collegeroitool.service.DebtManagementService;
 import com.example.collegeroitool.service.GroqService;
-import com.example.collegeroitool.service.PostGradProfileService;
+import com.example.collegeroitool.service.SearchUsageService;
+import com.example.collegeroitool.service.SubscriptionService;
 import com.example.collegeroitool.service.TavilySearchClient;
 import com.example.collegeroitool.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.security.Principal;
 import java.util.List;
@@ -31,7 +36,8 @@ public class DebtManagementController {
     private final CreditOfferSearchService creditOfferSearchService;
     private final UserService userService;
     private final TavilySearchClient tavilySearchClient;
-    private final PostGradProfileService postGradProfileService;
+    private final SubscriptionService subscriptionService;
+    private final SearchUsageService searchUsageService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final List<String> STUDENTAID_DOMAINS = List.of("studentaid.gov", "consumerfinance.gov");
@@ -43,13 +49,15 @@ public class DebtManagementController {
     public DebtManagementController(DebtManagementService debtService, GroqService groqService,
                                      CreditOfferSearchService creditOfferSearchService,
                                      UserService userService, TavilySearchClient tavilySearchClient,
-                                     PostGradProfileService postGradProfileService) {
+                                     SubscriptionService subscriptionService,
+                                     SearchUsageService searchUsageService) {
         this.debtService = debtService;
         this.groqService = groqService;
         this.creditOfferSearchService = creditOfferSearchService;
         this.userService = userService;
         this.tavilySearchClient = tavilySearchClient;
-        this.postGradProfileService = postGradProfileService;
+        this.subscriptionService = subscriptionService;
+        this.searchUsageService = searchUsageService;
     }
 
     /** Fetches live studentaid.gov content relevant to the given query for prompt injection. */
@@ -73,12 +81,8 @@ public class DebtManagementController {
     @PostMapping("/repayment-plans")
     public ResponseEntity<?> getRepaymentPlans(@RequestBody DebtIntakeRequest req, Principal principal) {
         try {
-            // Persist post-grad profile linked to the authenticated user — never trust client-supplied ID
-            Long userId = resolveUserId(principal);
-            if (userId != null) {
-                try { postGradProfileService.save(userId, req); }
-                catch (Exception ignored) {}
-            }
+            // TODO(follow-up): persist this intake into the new `postgrad` input-log table
+            // (see schema redesign plan) — deferred pending the tab increment/model_response wiring.
             List<Map<String, Object>> plans = debtService.calculateRepaymentPlans(req);
             Map<String, Object> pslfResult = null;
             if (req.getEmployerName() != null && !req.getEmployerName().isBlank()) {
@@ -91,7 +95,7 @@ public class DebtManagementController {
             String aiJson = groqService.getRepaymentRecommendation(req, plans, pslfResult, liveContent);
             Object aiParsed;
             try {
-                aiParsed = objectMapper.readValue(aiJson, Object.class);
+                aiParsed = objectMapper.readValue(GroqService.stripMarkdownFences(aiJson), Object.class);
             } catch (Exception e) {
                 aiParsed = Map.of("rationale", aiJson);
             }
@@ -129,7 +133,8 @@ public class DebtManagementController {
         if (principal == null) return false;
         AppUser user = userService.findByEmail(resolveEmail(principal)).orElse(null);
         if (user == null) return false;
-        return user.isSubscriptionActive() || user.getDebtSearchCount() < FREE_LIVE_SEARCHES;
+        return subscriptionService.hasAccess(user)
+            || searchUsageService.getOrCreateForUser(user).getPostgrad() < FREE_LIVE_SEARCHES;
     }
 
     private String resolveEmail(Principal principal) {
@@ -139,18 +144,17 @@ public class DebtManagementController {
             : (principal != null ? principal.getName() : null);
     }
 
-    private Long resolveUserId(Principal principal) {
-        try {
-            String email = resolveEmail(principal);
-            if (email == null) return null;
-            return userService.findByEmail(email).map(u -> u.getId()).orElse(null);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     /** Fetches live web content about a private lender's hardship, repayment, and loan agreement pages. */
     private Map<String, Object> fetchPrivateLenderResearch(String lender) {
+        return fetchPrivateLenderResearch(lender, null);
+    }
+
+    /**
+     * Fetches live web content about a private lender's hardship, repayment, and loan agreement pages,
+     * plus (when a state is provided) state-specific credit union/bank refinancing options the borrower
+     * could pursue as an alternative if the lender denies hardship relief.
+     */
+    private Map<String, Object> fetchPrivateLenderResearch(String lender, String state) {
         Map<String, Object> result = new java.util.LinkedHashMap<>();
         try {
             var forbearance = tavilySearchClient.searchHandbook(
@@ -167,6 +171,14 @@ public class DebtManagementController {
                 lender + " student loan promissory note loan agreement repayment terms conditions", 2, GENERAL_DOMAINS, 800);
             result.put("loanTermsResults", terms);
         } catch (Exception ignored) { result.put("loanTermsResults", List.of()); }
+        if (state != null && !state.isBlank()) {
+            try {
+                var stateCreditUnions = tavilySearchClient.searchHandbook(
+                    state + " state bank credit union student loan refinancing balance transfer low interest",
+                    2, GENERAL_DOMAINS, 700);
+                result.put("stateCreditUnionResults", stateCreditUnions);
+            } catch (Exception ignored) { result.put("stateCreditUnionResults", List.of()); }
+        }
         return result;
     }
 
@@ -216,7 +228,7 @@ public class DebtManagementController {
             return ResponseEntity.badRequest().body(Map.of("error", "Private lender name is required."));
         }
         try {
-            Map<String, Object> research = fetchPrivateLenderResearch(lender);
+            Map<String, Object> research = fetchPrivateLenderResearch(lender, req.getState());
             return ResponseEntity.ok(research);
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
@@ -224,47 +236,52 @@ public class DebtManagementController {
         }
     }
 
-    @PostMapping("/private-hardship-letter")
-    public ResponseEntity<?> generatePrivateHardshipLetter(@RequestBody DebtIntakeRequest req) {
+    @PostMapping(value = "/private-hardship-letter", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter generatePrivateHardshipLetter(@RequestBody DebtIntakeRequest req) {
         String lender = req.getPrivateLender();
         if (lender == null || lender.isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Private lender name is required."));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Private lender name is required.");
         }
-        try {
-            Map<String, Object> research = fetchPrivateLenderResearch(lender);
-            // Flatten all live research into a single prompt-injection block
-            StringBuilder liveContent = new StringBuilder();
-            for (String key : List.of("forbearanceResults", "faqResults", "loanTermsResults")) {
-                @SuppressWarnings("unchecked")
-                List<Map<String, Object>> items = (List<Map<String, Object>>) research.get(key);
-                if (items != null) {
-                    for (var item : items) {
-                        liveContent.append("\n[Source: ").append(item.get("url")).append("]\n");
-                        Object content = item.get("content");
-                        if (content == null) content = item.get("snippet");
-                        liveContent.append(content).append("\n");
-                    }
+        Map<String, Object> research = fetchPrivateLenderResearch(lender, req.getState());
+        // Flatten all live research into a single prompt-injection block
+        StringBuilder liveContent = new StringBuilder();
+        for (String key : List.of("forbearanceResults", "faqResults", "loanTermsResults")) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> items = (List<Map<String, Object>>) research.get(key);
+            if (items != null) {
+                for (var item : items) {
+                    liveContent.append("\n[Source: ").append(item.get("url")).append("]\n");
+                    Object content = item.get("content");
+                    if (content == null) content = item.get("snippet");
+                    liveContent.append(content).append("\n");
                 }
             }
-            String live = liveContent.toString().trim();
-            if (live.isEmpty()) live = "(Live search unavailable — use lender website for current forbearance policies)";
-
-            String letter = groqService.getPrivateHardshipLetter(req, live);
-            String letterText    = letter;
-            String checklistText = "";
-            int splitIdx = letter.indexOf("---CHECKLIST---");
-            if (splitIdx >= 0) {
-                letterText    = letter.substring(0, splitIdx).trim();
-                checklistText = letter.substring(splitIdx + 15).trim();
-            }
-            return ResponseEntity.ok(Map.of(
-                "letter",    letterText,
-                "checklist", checklistText
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                .body(Map.of("error", "Could not generate private hardship letter: " + e.getMessage()));
         }
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> stateCreditUnions = (List<Map<String, Object>>) research.get("stateCreditUnionResults");
+        if (stateCreditUnions != null && !stateCreditUnions.isEmpty()) {
+            liveContent.append("\n=== STATE-SPECIFIC CREDIT UNION / BANK REFINANCING OPTIONS (")
+                .append(req.getState()).append(") ===\n");
+            for (var item : stateCreditUnions) {
+                liveContent.append("\n[Source: ").append(item.get("url")).append("]\n");
+                Object content = item.get("content");
+                if (content == null) content = item.get("snippet");
+                liveContent.append(content).append("\n");
+            }
+            liveContent.append("=== END STATE-SPECIFIC OPTIONS ===\n");
+        }
+        String live = liveContent.toString().trim();
+        if (live.isEmpty()) live = "(Live search unavailable — use lender website for current forbearance policies)";
+
+        SseEmitter emitter = new SseEmitter(120_000L);
+        groqService.streamPrivateHardshipLetter(req, live,
+            token -> {
+                try { emitter.send(SseEmitter.event().data(token)); }
+                catch (Exception ignored) { /* client likely disconnected */ }
+            },
+            emitter::complete,
+            emitter::completeWithError);
+        return emitter;
     }
 
     @PostMapping("/pslf-check")
@@ -278,33 +295,25 @@ public class DebtManagementController {
         }
     }
 
-    @PostMapping("/hardship-letter")
-    public ResponseEntity<?> generateHardshipLetter(@RequestBody DebtIntakeRequest req) {
-        try {
-            String hardshipType = req.getHardshipType() != null ? req.getHardshipType() : "general";
-            String servicer = req.getLoanServicer() != null ? req.getLoanServicer() : "";
-            String liveContent = fetchLiveDebtContent(
-                "student loan " + hardshipType + " deferment forbearance requirements 2025 site:studentaid.gov",
-                (servicer.isBlank() ? "" : servicer + " loan servicer hardship forbearance contact")
-                    .strip().isEmpty() ? "federal student loan forbearance deferment how to apply site:studentaid.gov"
-                    : servicer + " student loan hardship forbearance deferment 2025"
-            );
-            String letter = groqService.getHardshipLetter(req, liveContent);
-            // Split letter and checklist
-            String letterText   = letter;
-            String checklistText = "";
-            int splitIdx = letter.indexOf("---CHECKLIST---");
-            if (splitIdx >= 0) {
-                letterText   = letter.substring(0, splitIdx).trim();
-                checklistText = letter.substring(splitIdx + 15).trim();
-            }
-            return ResponseEntity.ok(Map.of(
-                "letter",    letterText,
-                "checklist", checklistText
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                .body(Map.of("error", "Could not generate hardship letter: " + e.getMessage()));
-        }
+    @PostMapping(value = "/hardship-letter", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter generateHardshipLetter(@RequestBody DebtIntakeRequest req) {
+        String hardshipType = req.getHardshipType() != null ? req.getHardshipType() : "general";
+        String servicer = req.getLoanServicer() != null ? req.getLoanServicer() : "";
+        String liveContent = fetchLiveDebtContent(
+            "student loan " + hardshipType + " deferment forbearance requirements 2025 site:studentaid.gov",
+            (servicer.isBlank() ? "" : servicer + " loan servicer hardship forbearance contact")
+                .strip().isEmpty() ? "federal student loan forbearance deferment how to apply site:studentaid.gov"
+                : servicer + " student loan hardship forbearance deferment 2025"
+        );
+
+        SseEmitter emitter = new SseEmitter(120_000L);
+        groqService.streamHardshipLetter(req, liveContent,
+            token -> {
+                try { emitter.send(SseEmitter.event().data(token)); }
+                catch (Exception ignored) { /* client likely disconnected */ }
+            },
+            emitter::complete,
+            emitter::completeWithError);
+        return emitter;
     }
 }

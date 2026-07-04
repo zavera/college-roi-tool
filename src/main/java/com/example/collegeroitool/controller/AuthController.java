@@ -1,7 +1,10 @@
 package com.example.collegeroitool.controller;
 
 import com.example.collegeroitool.model.AppUser;
+import com.example.collegeroitool.model.SearchUsage;
 import com.example.collegeroitool.service.MagicLinkService;
+import com.example.collegeroitool.service.SearchUsageService;
+import com.example.collegeroitool.service.SubscriptionService;
 import com.example.collegeroitool.service.UserService;
 import com.example.collegeroitool.service.UserSessionService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,16 +36,22 @@ public class AuthController {
     private final UserService userService;
     private final UserSessionService sessionService;
     private final MagicLinkService magicLinkService;
+    private final SubscriptionService subscriptionService;
+    private final SearchUsageService searchUsageService;
 
     @Value("${premium.dev.bypass:false}")
     private boolean devBypass;
 
     public AuthController(UserService userService,
                           UserSessionService sessionService,
-                          MagicLinkService magicLinkService) {
+                          MagicLinkService magicLinkService,
+                          SubscriptionService subscriptionService,
+                          SearchUsageService searchUsageService) {
         this.userService      = userService;
         this.sessionService   = sessionService;
         this.magicLinkService = magicLinkService;
+        this.subscriptionService = subscriptionService;
+        this.searchUsageService  = searchUsageService;
     }
 
     @PostMapping("/register")
@@ -113,11 +122,12 @@ public class AuthController {
         }
 
         AppUser user = userService.findByEmail(email).orElse(null);
-        boolean subscribed = user != null && user.isSubscriptionActive();
-        int searchCount           = user != null ? user.getSearchCount() : 0;
-        int debtSearchCount       = user != null ? user.getDebtSearchCount() : 0;
-        int fafsaUsageCount       = user != null ? user.getFafsaUsageCount() : 0;
-        int scholarshipSearchCount = user != null ? user.getScholarshipSearchCount() : 0;
+        boolean subscribed = user != null && subscriptionService.hasAccess(user);
+        SearchUsage usage = user != null ? searchUsageService.getOrCreateForUser(user) : null;
+        int fafsaCount       = usage != null ? usage.getFafsa() : 0;
+        int scholarshipCount = usage != null ? usage.getScholarship() : 0;
+        int coaCount         = usage != null ? usage.getCoa() : 0;
+        int postgradCount    = usage != null ? usage.getPostgrad() : 0;
         if (user != null && user.getName() != null) name = user.getName();
 
         // Register this session — overwrites any prior session token for this user,
@@ -138,20 +148,23 @@ public class AuthController {
             "email",                   email,
             "name",                    name != null ? name : email,
             "subscriptionActive",      subscribed,
-            "searchCount",             searchCount,
-            "debtSearchCount",         debtSearchCount,
-            "fafsaUsageCount",         fafsaUsageCount,
-            "scholarshipSearchCount",  scholarshipSearchCount,
+            "fafsaSearchCount",        fafsaCount,
+            "scholarshipSearchCount",  scholarshipCount,
+            "coaSearchCount",          coaCount,
+            "postgradSearchCount",     postgradCount,
             "institutionName",         "Callisto Tech"
         ));
     }
 
+    // NOTE: these no longer increment — actual counting on successful LLM calls per tab
+    // is follow-up work (see schema redesign plan). They read the current search_usages
+    // row so the frontend keeps getting a real, non-incrementing count in the meantime.
     @PostMapping("/search/increment")
     public ResponseEntity<?> incrementSearch(Principal principal) {
         if (devBypass && principal == null) return ResponseEntity.ok(Map.of("searchCount", 0));
         if (principal == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
-        String email = resolveEmail(principal);
-        int count = userService.incrementSearchCount(email);
+        AppUser user = userService.findByEmail(resolveEmail(principal)).orElse(null);
+        int count = user != null ? searchUsageService.getOrCreateForUser(user).getFafsa() : 0;
         return ResponseEntity.ok(Map.of("searchCount", count));
     }
 
@@ -159,8 +172,8 @@ public class AuthController {
     public ResponseEntity<?> incrementScholarshipSearch(Principal principal) {
         if (devBypass && principal == null) return ResponseEntity.ok(Map.of("scholarshipSearchCount", 0));
         if (principal == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
-        String email = resolveEmail(principal);
-        int count = userService.incrementScholarshipSearchCount(email);
+        AppUser user = userService.findByEmail(resolveEmail(principal)).orElse(null);
+        int count = user != null ? searchUsageService.getOrCreateForUser(user).getScholarship() : 0;
         return ResponseEntity.ok(Map.of("scholarshipSearchCount", count));
     }
 
@@ -168,8 +181,8 @@ public class AuthController {
     public ResponseEntity<?> incrementDebtSearch(Principal principal) {
         if (devBypass && principal == null) return ResponseEntity.ok(Map.of("debtSearchCount", 0));
         if (principal == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
-        String email = resolveEmail(principal);
-        int count = userService.incrementDebtSearchCount(email);
+        AppUser user = userService.findByEmail(resolveEmail(principal)).orElse(null);
+        int count = user != null ? searchUsageService.getOrCreateForUser(user).getPostgrad() : 0;
         return ResponseEntity.ok(Map.of("debtSearchCount", count));
     }
 
@@ -177,9 +190,7 @@ public class AuthController {
     public ResponseEntity<?> incrementChatCount(Principal principal) {
         if (devBypass && principal == null) return ResponseEntity.ok(Map.of("chatCount", 1));
         if (principal == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
-        String email = resolveEmail(principal);
-        int count = userService.incrementFafsaUsageCount(email);
-        return ResponseEntity.ok(Map.of("chatCount", count));
+        return ResponseEntity.ok(Map.of("chatCount", 0));
     }
 
     @PostMapping("/subscription/toggle")

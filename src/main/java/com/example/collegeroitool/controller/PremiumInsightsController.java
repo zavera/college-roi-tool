@@ -26,7 +26,7 @@ public class PremiumInsightsController {
             return ResponseEntity.status(403).body(Map.of("error", "Subscription required"));
         }
         try {
-            String json = groqService.getPremiumInsights(req);
+            String json = GroqService.stripMarkdownFences(groqService.getPremiumInsights(req));
             // Return raw JSON string as-is — Groq returns valid JSON per prompt
             return ResponseEntity.ok()
                     .header("Content-Type", "application/json")

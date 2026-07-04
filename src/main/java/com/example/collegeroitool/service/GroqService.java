@@ -2,6 +2,7 @@ package com.example.collegeroitool.service;
 
 import com.example.collegeroitool.dto.LlmAdviceRequest;
 import com.example.collegeroitool.dto.PremiumInsightsRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -12,8 +13,17 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 @Service
 public class GroqService {
@@ -42,9 +52,6 @@ public class GroqService {
     private String repaymentPromptTemplate;
     private String hardshipPromptTemplate;
     private String privateHardshipPromptTemplate;
-    private String fafsaReadinessPromptTemplate;
-    private String fafsaRoadmapPromptTemplate;
-    private String fafsaChatPromptTemplate;
     private String fafsaAssetRepositioningPromptTemplate;
     private String fafsaPjAppealPromptTemplate;
     private String fafsaSaiCommentaryPromptTemplate;
@@ -53,12 +60,15 @@ public class GroqService {
     private String astraChatPromptTemplate;
 
     private final RestTemplate restTemplate;
+    private final HttpClient streamingHttpClient;
+    private final ExecutorService streamExecutor = Executors.newCachedThreadPool();
 
     public GroqService() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(10_000);
         factory.setReadTimeout(30_000);
         restTemplate = new RestTemplate(factory);
+        streamingHttpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
     }
 
     @PostConstruct
@@ -93,15 +103,6 @@ public class GroqService {
         privateHardshipPromptTemplate = new String(
             new ClassPathResource("prompts/private-hardship-prompt.txt").getInputStream().readAllBytes(),
             StandardCharsets.UTF_8);
-        fafsaReadinessPromptTemplate = new String(
-            new ClassPathResource("prompts/fafsa-readiness-prompt.txt").getInputStream().readAllBytes(),
-            StandardCharsets.UTF_8);
-        fafsaRoadmapPromptTemplate = new String(
-            new ClassPathResource("prompts/fafsa-roadmap-prompt.txt").getInputStream().readAllBytes(),
-            StandardCharsets.UTF_8);
-        fafsaChatPromptTemplate = new String(
-            new ClassPathResource("prompts/fafsa-chat-prompt.txt").getInputStream().readAllBytes(),
-            StandardCharsets.UTF_8);
         fafsaAssetRepositioningPromptTemplate = new String(
             new ClassPathResource("prompts/fafsa-asset-repositioning-prompt.txt").getInputStream().readAllBytes(),
             StandardCharsets.UTF_8);
@@ -129,7 +130,9 @@ public class GroqService {
             return buildDevStubAdvice(req);
         }
         String prompt = buildSummaryPrompt(req);
-        return callGroq(prompt, 2600, 0.2);
+        // gpt-oss-120b's internal reasoning eats into this budget before the JSON body is
+        // written, and this schema is large (multiple nested arrays) — give it real headroom.
+        return callGroq(prompt, 4000, 0.2);
     }
 
     private String buildSummaryPrompt(LlmAdviceRequest req) {
@@ -486,9 +489,11 @@ public class GroqService {
         return getRepaymentRecommendation(req, plans, pslfResult, null);
     }
 
-    public String getHardshipLetter(com.example.collegeroitool.dto.DebtIntakeRequest req, String liveContent) {
+    public void streamHardshipLetter(com.example.collegeroitool.dto.DebtIntakeRequest req, String liveContent,
+                                      Consumer<String> onToken, Runnable onComplete, Consumer<Throwable> onError) {
         if (DEV_STUB_KEY.equals(apiKey)) {
-            return buildHardshipLetterStub(req);
+            emitStub(buildHardshipLetterStub(req), onToken, onComplete);
+            return;
         }
         String live = liveContent != null ? liveContent : "(No live content retrieved)";
         String prompt = hardshipPromptTemplate
@@ -500,16 +505,14 @@ public class GroqService {
             .replace("{{hardshipType}}", req.getHardshipType() != null ? req.getHardshipType() : "general")
             .replace("{{hardshipDetails}}", req.getHardshipDetails() != null ? req.getHardshipDetails() : "not provided")
             .replace("{{liveSearchContent}}", live);
-        return callGroq(prompt, 1400, 0.3);
+        streamCompletion(prompt, 1400, 0.3, onToken, onComplete, onError);
     }
 
-    public String getHardshipLetter(com.example.collegeroitool.dto.DebtIntakeRequest req) {
-        return getHardshipLetter(req, null);
-    }
-
-    public String getPrivateHardshipLetter(com.example.collegeroitool.dto.DebtIntakeRequest req, String liveContent) {
+    public void streamPrivateHardshipLetter(com.example.collegeroitool.dto.DebtIntakeRequest req, String liveContent,
+                                             Consumer<String> onToken, Runnable onComplete, Consumer<Throwable> onError) {
         if (DEV_STUB_KEY.equals(apiKey)) {
-            return buildPrivateHardshipLetterStub(req);
+            emitStub(buildPrivateHardshipLetterStub(req), onToken, onComplete);
+            return;
         }
         String live = liveContent != null ? liveContent : "(No live content retrieved — visit lender website for current hardship policies)";
         String prompt = privateHardshipPromptTemplate
@@ -521,7 +524,7 @@ public class GroqService {
             .replace("{{hardshipType}}", req.getHardshipType() != null ? req.getHardshipType() : "financial hardship")
             .replace("{{hardshipDetails}}", req.getHardshipDetails() != null ? req.getHardshipDetails() : "not provided")
             .replace("{{liveSearchContent}}", live);
-        return callGroq(prompt, 1500, 0.3);
+        streamCompletion(prompt, 1500, 0.3, onToken, onComplete, onError);
     }
 
     private String buildPrivateHardshipLetterStub(com.example.collegeroitool.dto.DebtIntakeRequest req) {
@@ -563,64 +566,6 @@ public class GroqService {
 
     // ── FAFSA Prep ─────────────────────────────────────────────────────────────
 
-    public String getFafsaReadinessSummary(com.example.collegeroitool.model.FafsaProfile profile) {
-        if (DEV_STUB_KEY.equals(apiKey)) {
-            return "{\"readinessSummary\":\"Your tax documentation looks complete for a standard FAFSA filing — wages and federal withholding are both present.\",\"aidProjection\":\"Based on the income shown, you're likely in range for partial need-based aid plus full federal loan eligibility. This is an estimate, not an award letter.\",\"appealOpportunities\":[{\"title\":\"Professional judgment review\",\"detail\":\"If your family's income has changed since this tax year, ask the financial aid office for a professional judgment review using current income instead.\"}],\"scholarshipQueries\":[\"first-generation college student scholarships 2026\",\"need-based scholarships for incoming freshmen 2026\"],\"deadlines\":[{\"name\":\"FAFSA opens\",\"timing\":\"October 1 each year\",\"note\":\"File as early as possible — some state and institutional aid is first-come, first-served.\"}]}";
-        }
-        try {
-            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            String extractedDataJson = profile.getExtractedDataJson() != null ? profile.getExtractedDataJson() : "{}";
-            String prompt = fafsaReadinessPromptTemplate
-                .replace("{{studentName}}", profile.getStudentName() != null ? profile.getStudentName() : "not provided")
-                .replace("{{dateOfBirth}}", profile.getDateOfBirth() != null ? profile.getDateOfBirth().toString() : "not provided")
-                .replace("{{planningYear}}", profile.getPlanningYear() != null ? String.valueOf(profile.getPlanningYear()) : "not provided")
-                .replace("{{extractedDataJson}}", extractedDataJson);
-            return callGroq(prompt, 1200, 0.3);
-        } catch (Exception e) {
-            return "{\"error\":\"Could not generate readiness summary: " + e.getMessage() + "\"}";
-        }
-    }
-
-    public String getFafsaRoadmap(com.example.collegeroitool.model.FafsaProfile profile,
-                                   String deadlinesJson, String selectedOptionsJson) {
-        if (DEV_STUB_KEY.equals(apiKey)) {
-            return "{\"roadmapSteps\":[{\"order\":1,\"title\":\"File the FAFSA\",\"targetDate\":\"By October 1\",\"detail\":\"Submit as early as possible to maximize first-come, first-served state and institutional aid.\"},{\"order\":2,\"title\":\"Apply to selected scholarships\",\"targetDate\":\"Within 2 weeks of FAFSA filing\",\"detail\":\"Complete applications for the scholarships you selected while your financial documents are still organized.\"}],\"summary\":\"This plan front-loads your FAFSA filing, then layers in scholarship applications while your paperwork is fresh.\"}";
-        }
-        try {
-            String prompt = fafsaRoadmapPromptTemplate
-                .replace("{{studentName}}", profile.getStudentName() != null ? profile.getStudentName() : "not provided")
-                .replace("{{planningYear}}", profile.getPlanningYear() != null ? String.valueOf(profile.getPlanningYear()) : "not provided")
-                .replace("{{deadlinesJson}}", deadlinesJson != null ? deadlinesJson : "[]")
-                .replace("{{selectedOptionsJson}}", selectedOptionsJson != null ? selectedOptionsJson : "[]");
-            return callGroq(prompt, 900, 0.3);
-        } catch (Exception e) {
-            return "{\"error\":\"Could not generate roadmap: " + e.getMessage() + "\"}";
-        }
-    }
-
-    public String getFafsaChatResponse(com.example.collegeroitool.model.FafsaProfile profile,
-                                        String conversationHistory, String question) {
-        if (DEV_STUB_KEY.equals(apiKey)) {
-            return buildFafsaChatStub(profile, question);
-        }
-        String prompt = fafsaChatPromptTemplate
-            .replace("{{studentName}}", profile.getStudentName() != null ? profile.getStudentName() : "not provided")
-            .replace("{{dateOfBirth}}", profile.getDateOfBirth() != null ? profile.getDateOfBirth().toString() : "not provided")
-            .replace("{{planningYear}}", profile.getPlanningYear() != null ? String.valueOf(profile.getPlanningYear()) : "not provided")
-            .replace("{{extractedDataJson}}", profile.getExtractedDataJson() != null ? profile.getExtractedDataJson() : "{}")
-            .replace("{{readinessSummaryJson}}", profile.getReadinessSummaryJson() != null ? profile.getReadinessSummaryJson() : "not generated yet")
-            .replace("{{roadmapJson}}", profile.getRoadmapJson() != null ? profile.getRoadmapJson() : "not generated yet")
-            .replace("{{conversationHistory}}", conversationHistory != null ? conversationHistory : "(no prior messages)")
-            .replace("{{question}}", question);
-        return callGroq(prompt, 600, 0.3);
-    }
-
-    public String getAssetRepositioningAdvice(com.example.collegeroitool.model.FafsaProfile profile) {
-        return getAssetRepositioningAdvice(
-            profile.getExtractedDataJson() != null ? profile.getExtractedDataJson() : "{}",
-            null, null, null, null, null);
-    }
-
     public String getAssetRepositioningAdvice(String kvJson, String awardYear, String handbookContent,
                                                Integer expectedTaxYear, Integer extractedTaxYear, String taxYearNote) {
         String year = awardYear != null ? awardYear : "2026-2027";
@@ -643,7 +588,10 @@ public class GroqService {
             .replace("{{taxYearNote}}", taxYearNote != null ? taxYearNote : "")
             .replace("{{handbookContent}}", handbook)
             .replace("{{extractedDataJson}}", kvJson != null ? kvJson : "{}");
-        return callGroq(prompt, 1200, 0.3);
+        // gpt-oss-120b spends part of this budget on internal reasoning before emitting the
+        // JSON response, so this needs real headroom above the old model's 1200-token limit —
+        // otherwise the response truncates mid-JSON or comes back empty (finish_reason: length).
+        return callGroq(prompt, 3000, 0.3);
     }
 
     public String getProfessionalJudgmentAppeal(String studentName, String circumstancesJson,
@@ -652,7 +600,7 @@ public class GroqService {
         if (DEV_STUB_KEY.equals(apiKey)) {
             return buildPjAppealStub(studentName, circumstancesJson, extractedDataJson, year);
         }
-        String handbook = handbookContent != null ? handbookContent : "(No live content retrieved — reason from training knowledge of FSA Handbook Vol. 3, Ch. 5 " + year + ")";
+        String handbook = handbookContent != null ? handbookContent : "(No live content retrieved — reason from training knowledge of FSA Handbook AVG Ch 5 — Special Cases " + year + ")";
         String prompt = fafsaPjAppealPromptTemplate
             .replace("{{awardYear}}", year)
             .replace("{{studentName}}", studentName != null ? studentName : "the student")
@@ -841,61 +789,10 @@ public class GroqService {
         return "[" + String.join(",", scholarships) + "]";
     }
 
-    // ── FAFSA Prep: asset repositioning analysis ──────────────────────────────
-
-    public String getFafsaPrepAnalysis(com.example.collegeroitool.model.FafsaPrepEntry e) {
-        String dep = "dependent".equalsIgnoreCase(e.getDependencyStatus()) ? "dependent" : "independent";
-        int hh   = e.getHouseholdSize()   != null ? e.getHouseholdSize()   : 4;
-        int nic  = e.getNumberInCollege() != null ? e.getNumberInCollege() : 1;
-
-        String fmt = e.getDependencyStatus() != null
-            ? "Student dependency status: " + dep + "\n" : "";
-        fmt += "Household size: " + hh + ", number in college: " + nic + "\n\n";
-
-        fmt += "=== STUDENT ===\n";
-        if (e.getStudentAgi()            != null) fmt += "AGI: $" + e.getStudentAgi() + "\n";
-        if (e.getStudentTaxesPaid()      != null) fmt += "Income taxes paid: $" + e.getStudentTaxesPaid() + "\n";
-        if (e.getStudentUntaxedIncome()  != null) fmt += "Untaxed income: $" + e.getStudentUntaxedIncome() + "\n";
-        if (e.getStudentWorkStudy()      != null) fmt += "Work-study: $" + e.getStudentWorkStudy() + "\n";
-        if (e.getStudentCashSavings()    != null) fmt += "Cash / savings: $" + e.getStudentCashSavings() + "\n";
-        if (e.getStudentInvestments()    != null) fmt += "Investments (excl. retirement): $" + e.getStudentInvestments() + "\n";
-        if (e.getStudentBusinessNetWorth() != null) fmt += "Business / farm net worth: $" + e.getStudentBusinessNetWorth() + "\n";
-
-        if ("dependent".equals(dep)) {
-            fmt += "\n=== PARENT ===\n";
-            if (e.getParentAgi()              != null) fmt += "AGI: $" + e.getParentAgi() + "\n";
-            if (e.getParentTaxesPaid()        != null) fmt += "Income taxes paid: $" + e.getParentTaxesPaid() + "\n";
-            if (e.getParentUntaxedIncome()    != null) fmt += "Untaxed income: $" + e.getParentUntaxedIncome() + "\n";
-            if (e.getParentMaritalStatus()    != null) fmt += "Marital status: " + e.getParentMaritalStatus() + "\n";
-            if (e.getParentAge()              != null) fmt += "Age (eldest parent): " + e.getParentAge() + "\n";
-            if (e.getParentCashSavings()      != null) fmt += "Cash / savings: $" + e.getParentCashSavings() + "\n";
-            if (e.getParentInvestments()      != null) fmt += "Investments (excl. retirement): $" + e.getParentInvestments() + "\n";
-            if (e.getParentHomeEquity()       != null) fmt += "Home equity: $" + e.getParentHomeEquity() + " (not counted on FAFSA)\n";
-            if (e.getParentRetirementSavings() != null) fmt += "Retirement savings: $" + e.getParentRetirementSavings() + " (not counted on FAFSA)\n";
-            if (e.getParentBusinessNetWorth() != null) fmt += "Business / farm net worth: $" + e.getParentBusinessNetWorth() + "\n";
-            if (e.getParent529Balance()       != null) fmt += "529 plan balance: $" + e.getParent529Balance() + "\n";
-        }
-
-        String prompt =
-            "You are a certified financial aid advisor. A family has provided the following FAFSA financial data:\n\n" +
-            fmt + "\n" +
-            "Task: Provide a structured asset repositioning analysis with these sections:\n\n" +
-            "1. ESTIMATED SAI RANGE — Give a rough estimated Student Aid Index range based on the data above.\n\n" +
-            "2. LEGAL STRATEGIES TO REDUCE SAI — List 4–6 specific, actionable legal strategies this family can implement " +
-            "BEFORE the FAFSA filing date to reduce their SAI. For each strategy: name it, explain why it works under FAFSA rules, " +
-            "estimate the potential SAI impact, and note any caveats.\n\n" +
-            "3. ASSET PROTECTION NOTES — Call out which assets are already sheltered (retirement, home equity if dependent) " +
-            "and any risks to watch for.\n\n" +
-            "4. TIMING TIPS — Mention the FAFSA filing date impact and what actions must happen before vs. after.\n\n" +
-            "Be specific and grounded in current FAFSA/SAI formula rules (2024-25 simplified needs test, asset conversion rates). " +
-            "Do not give vague advice. Format with clear section headers.";
-
-        return callGroq(prompt, 1400, 0.2);
-    }
-
     // ── Shared Groq caller ────────────────────────────────────────────────────
 
-    private String callGroq(String prompt, int maxTokens, double temperature) {
+    /** Shared request body — used by both the blocking callGroq() and the streaming path. */
+    private Map<String, Object> buildRequestBody(String prompt, int maxTokens, double temperature, boolean stream) {
         Map<String, Object> message = new HashMap<>();
         message.put("role", "user");
         message.put("content", prompt);
@@ -903,8 +800,16 @@ public class GroqService {
         Map<String, Object> body = new HashMap<>();
         body.put("model", model);
         body.put("messages", List.of(message));
-        body.put("max_tokens", maxTokens);
+        body.put("max_completion_tokens", maxTokens);
         body.put("temperature", temperature);
+        body.put("top_p", 1);
+        body.put("reasoning_effort", "medium");
+        body.put("stream", stream);
+        return body;
+    }
+
+    private String callGroq(String prompt, int maxTokens, double temperature) {
+        Map<String, Object> body = buildRequestBody(prompt, maxTokens, temperature, false);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -927,10 +832,77 @@ public class GroqService {
         return content;
     }
 
+    /**
+     * Streams a completion from Groq token-by-token, invoking onToken per delta on a background
+     * thread so the calling controller can return an SseEmitter immediately. Calls onComplete once
+     * the stream ends cleanly, or onError if the request/parse fails.
+     */
+    private void streamCompletion(String prompt, int maxTokens, double temperature,
+                                   Consumer<String> onToken, Runnable onComplete, Consumer<Throwable> onError) {
+        streamExecutor.submit(() -> {
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                Map<String, Object> body = buildRequestBody(prompt, maxTokens, temperature, true);
+
+                HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(apiUrl))
+                    .timeout(Duration.ofSeconds(60))
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", "Bearer " + apiKey)
+                    .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body)))
+                    .build();
+
+                HttpResponse<Stream<String>> response =
+                    streamingHttpClient.send(request, HttpResponse.BodyHandlers.ofLines());
+
+                if (response.statusCode() >= 400) {
+                    throw new RuntimeException("Groq streaming request failed with status " + response.statusCode());
+                }
+
+                response.body().forEach(line -> {
+                    if (!line.startsWith("data:")) return;
+                    String data = line.substring(5).trim();
+                    if (data.isEmpty() || "[DONE]".equals(data)) return;
+                    try {
+                        Map<String, Object> chunk = mapper.readValue(data, Map.class);
+                        List<Map<String, Object>> choices = (List<Map<String, Object>>) chunk.get("choices");
+                        if (choices == null || choices.isEmpty()) return;
+                        Map<String, Object> delta = (Map<String, Object>) choices.get(0).get("delta");
+                        Object content = delta != null ? delta.get("content") : null;
+                        if (content instanceof String s && !s.isEmpty()) {
+                            onToken.accept(s);
+                        }
+                    } catch (Exception parseEx) {
+                        // Skip malformed/partial SSE line rather than aborting the whole stream.
+                    }
+                });
+                onComplete.run();
+            } catch (Exception e) {
+                onError.accept(e);
+            }
+        });
+    }
+
+    /** Emits a canned dev-stub response as a single chunk, keeping the same async contract as a real stream. */
+    private void emitStub(String stubText, Consumer<String> onToken, Runnable onComplete) {
+        streamExecutor.submit(() -> {
+            onToken.accept(stubText);
+            onComplete.run();
+        });
+    }
+
     /** Caps live-search content to prevent content-filter triggers from noisy scraped text. */
     public static String truncateLiveContent(String content, int maxChars) {
         if (content == null || content.length() <= maxChars) return content;
         return content.substring(0, maxChars) + "\n[content truncated for length]";
+    }
+
+    /** Strips ```json / ``` fences some models wrap JSON responses in despite prompt instructions. */
+    public static String stripMarkdownFences(String content) {
+        if (content == null) return null;
+        String trimmed = content.trim();
+        if (!trimmed.startsWith("```")) return content;
+        return trimmed.replaceAll("^```[a-zA-Z]*\\n?", "").replaceAll("```$", "").trim();
     }
 
     private String buildHardshipLetterStub(com.example.collegeroitool.dto.DebtIntakeRequest req) {
@@ -957,47 +929,6 @@ public class GroqService {
             + "and household size, at your request.\n\n"
             + "Thank you for your prompt attention to this matter.\n\n"
             + "Sincerely,\n[Borrower Name]\n[Account Number]\n[Contact Information]";
-    }
-
-    private String buildFafsaChatStub(com.example.collegeroitool.model.FafsaProfile profile, String question) {
-        String name = profile.getStudentName() != null ? profile.getStudentName() : "the student";
-        String year = profile.getPlanningYear() != null ? String.valueOf(profile.getPlanningYear()) : "the upcoming";
-
-        // Extract AGI from profile if available
-        String agiNote = "";
-        if (profile.getExtractedDataJson() != null && !profile.getExtractedDataJson().isBlank()) {
-            try {
-                @SuppressWarnings("unchecked")
-                java.util.Map<String, Object> kv = new com.fasterxml.jackson.databind.ObjectMapper()
-                    .readValue(profile.getExtractedDataJson(), java.util.Map.class);
-                Object agi = kv.get("Adjusted Gross Income");
-                if (agi != null) agiNote = " Based on the tax data on file (AGI: $" + agi + "), ";
-            } catch (Exception ignored) {}
-        }
-
-        String q = question != null ? question.toLowerCase() : "";
-        if (q.contains("pell") || q.contains("grant")) {
-            return "For " + year + " award year:" + agiNote + "Pell Grant eligibility is primarily determined by your "
-                + "Student Aid Index (SAI). Students with an SAI near zero qualify for the maximum Pell Grant "
-                + "($7,395 for 2024-25). Eligibility phases out as SAI increases. File the FAFSA as early as October 1 "
-                + "to secure priority consideration from your school's institutional aid office.";
-        }
-        if (q.contains("loan") || q.contains("borrow")) {
-            return "Federal Direct Loans for " + year + " are available regardless of income." + agiNote
-                + "Subsidized loans (need-based, no interest while enrolled) are preferable to Unsubsidized. "
-                + "Independent students can borrow up to $9,500/year in Direct Loans (Year 1). "
-                + "Always exhaust grants and scholarships before borrowing.";
-        }
-        if (q.contains("deadline") || q.contains("when")) {
-            return "Key FAFSA deadlines for " + name + ": The federal deadline is June 30 of the award year, "
-                + "but state and institutional deadlines are often much earlier — many fall between February and April. "
-                + "File as soon as the FAFSA opens (October 1) to maximize first-come, first-served aid.";
-        }
-        return "Great question about " + name + "'s " + year + " financial aid." + agiNote
-            + "I can help with FAFSA strategy, scholarship searches, professional judgment opportunities, "
-            + "and aid appeal letters. To get a specific answer, I need a Groq API key configured — "
-            + "please set GROQ_API_KEY in your environment. In the meantime, all other features "
-            + "(readiness summary, roadmap, PJ appeal, scholarships) are fully functional.";
     }
 
     private String buildInstitutionalChatStub(String institutionName,
@@ -1060,9 +991,12 @@ public class GroqService {
      * history: list of {role, content} maps from prior turns.
      * liveContent: Tavily search results injected before calling Groq.
      */
-    public String getAstraChatResponse(List<Map<String, Object>> history, String message, String liveContent) {
+    public void streamAstraChatResponse(List<Map<String, Object>> history, String message, String liveContent,
+                                         Consumer<String> onToken, Runnable onComplete, Consumer<Throwable> onError) {
         if (DEV_STUB_KEY.equals(apiKey)) {
-            return "I'm Astra! I can help with scholarships, financial aid award letters, and loan repayment. (Dev mode — Groq key not set)";
+            emitStub("I'm Astra! I can help with scholarships, financial aid award letters, and loan repayment. (Dev mode — Groq key not set)",
+                onToken, onComplete);
+            return;
         }
         StringBuilder historyText = new StringBuilder();
         if (history != null) {
@@ -1078,7 +1012,7 @@ public class GroqService {
             .replace("{{liveContent}}", live)
             .replace("{{conversationHistory}}", historyText.isEmpty() ? "(no prior messages)" : historyText.toString().trim())
             .replace("{{message}}", message);
-        return callGroq(prompt, 700, 0.35);
+        streamCompletion(prompt, 700, 0.35, onToken, onComplete, onError);
     }
 
     public String summarizeStateAssistance(String state, String liveContent) {

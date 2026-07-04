@@ -312,7 +312,19 @@
       "Bash(git remote *)",
       "mcp__visualize__read_me",
       "mcp__visualize__show_widget",
-      "Bash(grep -i \"price\\\\|99\\\\|\\\\$\")"
+      "Bash(grep -i \"price\\\\|99\\\\|\\\\$\")",
+      "Bash(./mvnw -q compile)",
+      "Bash(gh pr *)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('Title:', d['title']\\); print\\('State:', d['state']\\); print\\('URL:', d['html_url']\\); print\\('Body:', d['body'][:1500]\\)\")",
+      "Bash(mkdir -p \"/Users/ambreenzaver/IdeaProjects/callisto-iris/debezium-design-documents/DDD-53\")",
+      "Bash(mkdir -p \"/Users/ambreenzaver/IdeaProjects/callisto-iris/config\")",
+      "Bash(mvn -q -o compile)",
+      "Bash(ls \"/Users/ambreenzaver/.claude/projects/-Users-ambreenzaver-IdeaProjects-college-roi-tool/memory/\" | grep -i iris)",
+      "Bash(find /Users/ambreenzaver/IdeaProjects/callisto-iris -iname \"DDD-53.md\" 2>/dev/null; find /Users/ambreenzaver/IdeaProjects/college-roi-tool/debezium-design-documents -iname \"DDD-53.md\" 2>/dev/null)",
+      "Bash(echo \"EXIT_CODE=$?\")",
+      "Bash(lsof -nP -iTCP:8080 -sTCP:LISTEN)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(grep -n \"\\\\$\\('#debtResultsCard'\\).hide\\(\\);\" src/main/resources/static/app.html)"
     ]
   }
 }

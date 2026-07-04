@@ -1153,6 +1153,16 @@
             line-height: 1.7;
         }
         #privateHardshipChecklist strong { color: #166534; display: block; margin-bottom: 6px; }
+        #privateHardshipAlternatives {
+            margin-top: 14px;
+            padding: 14px 16px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+        #privateHardshipAlternatives strong { color: #1e40af; display: block; margin-bottom: 6px; }
         /* ── Private Lender Research Sections ── */
         .private-lender-section {
             border: 1px solid var(--border);
@@ -1440,7 +1450,7 @@
   <!-- Combined results -->
   <div id="scholResultsSection" style="display:none;">
     <div class="card" style="padding-bottom:8px;">
-      <h2>Scholarships <span class="groq-tag">Groq · llama-3.3-70b-versatile</span></h2>
+      <h2>Scholarships <span class="groq-tag">Groq · gpt-oss-120b</span></h2>
       <p class="debt-step-sub" id="scholResultsSubtitle"></p>
       <div id="scholAllResults"></div>
     </div>
@@ -1652,7 +1662,7 @@
     <div id="aiSection">
         <h2>
             AI Financial Summary
-            <span class="groq-tag">Groq · llama-3.3-70b-versatile</span>
+            <span class="groq-tag">Groq · gpt-oss-120b</span>
         </h2>
         <p class="desc">
             Enter your aid package above, select a college, then click below for personalized summary.
@@ -1818,6 +1828,28 @@
             </div>
         </div>
 
+        <div class="debt-form-row">
+            <div class="field-group">
+                <label for="dState">State of Residence <span style="font-weight:400;color:var(--muted)">(used to search for state-specific forgiveness/refinancing programs)</span></label>
+                <select id="dState" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
+                    <option value="">-- Select --</option>
+                    <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option>
+                    <option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option>
+                    <option>Florida</option><option>Georgia</option><option>Hawaii</option><option>Idaho</option>
+                    <option>Illinois</option><option>Indiana</option><option>Iowa</option><option>Kansas</option>
+                    <option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option>
+                    <option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option>
+                    <option>Missouri</option><option>Montana</option><option>Nebraska</option><option>Nevada</option>
+                    <option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option><option>New York</option>
+                    <option>North Carolina</option><option>North Dakota</option><option>Ohio</option><option>Oklahoma</option>
+                    <option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option>
+                    <option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option>
+                    <option>Vermont</option><option>Virginia</option><option>Washington</option><option>West Virginia</option>
+                    <option>Wisconsin</option><option>Wyoming</option>
+                </select>
+            </div>
+        </div>
+
         <button type="button" class="btn-primary" onclick="analyzeDebt()" id="debtAnalyzeBtn" style="margin-top:8px;">
             Analyze My Loans
         </button>
@@ -1831,7 +1863,7 @@
 
         <!-- AI Assist -->
         <div class="debt-step">
-            <p class="debt-section-title">AI Assist <span class="groq-tag">Groq · llama-3.3-70b-versatile</span></p>
+            <p class="debt-section-title">AI Assist <span class="groq-tag">Groq · gpt-oss-120b</span></p>
             <div id="debtAiAdvice" class="debt-ai-box" aria-live="polite"></div>
         </div>
 
@@ -1872,6 +1904,12 @@
         <div id="creditOptionsContent">
             <p style="font-size:13px;color:var(--muted);font-style:italic;">Complete your loan analysis above to see 0% balance transfer cards and private loan refinancing options matched to your credit score.</p>
         </div>
+    </div>
+
+    <!-- State-Specific Assistance — populated when a state of residence is selected above -->
+    <div class="debt-step" id="stateAssistanceCard" style="display:none;">
+        <p class="debt-section-title">State-Specific Assistance</p>
+        <div id="stateAssistanceContent" aria-live="polite"></div>
     </div>
 
     <!-- Step 3: Hardship Letter Generator -->
@@ -1923,7 +1961,7 @@
 
     <!-- Private Lender Hardship Letter Generator -->
     <div class="debt-step" id="privateHardshipCard" style="display:none;">
-        <p class="debt-section-title">Private Lender Hardship Letter <span class="groq-tag">Groq · llama-3.3-70b-versatile</span></p>
+        <p class="debt-section-title">Private Lender Hardship Letter <span class="groq-tag">Groq · gpt-oss-120b</span></p>
         <h2>Request Forbearance from Your Private Lender</h2>
         <p class="debt-step-sub">Private lenders set their own forbearance and hardship policies — not federal regulations. Astra generates a letter tailored to your lender's specific programs based on live research above.</p>
 
@@ -1936,6 +1974,25 @@
                 <option value="medical">Medical Emergency or Illness</option>
                 <option value="natural disaster">Natural Disaster or Emergency</option>
                 <option value="financial hardship">General Financial Hardship</option>
+            </select>
+        </div>
+        <div class="field-group">
+            <label for="dPrivateState">Your State of Residence <span style="font-weight:400;color:var(--muted)">(used to surface state credit union/bank refinancing options as a backup if this lender denies your request)</span></label>
+            <select id="dPrivateState" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
+                <option value="">-- Select --</option>
+                <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option>
+                <option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option>
+                <option>Florida</option><option>Georgia</option><option>Hawaii</option><option>Idaho</option>
+                <option>Illinois</option><option>Indiana</option><option>Iowa</option><option>Kansas</option>
+                <option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option>
+                <option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option>
+                <option>Missouri</option><option>Montana</option><option>Nebraska</option><option>Nevada</option>
+                <option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option><option>New York</option>
+                <option>North Carolina</option><option>North Dakota</option><option>Ohio</option><option>Oklahoma</option>
+                <option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option>
+                <option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option>
+                <option>Vermont</option><option>Virginia</option><option>Washington</option><option>West Virginia</option>
+                <option>Wisconsin</option><option>Wyoming</option>
             </select>
         </div>
         <div class="field-group" style="margin-bottom:0;">
@@ -1957,6 +2014,7 @@
                 Copy Letter
             </button>
             <div id="privateHardshipChecklist"></div>
+            <div id="privateHardshipAlternatives" style="display:none;"></div>
         </div>
     </div>
 
@@ -2024,10 +2082,6 @@
       <!-- Planning context -->
       <div class="fafsa-section-hdr">Planning Context</div>
       <div class="fafsa-grid">
-        <div class="fafsa-field">
-          <label>Academic Year</label>
-          <input type="number" name="planningYear" placeholder="e.g. 2026" min="2024" max="2035">
-        </div>
         <div class="fafsa-field">
           <label>Dependency Status</label>
           <select name="dependencyStatus">
@@ -3104,9 +3158,17 @@
                 success: function(resp) {
                     $("#aiSpinner").hide();
                     $("#aiSection").attr("aria-busy", "false");
-                    if (resp.data) {
+                    // resp.data is the normal path. If the backend's JSON parse failed (e.g. a
+                    // truncated model response), resp.advice may still be raw JSON text rather
+                    // than free-form prose — try to recover the structured render before falling
+                    // back to plain-text formatting.
+                    let structured = resp.data || null;
+                    if (!structured && typeof resp.advice === 'string' && resp.advice.trim().startsWith('{')) {
+                        try { structured = JSON.parse(resp.advice); } catch (e) { structured = null; }
+                    }
+                    if (structured) {
                         const profile = buildProfileData();
-                        $("#aiAdviceBox").html(renderSummaryReport(resp.data, profile)).show();
+                        $("#aiAdviceBox").html(renderSummaryReport(structured, profile)).show();
                     } else {
                         $("#aiAdviceBox").html(formatAdvice(resp.advice || "No advice returned.")).show();
                     }
@@ -4192,17 +4254,66 @@
         win.focus();
     }
 
+    // ── SSE streaming helper (shared by chat + hardship letters) ────────────
+    // Parses a text/event-stream response per the SSE spec: events are separated by a
+    // blank line, and a single event's "data:" lines are joined with "\n" to reconstitute
+    // multi-line payloads (e.g. paragraph breaks inside a streamed letter).
+    function streamSse(url, payload, onToken, onDone, onError) {
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        }).then(function(response) {
+            if (!response.ok) {
+                return response.json().catch(function() { return {}; }).then(function(errBody) {
+                    throw new Error(errBody.error || ('Request failed with status ' + response.status));
+                });
+            }
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            function pump() {
+                return reader.read().then(function(result) {
+                    if (result.done) { onDone(); return; }
+                    buffer += decoder.decode(result.value, { stream: true });
+                    const events = buffer.split('\n\n');
+                    buffer = events.pop(); // last chunk may be incomplete; keep it for next read
+                    events.forEach(function(evt) {
+                        const dataLines = evt.split('\n').filter(function(l) { return l.startsWith('data:'); });
+                        if (!dataLines.length) return;
+                        // Spring's SseEmitter writes raw content immediately after "data:" with no
+                        // separator space, and model tokens routinely carry their own leading space
+                        // (e.g. " world") — stripping a leading space here would eat real content.
+                        const data = dataLines.map(function(l) { return l.slice(5); }).join('\n');
+                        onToken(data);
+                    });
+                    return pump();
+                });
+            }
+            return pump();
+        }).catch(function(err) {
+            onError(err);
+        });
+    }
+
     // ── ASK ASTRA (CHATBOT) ─────────────────────────────────────────────────
     function appendChatBubble(role, text) {
+        createChatBubble(role).text(text);
+    }
+
+    function createChatBubble(role) {
         const align = role === 'user' ? 'right' : 'left';
         const bg = role === 'user' ? 'var(--primary)' : '#eef1f5';
         const color = role === 'user' ? '#fff' : 'var(--text)';
-        $('#chatMessages').append(
+        const $wrap = $(
             `<div style="text-align:${align};margin-bottom:10px;">
-                <span style="display:inline-block;max-width:80%;padding:8px 12px;border-radius:10px;background:${bg};color:${color};">${text}</span>
+                <span style="display:inline-block;max-width:80%;padding:8px 12px;border-radius:10px;background:${bg};color:${color};white-space:pre-wrap;overflow-wrap:break-word;"></span>
             </div>`
         );
+        $('#chatMessages').append($wrap);
         $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+        return $wrap.find('span');
     }
 
     function sendChatMessage() {
@@ -4219,17 +4330,20 @@
         $('#chatSpinner').show();
         $('#chatInput').prop('disabled', true);
 
-        $.ajax({
-            url: '/api/chat/send',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ message, history: chatHistory }),
-            success: function(data) {
+        const $assistantBubble = createChatBubble('assistant');
+        let answer = '';
+
+        streamSse('/api/chat/send', { message, history: chatHistory },
+            function onToken(token) {
+                answer += token;
+                $assistantBubble.text(answer);
+                $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+            },
+            function onDone() {
                 $('#chatSpinner').hide();
                 $('#chatInput').prop('disabled', false);
                 chatHistory.push({ role: 'user', content: message });
-                chatHistory.push({ role: 'assistant', content: data.answer });
-                appendChatBubble('assistant', data.answer);
+                chatHistory.push({ role: 'assistant', content: answer });
                 // Increment server-side count then gate on next attempt
                 $.post('/api/auth/chat/increment', function(res) {
                     chatCount = res.chatCount || (chatCount + 1);
@@ -4238,15 +4352,11 @@
                     }
                 });
             },
-            error: function(xhr) {
+            function onError(err) {
                 $('#chatSpinner').hide();
                 $('#chatInput').prop('disabled', false);
-                const err = xhr.responseJSON && xhr.responseJSON.error
-                    ? xhr.responseJSON.error
-                    : 'Could not get a response. Please try again.';
-                appendChatBubble('assistant', err);
-            }
-        });
+                $assistantBubble.text(err.message || 'Could not get a response. Please try again.');
+            });
     }
 
     function analyzeDebt() {
@@ -4277,6 +4387,7 @@
         $('#debtSpinner').show();
         $('#debtAnalyzeBtn').prop('disabled', true);
         $('#debtResultsCard').hide();
+        $('#stateAssistanceCard').hide();
 
         const payload = {
             federalLoanBalance: federalBalance,
@@ -4310,6 +4421,11 @@
                 // Private lender research — runs only when a private balance + lender were provided
                 if (privateBalance > 0 && privateLender) {
                     fetchPrivateLenderInfo(privateLender);
+                }
+                // State-specific assistance — live search, isolated, only when a state was selected
+                const state = $('#dState').val();
+                if (state) {
+                    fetchStateAssistance(state);
                 }
                 // Increment counter; show paywall on next attempt if limit reached
                 $.post('/api/auth/debt-search/increment', function(res) {
@@ -4388,7 +4504,10 @@
 
         $('#hardshipSpinner').show();
         $('#hardshipBtn').prop('disabled', true);
-        $('#hardshipLetterWrap').hide();
+        $('#hardshipLetterOutput').text('');
+        $('#hardshipChecklist').html('');
+        $('#hardshipLetterWrap').show();
+        document.getElementById('hardshipLetterWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
         const payload = {
             federalLoanBalance: parseFloat($('#dFederalBalance').val()) || 0,
@@ -4400,27 +4519,27 @@
             hardshipDetails:    $('#dHardshipDetails').val().trim()
         };
 
-        $.ajax({
-            url: '/api/debt/hardship-letter',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(payload),
-            success: function(resp) {
-                $('#hardshipLetterOutput').text(resp.letter || '');
-                if (resp.checklist) {
-                    $('#hardshipChecklist').html('<strong>Supporting Documents to Attach:</strong>' + resp.checklist);
+        let fullText = '';
+        const MARKER = '---CHECKLIST---';
+        streamSse('/api/debt/hardship-letter', payload,
+            function onToken(token) {
+                fullText += token;
+                $('#hardshipLetterOutput').text(fullText.split(MARKER)[0].trim());
+            },
+            function onDone() {
+                const splitIdx = fullText.indexOf(MARKER);
+                if (splitIdx >= 0) {
+                    $('#hardshipLetterOutput').text(fullText.substring(0, splitIdx).trim());
+                    $('#hardshipChecklist').html('<strong>Supporting Documents to Attach:</strong>' + fullText.substring(splitIdx + MARKER.length).trim());
                 }
-                $('#hardshipLetterWrap').show();
                 $('#hardshipSpinner').hide();
                 $('#hardshipBtn').prop('disabled', false);
-                document.getElementById('hardshipLetterWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
             },
-            error: function() {
+            function onError() {
                 $('#hardshipSpinner').hide();
                 $('#hardshipBtn').prop('disabled', false);
                 alert('Could not generate the hardship letter. Please try again.');
-            }
-        });
+            });
     }
 
     function togglePrivateLenderField() {
@@ -4431,6 +4550,27 @@
             $('#privateLenderRow').hide();
             $('#dPrivateLender').val('');
         }
+    }
+
+    function fetchStateAssistance(state) {
+        $('#stateAssistanceCard').show();
+        $('#stateAssistanceContent').html('<p style="font-size:13px;color:var(--muted);font-style:italic;">Searching ' + escHtml(state) + ' loan forgiveness, refinancing, and advocacy programs…</p>');
+
+        $.ajax({
+            url: '/api/debt/state-assistance',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ state: state }),
+            success: function(resp) {
+                const summary = resp.summary || 'No state-specific information was found.';
+                // The model formats section headers as **bold** markdown — render them as <strong>.
+                const html = escHtml(summary).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+                $('#stateAssistanceContent').html('<div style="white-space:pre-wrap;line-height:1.65;font-size:13px;">' + html + '</div>');
+            },
+            error: function() {
+                $('#stateAssistanceContent').html('<p style="font-size:13px;color:#b33;">Could not fetch state-specific assistance. Please try again.</p>');
+            }
+        });
     }
 
     function fetchPrivateLenderInfo(lender) {
@@ -4503,7 +4643,11 @@
 
         $('#privateHardshipSpinner').show();
         $('#privateHardshipBtn').prop('disabled', true);
-        $('#privateHardshipLetterWrap').hide();
+        $('#privateHardshipLetterOutput').text('');
+        $('#privateHardshipChecklist').html('');
+        $('#privateHardshipAlternatives').html('').hide();
+        $('#privateHardshipLetterWrap').show();
+        document.getElementById('privateHardshipLetterWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
         const payload = {
             privateLender:      lender,
@@ -4512,30 +4656,40 @@
             householdSize:      parseInt($('#dHousehold').val()) || 1,
             employmentStatus:   $('#dEmploymentStatus').val(),
             hardshipType:       hardshipType,
-            hardshipDetails:    $('#dPrivateHardshipDetails').val().trim()
+            hardshipDetails:    $('#dPrivateHardshipDetails').val().trim(),
+            state:              $('#dPrivateState').val()
         };
 
-        $.ajax({
-            url: '/api/debt/private-hardship-letter',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(payload),
-            success: function(resp) {
-                $('#privateHardshipLetterOutput').text(resp.letter || '');
-                if (resp.checklist) {
-                    $('#privateHardshipChecklist').html('<strong>Supporting Documents to Attach:</strong>' + resp.checklist);
+        let fullText = '';
+        const MARKER = '---CHECKLIST---';
+        const ALT_MARKER = '---ALTERNATIVE OPTIONS---';
+        streamSse('/api/debt/private-hardship-letter', payload,
+            function onToken(token) {
+                fullText += token;
+                $('#privateHardshipLetterOutput').text(fullText.split(MARKER)[0].trim());
+            },
+            function onDone() {
+                const splitIdx = fullText.indexOf(MARKER);
+                if (splitIdx >= 0) {
+                    $('#privateHardshipLetterOutput').text(fullText.substring(0, splitIdx).trim());
+                    let rest = fullText.substring(splitIdx + MARKER.length).trim();
+                    const altIdx = rest.indexOf(ALT_MARKER);
+                    if (altIdx >= 0) {
+                        $('#privateHardshipAlternatives')
+                            .html('<strong>Alternative Options If This Lender Denies Your Request:</strong>' + rest.substring(altIdx + ALT_MARKER.length).trim())
+                            .show();
+                        rest = rest.substring(0, altIdx).trim();
+                    }
+                    $('#privateHardshipChecklist').html('<strong>Supporting Documents to Attach:</strong>' + rest);
                 }
-                $('#privateHardshipLetterWrap').show();
                 $('#privateHardshipSpinner').hide();
                 $('#privateHardshipBtn').prop('disabled', false);
-                document.getElementById('privateHardshipLetterWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
             },
-            error: function() {
+            function onError() {
                 $('#privateHardshipSpinner').hide();
                 $('#privateHardshipBtn').prop('disabled', false);
                 alert('Could not generate the hardship letter. Please try again.');
-            }
-        });
+            });
     }
 
     function copyPrivateHardshipLetter() {
@@ -4831,11 +4985,7 @@
             btn.disabled = false;
             btn.textContent = 'Get Asset Repositioning Analysis';
             document.getElementById('fafsa-analysis-wrap').style.display = 'block';
-            if (data.assetRepositioning) {
-                document.getElementById('fafsa-analysis-text').textContent = data.assetRepositioning;
-            } else {
-                document.getElementById('fafsa-analysis-text').textContent = 'Analysis could not be generated — the AI service may not be configured. Your data has been saved.';
-            }
+            document.getElementById('fafsa-analysis-text').innerHTML = buildFafsaAnalysisHtml(data.analysis);
             fafsaLoadHistory();
             form.reset();
         })
@@ -4844,6 +4994,40 @@
             btn.disabled = false;
             btn.textContent = 'Get Asset Repositioning Analysis';
         });
+    }
+
+    /** Renders the structured { discrepancy, line_items, opportunities, source, source_url } analysis shape. */
+    function buildFafsaAnalysisHtml(analysis) {
+        if (!analysis) {
+            return '<p style="font-size:13px;color:var(--muted);">Analysis could not be generated — the AI service may not be configured. Your data has been saved.</p>';
+        }
+        let html = '';
+        if (analysis.discrepancy) {
+            html += `<div style="background:#fff7ed;border:1px solid #f97316;border-radius:6px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#7c2d12;">
+                <strong>⚠ Tax year discrepancy:</strong> ${escHtml(analysis.discrepancy.message || '')}
+            </div>`;
+        }
+        if (Array.isArray(analysis.line_items) && analysis.line_items.length) {
+            html += '<div class="fafsa-section-hdr" style="margin-top:0;">FAFSA Line Items</div><ul style="padding-left:20px;line-height:1.7;font-size:13px;">';
+            analysis.line_items.forEach(function(item) {
+                html += `<li><strong>${escHtml(item.fafsa_field || '')}:</strong> ${escHtml(item.reported_value || '')} — ${escHtml(item.guidance || '')}</li>`;
+            });
+            html += '</ul>';
+        }
+        if (Array.isArray(analysis.opportunities) && analysis.opportunities.length) {
+            html += '<div class="fafsa-section-hdr">Repositioning Opportunities</div><ul style="padding-left:20px;line-height:1.7;font-size:13px;">';
+            analysis.opportunities.forEach(function(opp) {
+                html += `<li><strong>${escHtml(opp.title || '')}</strong> (${escHtml(opp.fafsa_field || '')})<br>${escHtml(opp.rationale || '')}</li>`;
+            });
+            html += '</ul>';
+        }
+        if (analysis.source) {
+            const sourceLabel = analysis.source_url
+                ? `<a href="${escHtml(analysis.source_url)}" target="_blank" rel="noopener">${escHtml(analysis.source)}</a>`
+                : escHtml(analysis.source);
+            html += `<p style="font-size:11px;color:var(--muted);margin-top:16px;">Source: ${sourceLabel}</p>`;
+        }
+        return html || '<p style="font-size:13px;color:var(--muted);">No analysis details returned.</p>';
     }
 
     function fafsaLoadHistory() {
@@ -4856,27 +5040,23 @@
                 return;
             }
             let html = '<table class="fafsa-history-table"><thead><tr>'
-                + '<th>Label</th><th>Year</th><th>Added By</th><th>Est. SAI</th><th>Date</th><th></th>'
+                + '<th>Label</th><th>Added By</th><th>Date</th><th></th>'
                 + '</tr></thead><tbody>';
             rows.forEach(r => {
-                const label   = r.label   || '—';
-                const year    = r.planningYear || '—';
-                const by      = r.addedBy || '—';
-                const sai     = r.estimatedSai != null ? '$' + Number(r.estimatedSai).toLocaleString() : '—';
-                const date    = r.createdAt ? r.createdAt.substring(0,10) : '—';
+                const label = r.label   || '—';
+                const by    = r.addedBy || '—';
+                const date  = r.createdAt ? r.createdAt.substring(0,10) : '—';
                 html += `<tr>
                     <td style="font-weight:600;">${escHtml(label)}</td>
-                    <td>${escHtml(String(year))}</td>
                     <td>${escHtml(by)}</td>
-                    <td>${sai}</td>
                     <td style="color:var(--muted);font-size:12px;">${date}</td>
                     <td><button class="fafsa-del-btn" onclick="fafsaDelete(${r.id}, this)">Delete</button></td>
                 </tr>`;
-                if (r.assetRepositioning) {
-                    html += `<tr><td colspan="6" style="padding:0 10px 14px;">
+                if (r.analysis) {
+                    html += `<tr><td colspan="4" style="padding:0 10px 14px;">
                         <details style="font-size:12px;">
                         <summary style="cursor:pointer;color:var(--primary-dk);font-weight:600;">View analysis</summary>
-                        <div style="margin-top:8px;white-space:pre-wrap;line-height:1.65;color:#444;">${escHtml(r.assetRepositioning)}</div>
+                        <div style="margin-top:8px;">${buildFafsaAnalysisHtml(r.analysis)}</div>
                         </details></td></tr>`;
                 }
             });

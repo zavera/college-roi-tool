@@ -1,8 +1,12 @@
 package com.example.collegeroitool.config;
 
 import com.example.collegeroitool.model.AppUser;
+import com.example.collegeroitool.service.ExemptionService;
+import com.example.collegeroitool.service.SearchUsageService;
+import com.example.collegeroitool.service.SubscriptionService;
 import com.example.collegeroitool.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,13 +31,36 @@ public class SecurityConfig {
 
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final SubscriptionService subscriptionService;
+    private final SearchUsageService searchUsageService;
+    private final ExemptionService exemptionService;
 
     @Value("${premium.dev.bypass:false}")
     private boolean devBypass;
 
-    public SecurityConfig(UserService userService, PasswordEncoder passwordEncoder) {
+    public SecurityConfig(UserService userService, PasswordEncoder passwordEncoder,
+                           SubscriptionService subscriptionService, SearchUsageService searchUsageService,
+                           ExemptionService exemptionService) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
+        this.subscriptionService = subscriptionService;
+        this.searchUsageService = searchUsageService;
+        this.exemptionService = exemptionService;
+    }
+
+    /**
+     * Ensures the subscription/search-usage/exemption rows exist and caches them on the session.
+     * Returns whether the user has access (paid subscription OR a manually granted exemption).
+     */
+    private boolean bootstrapSessionState(AppUser user, HttpSession session) {
+        var subscription = subscriptionService.getOrCreateForUser(user);
+        var exemption = exemptionService.getOrCreateForUser(user);
+        if (session != null) {
+            session.setAttribute("subscription", subscription);
+            session.setAttribute("searchUsage", searchUsageService.getOrCreateForUser(user));
+            session.setAttribute("exemption", exemption);
+        }
+        return subscription.isActive() || exemption.isActive();
     }
 
     @Bean
@@ -135,7 +162,7 @@ public class SecurityConfig {
         return (request, response, authentication) -> {
             String email = authentication.getName();
             AppUser user = userService.findByEmail(email).orElse(null);
-            boolean subscribed = user != null && user.isSubscriptionActive();
+            boolean subscribed = user != null && bootstrapSessionState(user, request.getSession(true));
             String name = user != null && user.getName() != null ? user.getName() : email;
             response.setContentType("application/json");
             response.getWriter().write(String.format(
@@ -158,7 +185,8 @@ public class SecurityConfig {
             log.info("[OAuth2] SUCCESS — email={} sessionId={}",
                     email, request.getSession(false) != null ? request.getSession(false).getId() : "NO SESSION");
             try {
-                userService.findOrCreateGoogleUser(oAuth2User);
+                AppUser user = userService.findOrCreateGoogleUser(oAuth2User);
+                bootstrapSessionState(user, request.getSession(true));
                 log.info("[OAuth2] user persisted email={}", email);
             } catch (Exception e) {
                 log.error("[OAuth2] user persist FAILED email={} error={}", email, e.getMessage(), e);

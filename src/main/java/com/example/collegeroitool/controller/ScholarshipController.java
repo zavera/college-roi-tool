@@ -1,14 +1,10 @@
 package com.example.collegeroitool.controller;
 
-import com.example.collegeroitool.service.ScholarshipProfileService;
+import com.example.collegeroitool.service.GroqService;
 import com.example.collegeroitool.service.ScholarshipService;
-import com.example.collegeroitool.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -23,16 +19,10 @@ public class ScholarshipController {
     private boolean devBypass;
 
     private final ScholarshipService scholarshipService;
-    private final ScholarshipProfileService scholarshipProfileService;
-    private final UserService userService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ScholarshipController(ScholarshipService scholarshipService,
-                                  ScholarshipProfileService scholarshipProfileService,
-                                  UserService userService) {
+    public ScholarshipController(ScholarshipService scholarshipService) {
         this.scholarshipService = scholarshipService;
-        this.scholarshipProfileService = scholarshipProfileService;
-        this.userService = userService;
     }
 
     @PostMapping("/search")
@@ -45,12 +35,8 @@ public class ScholarshipController {
             @SuppressWarnings("unchecked")
             List<String> schools = (List<String>) body.getOrDefault("targetSchools", List.of());
 
-            // Resolve userId from server-side session — never from client body
-            Long userId = resolveUserId();
-            if (userId != null) {
-                try { scholarshipProfileService.save(userId, demographics, comments, schools); }
-                catch (Exception ignored) {}
-            }
+            // TODO(follow-up): persist this search into the new `scholarship` input-log table
+            // (see schema redesign plan) — deferred pending the tab increment/model_response wiring.
 
             String json = scholarshipService.search(demographics, comments, schools);
             return ResponseEntity.ok(Map.of("scholarships", parseOrRaw(json)));
@@ -85,21 +71,8 @@ public class ScholarshipController {
         }
     }
 
-    private Long resolveUserId() {
-        try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth == null) return null;
-            String email = (auth.getPrincipal() instanceof OAuth2User oAuth2User)
-                ? (String) oAuth2User.getAttributes().get("email")
-                : auth.getName();
-            return userService.findByEmail(email).map(u -> u.getId()).orElse(null);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     private Object parseOrRaw(String json) {
-        try { return objectMapper.readValue(json, Object.class); }
+        try { return objectMapper.readValue(GroqService.stripMarkdownFences(json), Object.class); }
         catch (Exception e) { return json; }
     }
 }

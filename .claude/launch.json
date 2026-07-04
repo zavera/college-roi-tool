@@ -1,0 +1,26 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "college-roi-tool-verify",
+      "runtimeExecutable": "mvn",
+      "runtimeArgs": [
+        "spring-boot:run",
+        "-o",
+        "-Dspring-boot.run.profiles=local",
+        "-Dspring-boot.run.arguments=--spring.datasource.url=jdbc:h2:mem:verifydb;DB_CLOSE_DELAY=-1 --server.port=8091 --premium.dev.bypass=false"
+      ],
+      "port": 8091
+    },
+    {
+      "name": "college-roi-tool-local",
+      "runtimeExecutable": "mvn",
+      "runtimeArgs": [
+        "spring-boot:run",
+        "-o",
+        "-Dspring-boot.run.profiles=local"
+      ],
+      "port": 8080
+    }
+  ]
+}

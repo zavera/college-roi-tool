@@ -21,13 +21,19 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ResendEmailService emailService;
+    private final SubscriptionService subscriptionService;
+    private final SearchUsageService searchUsageService;
 
     public UserService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
-                       ResendEmailService emailService) {
+                       ResendEmailService emailService,
+                       SubscriptionService subscriptionService,
+                       SearchUsageService searchUsageService) {
         this.userRepository  = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService    = emailService;
+        this.subscriptionService = subscriptionService;
+        this.searchUsageService  = searchUsageService;
     }
 
     @Override
@@ -96,70 +102,32 @@ public class UserService implements UserDetailsService {
     }
 
     public AppUser findOrCreateDevUser() {
-        return userRepository.findByEmail("dev@local").orElseGet(() -> {
+        AppUser user = userRepository.findByEmail("dev@local").orElseGet(() -> {
             AppUser nu = new AppUser();
             nu.setEmail("dev@local");
             nu.setName("Dev User");
             nu.setProvider("local");
-            nu.setSubscriptionActive(true);
             return userRepository.save(nu);
         });
+        subscriptionService.setActive(user, true);
+        searchUsageService.getOrCreateForUser(user);
+        return user;
     }
 
     public boolean deactivateSubscription(String email) {
-        return userRepository.findByEmail(email.toLowerCase()).map(u -> {
-            u.setSubscriptionActive(false);
-            userRepository.save(u);
-            return true;
-        }).orElse(false);
+        return userRepository.findByEmail(email.toLowerCase())
+            .map(u -> { subscriptionService.setActive(u, false); return true; })
+            .orElse(false);
     }
 
     public boolean activateSubscription(String email) {
-        return userRepository.findByEmail(email.toLowerCase()).map(u -> {
-            u.setSubscriptionActive(true);
-            userRepository.save(u);
-            return true;
-        }).orElse(false);
-    }
-
-    public int incrementSearchCount(String email) {
-        return userRepository.findByEmail(email.toLowerCase()).map(u -> {
-            u.setSearchCount(u.getSearchCount() + 1);
-            userRepository.save(u);
-            return u.getSearchCount();
-        }).orElse(-1);
-    }
-
-    public int incrementDebtSearchCount(String email) {
-        return userRepository.findByEmail(email.toLowerCase()).map(u -> {
-            u.setDebtSearchCount(u.getDebtSearchCount() + 1);
-            userRepository.save(u);
-            return u.getDebtSearchCount();
-        }).orElse(-1);
-    }
-
-    public int incrementScholarshipSearchCount(String email) {
-        return userRepository.findByEmail(email.toLowerCase()).map(u -> {
-            u.setScholarshipSearchCount(u.getScholarshipSearchCount() + 1);
-            userRepository.save(u);
-            return u.getScholarshipSearchCount();
-        }).orElse(-1);
-    }
-
-    public int incrementFafsaUsageCount(String email) {
-        return userRepository.findByEmail(email.toLowerCase()).map(u -> {
-            u.setFafsaUsageCount(u.getFafsaUsageCount() + 1);
-            userRepository.save(u);
-            return u.getFafsaUsageCount();
-        }).orElse(-1);
+        return userRepository.findByEmail(email.toLowerCase())
+            .map(u -> { subscriptionService.setActive(u, true); return true; })
+            .orElse(false);
     }
 
     public Optional<Boolean> toggleSubscription(String email) {
-        return userRepository.findByEmail(email.toLowerCase()).map(u -> {
-            boolean newState = !u.isSubscriptionActive();
-            u.setSubscriptionActive(newState);
-            userRepository.save(u);
-            return newState;
-        });
+        return userRepository.findByEmail(email.toLowerCase())
+            .map(subscriptionService::toggleActive);
     }
 }
