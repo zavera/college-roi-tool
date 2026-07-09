@@ -40,40 +40,27 @@ public class GroqService {
     // =========================================================================
     private static final String PROMPT_TEMPLATE =
 "You are producing an AI Financial Summary for a student.\n" +
-"Output ONLY valid HTML — no markdown, no plain text, no code fences.\n" +
-"Use inline CSS only. Do not use <html>, <head>, <body>, or <style> tags.\n" +
+"Output ONLY valid HTML (inline CSS; no markdown, code fences, or <html>/<head>/<body>/<style> tags).\n" +
 "\n" +
-"STUDENT DATA (use only these pre-calculated numbers — do not recalculate):\n" +
-"College: %s\n" +
-"Major: %s\n" +
-"Annual Net Price: $%,.0f\n" +
-"Annual Federal Loans Offered: $%,.0f\n" +
-"Annual Unmet Need (after federal loans): $%,.0f\n" +
-"Annual Free Aid (Pell + grants + scholarships): $%,.0f\n" +
-"Median Earnings - This Major (6 yrs): %s\n" +
-"Median Earnings - College-Wide (6 yrs): %s\n" +
-"Student profile: %s\n" +
+"STUDENT DATA (fixed — do not recalculate):\n" +
+"College: %s | Major: %s\n" +
+"Net Price/yr: $%,.0f | Fed Loans/yr: $%,.0f | Unmet Need/yr: $%,.0f | Free Aid/yr: $%,.0f\n" +
+"Earnings (6yr) — This Major: %s | College-Wide: %s\n" +
+"Profile: %s\n" +
 "\n" +
-"REPAYMENT SCENARIOS (pre-calculated -- use these exact figures):\n" +
-"Scenario 1 (Federal Loans Only): 4-yr=$%,d, monthly=~$%,d, annual=~$%,d, ~%s of 6-yr earnings\n" +
-"Scenario 2 (Maximum Borrowing):  4-yr=$%,d, monthly=~$%,d, annual=~$%,d, ~%s of 6-yr earnings\n" +
+"REPAYMENT SCENARIOS (fixed — use these exact figures):\n" +
+"S1 Federal-Only: 4yr=$%,d mo=~$%,d yr=~$%,d pct=~%s of 6-yr earnings\n" +
+"S2 Max-Borrow:   4yr=$%,d mo=~$%,d yr=~$%,d pct=~%s of 6-yr earnings\n" +
 "\n" +
-"===============================================\n" +
-"OUTPUT — produce exactly this HTML document structure:\n" +
-"===============================================\n" +
+"OUTPUT — produce exactly this HTML structure:\n" +
 "\n" +
-"Wrap everything in:\n" +
 "<div style=\"font-family:'Segoe UI',Arial,sans-serif;max-width:680px;color:#1a1a1a;line-height:1.6;font-size:14px;\">\n" +
 "\n" +
-"---\n" +
-"SECTION 1: FINANCIAL SUMMARY\n" +
-"---\n" +
-"Section heading style (reuse for ALL headings):\n" +
+"## SECTION 1: FINANCIAL SUMMARY (reuse this <h3> style for ALL headings below)\n" +
 "<h3 style=\"color:#1e5c1e;font-size:15px;font-weight:700;margin:20px 0 8px;\">Financial Summary</h3>\n" +
 "\n" +
-"Intro line: \"Here is a snapshot of your financial picture for this school based on the information available.\"\n" +
+"Intro: \"Here is a snapshot of your financial picture for this school based on the information available.\"\n" +
 "\n" +
-"Render a 2-column bordered table:\n" +
 "<table style=\"width:100%%;border-collapse:collapse;margin-bottom:10px;\">\n" +
 "  <tr>\n" +
 "    <td style=\"padding:8px 12px;font-weight:700;background:#f5f5f5;border:1px solid #ddd;width:65%%;\">Net Price</td>\n" +
@@ -88,17 +75,10 @@ public class GroqService {
 "    <td style=\"padding:8px 12px;text-align:right;border:1px solid #ddd;\">$[unmet need value]</td>\n" +
 "  </tr>\n" +
 "</table>\n" +
-"\n" +
-"Italic note below table:\n" +
 "<p style=\"font-size:12px;color:#555;font-style:italic;margin:6px 0 16px;\">Note: Unmet need represents the remaining gap after federal loans are applied. This gap may be covered through additional borrowing, outside scholarships, family contributions, or employment. This tool does not predict how that gap will be filled.</p>\n" +
 "<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
 "\n" +
-"---\n" +
-"SECTION 2: EARNINGS DATA\n" +
-"---\n" +
-"Heading: \"For Context: Earnings Data\"\n" +
-"\n" +
-"Render a 2-column bordered table:\n" +
+"## SECTION 2: EARNINGS DATA — Heading: \"For Context: Earnings Data\"\n" +
 "<table style=\"width:100%%;border-collapse:collapse;margin-bottom:10px;\">\n" +
 "  <tr>\n" +
 "    <td style=\"padding:8px 12px;font-weight:700;background:#f5f5f5;border:1px solid #ddd;width:65%%;\">Median Earnings - This Major (6 yrs)</td>\n" +
@@ -109,18 +89,11 @@ public class GroqService {
 "    <td style=\"padding:8px 12px;text-align:right;border:1px solid #ddd;\">[college-wide earnings value]</td>\n" +
 "  </tr>\n" +
 "</table>\n" +
-"CRITICAL: Use ONLY the exact earnings figures from the student data above — do not invent or change these numbers.\n" +
-"\n" +
-"Italic note:\n" +
+"Use ONLY these exact earnings figures — do not invent or change them.\n" +
 "<p style=\"font-size:12px;color:#555;font-style:italic;margin:6px 0 16px;\">Note: These figures reflect median earnings approximately 2 years after completing a 4-year degree. They represent median outcomes and do not guarantee individual results. For majors where graduate school is common, early career earnings may be lower.</p>\n" +
 "<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
 "\n" +
-"---\n" +
-"SECTION 3: REPAYMENT SCENARIOS\n" +
-"---\n" +
-"Heading: \"For Context: Estimated Repayment Scenarios (10-Year Standard Plan)\"\n" +
-"\n" +
-"Render this 3-column table:\n" +
+"## SECTION 3: REPAYMENT SCENARIOS — Heading: \"For Context: Estimated Repayment Scenarios (10-Year Standard Plan)\"\n" +
 "<table style=\"width:100%%;border-collapse:collapse;margin-bottom:10px;\">\n" +
 "  <thead>\n" +
 "    <tr style=\"background:#1e5c1e;color:white;\">\n" +
@@ -152,34 +125,18 @@ public class GroqService {
 "    </tr>\n" +
 "  </tbody>\n" +
 "</table>\n" +
-"\n" +
-"For the 'As %% of 6-Year Median Earnings' row:\n" +
-"- If pct <= 10%%: use color #1e5c1e (green) and one square &#9632;\n" +
-"- If pct > 10%%: use color #c53030 (red) and two squares &#9632;&#9632;\n" +
-"\n" +
-"Italic note below table:\n" +
 "<p style=\"font-size:12px;color:#555;font-style:italic;margin:6px 0 16px;\">Note: Repayment estimates assume a 6.5%% federal loan interest rate. Actual rates may vary. Scenario 2 assumes all unmet need is borrowed across 4 years ($%,.0f x 4 = $%,.0f + $%,d federal).</p>\n" +
 "<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
 "\n" +
-"---\n" +
-"SECTION 4: DEBT-TO-INCOME BENCHMARK\n" +
-"---\n" +
-"Heading: \"For Context: Debt-to-Income Benchmark\"\n" +
-"\n" +
+"## SECTION 4: DEBT-TO-INCOME BENCHMARK — Heading: \"For Context: Debt-to-Income Benchmark\"\n" +
 "<p style=\"font-size:13px;color:#1a1a1a;margin:0 0 16px;\">Financial industry sources generally cite annual student loan repayment under 10%% of income as a manageable threshold. This figure is provided for reference only.</p>\n" +
 "<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
 "\n" +
-"---\n" +
-"SECTION 5: EMPLOYMENT OPPORTUNITIES\n" +
-"---\n" +
-"Heading: \"Possible Employment Opportunities\"\n" +
-"\n" +
-"Write 3-4 bullet points for the student's specific major. CRITICAL: Each bullet MUST name a real,\n" +
-"concrete job title or role tied to that exact field of study — do NOT write generic phrases like\n" +
-"'internships related to your major', 'part-time campus jobs', or 'freelance work'.\n" +
-"Example: if major = Computer Science, write 'Software developer intern at a local startup or university\n" +
-"IT department'. Mention how earning while in school reduces total borrowing.\n" +
-"Each distinct employment idea = its own <li>.\n" +
+"## SECTION 5: EMPLOYMENT OPPORTUNITIES — Heading: \"Possible Employment Opportunities\"\n" +
+"Write 3-4 bullets, each naming a real, concrete job title/role tied to the exact major — no generic\n" +
+"phrases ('internships related to your major', 'campus jobs', 'freelance work'). E.g. Computer Science ->\n" +
+"'Software developer intern at a local startup or university IT department'. Note that earning while in\n" +
+"school reduces total borrowing.\n" +
 "<ul style=\"margin:4px 0 16px;padding-left:20px;font-size:13px;line-height:1.8;color:#1a1a1a;\">\n" +
 "  <li style=\"margin-bottom:5px;\">[bullet 1]</li>\n" +
 "  <li style=\"margin-bottom:5px;\">[bullet 2]</li>\n" +
@@ -188,38 +145,24 @@ public class GroqService {
 "</ul>\n" +
 "<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
 "\n" +
-"---\n" +
-"SECTION 6: ADDITIONAL RESOURCES\n" +
-"---\n" +
-"Heading: \"Additional Resources to Explore\"\n" +
-"\n" +
+"## SECTION 6: ADDITIONAL RESOURCES — Heading: \"Additional Resources to Explore\"\n" +
 "<p style=\"font-size:13px;margin:0 0 6px;\">For scholarship opportunities that may apply to your profile, visit:</p>\n" +
 "<p style=\"margin:0 0 16px;\"><a href=\"https://the.ismaili/us/en/resources/scholarships\" target=\"_blank\" style=\"color:#1e5c1e;text-decoration:underline;\">https://the.ismaili/us/en/resources/scholarships</a></p>\n" +
 "<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
 "\n" +
-"---\n" +
-"SECTION 7: KEY CONSIDERATIONS\n" +
-"---\n" +
-"Heading: \"Key Considerations\"\n" +
-"\n" +
+"## SECTION 7: KEY CONSIDERATIONS — Heading: \"Key Considerations\"\n" +
 "Output this paragraph EXACTLY as written — do not change, paraphrase, or add to it:\n" +
 "<p style=\"font-size:13px;color:#1a1a1a;margin:0 0 16px;\">This information is provided to help you understand your financial aid package. For personalized guidance on managing your educational costs, we encourage you to speak with your school's financial aid office or an independent financial advisor.</p>\n" +
 "\n" +
-"---\n" +
-"FOOTER\n" +
-"---\n" +
+"## FOOTER\n" +
 "<p style=\"font-size:11px;color:#888;font-style:italic;border-top:1px solid #ddd;padding-top:12px;margin-top:16px;\">This document is for informational purposes only.</p>\n" +
 "\n" +
-"===============================================\n" +
 "STRICT RULES:\n" +
-"===============================================\n" +
 "1. Output ONLY the HTML wrapper div. No text outside HTML tags, no markdown, no code fences.\n" +
 "2. Use ONLY the pre-calculated numbers provided. Do not recalculate or invent values.\n" +
-"3. Earnings table MUST show the exact This Major and College-Wide values from student data.\n" +
-"4. The scholarship URL must be a real <a href> hyperlink.\n" +
-"5. Do NOT include any organization name, branding, or program name anywhere in the output.\n" +
-"6. Section headings use <h3 style=\"color:#1e5c1e;font-size:15px;font-weight:700;margin:20px 0 8px;\"> — no background color.\n" +
-"7. Employment opportunities MUST use <ul><li> format — never plain sentences.\n";
+"3. The scholarship URL must be a real <a href> hyperlink.\n" +
+"4. Do NOT include any organization name, branding, or program name anywhere in the output.\n" +
+"5. Employment opportunities MUST use <ul><li> format — never plain sentences.\n";
 
     // =========================================================================
     //  COMPARE PROMPT TEMPLATE  (comparison mode — up to 5 colleges)
@@ -228,25 +171,20 @@ public class GroqService {
     // =========================================================================
     private static final String COMPARE_PROMPT_TEMPLATE =
 "You are producing an AI College Comparison Financial Summary for a student.\n" +
-"Output ONLY valid HTML — no markdown, no plain text, no code fences.\n" +
-"Use inline CSS only. Do not use <html>, <head>, <body>, or <style> tags.\n" +
-"Do NOT use any emojis anywhere in the output.\n" +
+"Output ONLY valid HTML (inline CSS; no markdown, code fences, emojis, or <html>/<head>/<body>/<style> tags).\n" +
 "\n" +
 "ALL FINANCIAL DATA (pre-calculated — use ONLY these exact numbers, do not recalculate):\n" +
 "%s\n" +
 "Student profile: %s\n" +
 "\n" +
-"===============================================\n" +
-"OUTPUT — produce exactly this HTML structure in order:\n" +
-"===============================================\n" +
+"OUTPUT — produce exactly this HTML structure, in order:\n" +
 "\n" +
-"Wrap everything in:\n" +
 "<div style=\"font-family:'Segoe UI',Arial,sans-serif;max-width:680px;color:#1a1a1a;line-height:1.6;font-size:14px;\">\n" +
 "\n" +
-"SECTION 1 — COMPARISON AT A GLANCE\n" +
+"## SECTION 1 — COMPARISON AT A GLANCE (reuse this <h3> style for ALL headings below)\n" +
 "<h3 style=\"color:#1e5c1e;font-size:15px;font-weight:700;margin:20px 0 8px;\">Comparison at a Glance</h3>\n" +
 "<p style=\"font-size:13px;margin:0 0 12px;\">Here is a side-by-side breakdown of annual cost and coverage for each school based on the information provided.</p>\n" +
-"Render a table (one row per college) using the OVERVIEW DATA above:\n" +
+"Table, one row per college, using the OVERVIEW DATA above:\n" +
 "<table style=\"width:100%%;border-collapse:collapse;margin-bottom:10px;font-size:13px;\">\n" +
 "  <thead><tr style=\"background:#1e5c1e;color:white;\">\n" +
 "    <th style=\"padding:9px 12px;text-align:left;border:1px solid #1e5c1e;\">College</th>\n" +
@@ -261,9 +199,7 @@ public class GroqService {
 "</table>\n" +
 "<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
 "\n" +
-"SECTIONS 2 through N+1 — PER-COLLEGE BLOCKS (repeat for EACH college in the data, in order):\n" +
-"\n" +
-"For each college:\n" +
+"## SECTIONS 2..N+1 — repeat this whole block for EACH college in the data, in order:\n" +
 "\n" +
 "A) Financial Summary:\n" +
 "<h3 style=\"color:#1e5c1e;font-size:15px;font-weight:700;margin:20px 0 8px;\">[College Name] — Financial Summary</h3>\n" +
@@ -301,16 +237,13 @@ public class GroqService {
 "        <td style=\"padding:9px 12px;text-align:center;border:1px solid #ddd;color:[S2 color];font-weight:700;\">~[S2 pct] [S2 indicator]</td></tr>\n" +
 "  </tbody>\n" +
 "</table>\n" +
-"Color rule — use the THRESHOLD from the data for each college:\n" +
-"  pct <= 10%%: color #1e5c1e (green), indicator = one green square &#9632;\n" +
-"  pct >  10%%: color #c53030 (red),   indicator = two red squares &#9632;&#9632;\n" +
-"Italic note below table (use the S2 FOOTNOTE values from the per-college data):\n" +
+"Color rule — use the threshold flag (ok=YES/NO) from the data for each college:\n" +
+"  ok=YES: color #1e5c1e (green), indicator = one green square &#9632;\n" +
+"  ok=NO:  color #c53030 (red),   indicator = two red squares &#9632;&#9632;\n" +
 "<p style=\"font-size:12px;color:#555;font-style:italic;margin:6px 0 16px;\">Note: Repayment estimates assume a 6.5%% federal loan interest rate. Actual rates may vary. Scenario 2 assumes all unmet need is borrowed across 4 years ($[unmet/yr] x 4 = $[unmet x4] + $[fed principal] federal).</p>\n" +
 "<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
 "\n" +
-"[END PER-COLLEGE REPEAT]\n" +
-"\n" +
-"EARNINGS DATA SECTION\n" +
+"## [END PER-COLLEGE REPEAT] — SECTION: EARNINGS DATA\n" +
 "<h3 style=\"color:#1e5c1e;font-size:15px;font-weight:700;margin:20px 0 8px;\">For Context: Earnings Data</h3>\n" +
 "<table style=\"width:100%%;border-collapse:collapse;margin-bottom:10px;\">\n" +
 "  <thead><tr style=\"background:#1e5c1e;color:white;\">\n" +
@@ -322,52 +255,46 @@ public class GroqService {
 "<p style=\"font-size:12px;color:#555;font-style:italic;margin:6px 0 16px;\">Note: These figures reflect median earnings approximately 2 years after completing a 4-year degree. They represent median outcomes and do not guarantee individual results. For majors where graduate school is common, early career earnings may be lower.</p>\n" +
 "<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
 "\n" +
-"DEBT-TO-INCOME BENCHMARK\n" +
+"## SECTION: DEBT-TO-INCOME BENCHMARK\n" +
 "<h3 style=\"color:#1e5c1e;font-size:15px;font-weight:700;margin:20px 0 8px;\">For Context: Debt-to-Income Benchmark</h3>\n" +
 "<p style=\"font-size:13px;color:#1a1a1a;margin:0 0 16px;\">Financial industry sources generally cite annual student loan repayment under 10%% of income as a manageable threshold. This figure is provided for reference only.</p>\n" +
 "<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
 "\n" +
-"EMPLOYMENT OPPORTUNITIES — MAJOR-SPECIFIC ONLY\n" +
+"## SECTION: EMPLOYMENT OPPORTUNITIES — major-specific only\n" +
 "<h3 style=\"color:#1e5c1e;font-size:15px;font-weight:700;margin:20px 0 8px;\">Possible Employment Opportunities</h3>\n" +
-"Look at 'MAJORS SELECTED IN THIS COMPARISON' at the very top of the data above.\n" +
-"Write exactly ONE bullet per major listed there. Each bullet MUST:\n" +
-"  1. Open with the major name in bold: e.g. <strong>Computer Science:</strong>\n" +
-"  2. Name at least one specific, real job title or role tied to that field\n" +
-"     (e.g. 'software developer intern', 'CNA at a local hospital', 'junior bookkeeper')\n" +
-"  3. NOT use generic phrases like 'internships related to your major', 'campus jobs', 'freelance work'\n" +
-"If no majors were selected, write 2 general but realistic campus employment bullets instead.\n" +
-"End the last bullet with a brief note that earning while studying reduces total borrowing.\n" +
+"One bullet per major in 'MAJORS SELECTED IN THIS COMPARISON' (top of data above). Each bullet: bold major\n" +
+"name prefix (e.g. <strong>Computer Science:</strong>) + one specific real job title/role tied to that field\n" +
+"(e.g. 'software developer intern', 'CNA at a local hospital') — no generic phrases like 'internships related\n" +
+"to your major' or 'campus jobs'. If no majors selected, write 2 general realistic campus job bullets instead.\n" +
+"Last bullet notes that earning while studying reduces total borrowing.\n" +
 "<ul style=\"margin:4px 0 16px;padding-left:20px;font-size:13px;line-height:1.8;color:#1a1a1a;\">\n" +
 "  [one <li> per major from the MAJORS SELECTED list]\n" +
 "</ul>\n" +
 "<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
 "\n" +
-"ADDITIONAL RESOURCES\n" +
+"## SECTION: ADDITIONAL RESOURCES\n" +
 "<h3 style=\"color:#1e5c1e;font-size:15px;font-weight:700;margin:20px 0 8px;\">Additional Resources to Explore</h3>\n" +
 "<p style=\"font-size:13px;margin:0 0 6px;\">For scholarship opportunities that may apply to your profile, visit:</p>\n" +
 "<p style=\"margin:0 0 16px;\"><a href=\"https://the.ismaili/us/en/resources/scholarships\" target=\"_blank\" style=\"color:#1e5c1e;text-decoration:underline;\">https://the.ismaili/us/en/resources/scholarships</a></p>\n" +
 "<hr style=\"border:none;border-top:1px solid #ddd;margin:16px 0;\">\n" +
 "\n" +
-"KEY CONSIDERATIONS\n" +
+"## SECTION: KEY CONSIDERATIONS\n" +
 "<h3 style=\"color:#1e5c1e;font-size:15px;font-weight:700;margin:20px 0 8px;\">Key Considerations</h3>\n" +
 "Output this paragraph EXACTLY as written — do not change or paraphrase:\n" +
 "<p style=\"font-size:13px;color:#1a1a1a;margin:0 0 16px;\">This information is provided to help you understand your financial aid package. For personalized guidance on managing your educational costs, we encourage you to speak with your school's financial aid office or an independent financial advisor.</p>\n" +
 "\n" +
-"FOOTER\n" +
+"## FOOTER\n" +
 "<p style=\"font-size:11px;color:#888;font-style:italic;border-top:1px solid #ddd;padding-top:12px;margin-top:16px;\">This document is for informational purposes only.</p>\n" +
 "\n" +
 "Close the wrapper </div>\n" +
 "\n" +
-"===============================================\n" +
 "STRICT RULES:\n" +
-"===============================================\n" +
 "1. Output ONLY the HTML wrapper div. No text outside HTML tags, no markdown, no code fences.\n" +
 "2. Use ONLY the pre-calculated numbers provided. Do not recalculate or invent values.\n" +
 "3. Do NOT use any emojis. Do NOT include organization names or branding.\n" +
-"4. Section headings use exactly: <h3 style=\"color:#1e5c1e;font-size:15px;font-weight:700;margin:20px 0 8px;\">.\n" +
-"5. The scholarship URL must be a real <a href> hyperlink.\n" +
-"6. Produce one Financial Summary + one Repayment Scenarios block for EACH college in the data.\n" +
-"7. Employment Opportunities: 2-3 bullets only — keep it brief.\n";
+"4. The scholarship URL must be a real <a href> hyperlink.\n" +
+"5. Produce one Financial Summary + one Repayment Scenarios block for EACH college in the data.\n" +
+"6. Employment Opportunities: 2-3 bullets only — keep it brief.\n";
 
     // =========================================================================
 
@@ -402,6 +329,12 @@ public class GroqService {
         body.put("messages", List.of(message));
         body.put("max_tokens", maxTokens);
         body.put("temperature", 0.3);
+        // gpt-oss models spend hidden "reasoning" tokens out of the same TPM budget as the
+        // visible output; this is a deterministic templated-formatting task, not a reasoning
+        // one, so keep reasoning effort low to leave more of the budget for actual HTML output.
+        if (model != null && model.contains("gpt-oss")) {
+            body.put("reasoning_effort", "low");
+        }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -594,27 +527,10 @@ public class GroqService {
 
             detail.append(String.format(Locale.US,
                 "\n--- College %d: %s ---\n" +
-                "Selected Major:            %s\n" +
-                "Net Price/yr:              $%,.0f\n" +
-                "Federal Loans/yr:          $%,.0f  (Sub $%,.0f + Unsub $%,.0f)\n" +
-                "Unmet Need/yr:             $%,.0f\n" +
-                "Free Aid/yr:               $%,.0f  (Pell $%,.0f + Inst Grant $%,.0f + Scholarship $%,.0f)\n" +
-                "Work-Study/yr:             $%,.0f\n" +
-                "Family Contribution/yr:    $%,.0f\n" +
-                "6-yr Median Earnings:      %s\n" +
-                "\n" +
-                "Repayment S1 (Federal Loans Only):\n" +
-                "  4-Year Total:  $%,d\n" +
-                "  Monthly:       ~$%,d\n" +
-                "  Annual:        ~$%,d\n" +
-                "  Pct of Earnings: ~%s  [THRESHOLD: %s <= 10%% => color %s, indicator %s]\n" +
-                "\n" +
-                "Repayment S2 (Maximum Borrowing):\n" +
-                "  4-Year Total:  $%,d\n" +
-                "  Monthly:       ~$%,d\n" +
-                "  Annual:        ~$%,d\n" +
-                "  Pct of Earnings: ~%s  [THRESHOLD: %s <= 10%% => color %s, indicator %s]\n" +
-                "  S2 Footnote values: $%,.0f/yr x 4 = $%,.0f + $%,d federal\n",
+                "Major:%s | NetPrice/yr:$%,.0f | FedLoans/yr:$%,.0f(Sub$%,.0f+Unsub$%,.0f) | UnmetNeed/yr:$%,.0f\n" +
+                "FreeAid/yr:$%,.0f(Pell$%,.0f+Inst$%,.0f+Schol$%,.0f) | WorkStudy/yr:$%,.0f | FamContrib/yr:$%,.0f | 6yrEarnings:%s\n" +
+                "S1(FedOnly): 4yr=$%,d mo=~$%,d yr=~$%,d pct=~%s ok=%s\n" +
+                "S2(MaxBorrow): 4yr=$%,d mo=~$%,d yr=~$%,d pct=~%s ok=%s | footnote: $%,.0f/yr x4=$%,.0f + $%,d federal\n",
                 i + 1, name,
                 majorTitle != null ? majorTitle : "Not selected",
                 netP,
@@ -625,15 +541,9 @@ public class GroqService {
                 fam,
                 earn > 0 ? String.format(Locale.US, "$%,.0f", earn) : "N/A",
                 // S1
-                (long) s1p, s1m, s1a, s1Pct,
-                s1Ok ? "YES" : "NO",
-                s1Ok ? "#1e5c1e (green)" : "#c53030 (red)",
-                s1Ok ? "&#9632;" : "&#9632;&#9632;",
+                (long) s1p, s1m, s1a, s1Pct, s1Ok ? "YES" : "NO",
                 // S2
-                (long) s2p, s2m, s2a, s2Pct,
-                s2Ok ? "YES" : "NO",
-                s2Ok ? "#1e5c1e (green)" : "#c53030 (red)",
-                s2Ok ? "&#9632;" : "&#9632;&#9632;",
+                (long) s2p, s2m, s2a, s2Pct, s2Ok ? "YES" : "NO",
                 // S2 footnote
                 unmet, unmet * 4, (long) s1p
             ));
