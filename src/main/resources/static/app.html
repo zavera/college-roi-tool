@@ -2003,7 +2003,7 @@
 
     <!-- Private Lender Hardship Letter Generator -->
     <div class="debt-step" id="privateHardshipCard" style="display:none;">
-        <p class="debt-section-title">Private Lender Hardship Letter <span class="groq-tag">Groq · gpt-oss-120b</span></p>
+        <p class="debt-section-title">Private Lender Hardship Letter</p>
         <h2>Request Forbearance from Your Private Lender</h2>
         <p class="debt-step-sub">Private lenders set their own forbearance and hardship policies — not federal regulations. Astra generates a letter tailored to your lender's specific programs based on live research above.</p>
 
@@ -4946,7 +4946,6 @@
         const btCards    = resp.balanceTransferCards || [];
         const refiLenders = resp.refiLenders || [];
         const isLive      = resp.source === 'live';
-        const isPaywalled = resp.source === 'fallback-paywalled';
         let html = '';
 
         html += `<div class="credit-warning">
@@ -4958,11 +4957,6 @@
         if (isLive) {
             html += `<p style="font-size:11px;color:var(--muted);margin-bottom:14px;font-style:italic;">
                 Results pulled from a live web search and may include sponsored or affiliate links — always verify rates directly with the lender before applying.</p>`;
-        } else if (isPaywalled) {
-            html += `<div class="credit-warning" style="background:#fff8e6;border-color:#f0c869;">
-                <strong>🔒 Live offer search used up.</strong> You've used your 3 free live searches for this tool.
-                Showing our curated list below instead — <a href="#" onclick="$('#debtPaywall').css('display','flex');return false;" style="color:var(--primary-dk);font-weight:700;">upgrade to premium</a> for unlimited live searches.
-            </div>`;
         }
 
         // Store for print functions
