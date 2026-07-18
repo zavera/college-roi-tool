@@ -18,7 +18,8 @@ public class ModelResponse {
     @Column(name = "type_input_payload", nullable = false)
     private InputPayloadType typeInputPayload;
 
-    @Lob
+    // No @Lob: see Fafsa.java — @Lob on a String forces the Postgres Large Object API, which
+    // requires a non-autocommit connection.
     @Column(name = "output_payload", columnDefinition = "TEXT")
     private String outputPayload;
 

@@ -14,7 +14,8 @@ public class Postgrad {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Lob
+    // No @Lob: see Fafsa.java — @Lob on a String forces the Postgres Large Object API, which
+    // requires a non-autocommit connection.
     @Column(name = "input_postgrad_payload", columnDefinition = "TEXT")
     private String inputPostgradPayload;
 

@@ -21,7 +21,10 @@ public class FafsaHandbookReference {
     @Column(name = "chapter_label", nullable = false)
     private String chapterLabel;
 
-    @Lob
+    // No @Lob here: the column is plain Postgres TEXT (see V27 migration). Hibernate 6's @Lob on a
+    // String maps to Types.CLOB, which the Postgres JDBC driver reads via its Large Object API —
+    // that API requires a non-autocommit connection and threw "Large Objects may not be used in
+    // auto-commit mode" when this seeder ran at startup outside a transactional web request.
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 

@@ -14,7 +14,9 @@ public class Fafsa {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Lob
+    // No @Lob: plain Postgres TEXT column. @Lob on a String maps to Types.CLOB, which Postgres's
+    // JDBC driver reads via its Large Object API — that requires a non-autocommit connection and
+    // throws "Large Objects may not be used in auto-commit mode" outside a transactional context.
     @Column(name = "input_fafsa_payload", columnDefinition = "TEXT")
     private String inputFafsaPayload;
 
