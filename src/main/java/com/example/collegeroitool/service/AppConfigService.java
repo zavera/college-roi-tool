@@ -10,7 +10,7 @@ public class AppConfigService {
     private static final int DEFAULT_SUBSCRIPTION_AMOUNT_CENTS = 9900;
 
     private static final String FREE_SEARCHES_LIMIT_KEY = "free_searches_limit";
-    private static final int DEFAULT_FREE_SEARCHES_LIMIT = 3;
+    private static final int DEFAULT_FREE_SEARCHES_LIMIT = 1;
 
     private final AppConfigRepository repo;
 

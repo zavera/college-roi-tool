@@ -18,6 +18,9 @@ public class DebtIntakeRequest {
     private String hardshipType;           // economic, unemployment, medical, general
     private String hardshipDetails;
     private String state;                  // two-letter US state code e.g. "MD"
+    private String federalLoanType;        // direct, ffel, perkins, consolidated, unknown — PSLF only counts direct/consolidated
+    private String currentRepaymentPlan;   // standard, save, paye, ibr, icr, graduated, extended, not-enrolled — only IDR plans + 10yr Standard count toward PSLF
+    private Integer qualifyingPaymentsMade; // count of qualifying PSLF payments made so far, out of 120
 
     // Getters and setters
     public Double getFederalLoanBalance() { return federalLoanBalance; }
@@ -70,4 +73,13 @@ public class DebtIntakeRequest {
 
     public String getState() { return state; }
     public void setState(String v) { this.state = v; }
+
+    public String getFederalLoanType() { return federalLoanType; }
+    public void setFederalLoanType(String v) { this.federalLoanType = v; }
+
+    public String getCurrentRepaymentPlan() { return currentRepaymentPlan; }
+    public void setCurrentRepaymentPlan(String v) { this.currentRepaymentPlan = v; }
+
+    public Integer getQualifyingPaymentsMade() { return qualifyingPaymentsMade; }
+    public void setQualifyingPaymentsMade(Integer v) { this.qualifyingPaymentsMade = v; }
 }

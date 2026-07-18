@@ -107,8 +107,11 @@ public class DebtManagementController {
             // (see schema redesign plan) — deferred pending model_response wiring for this tab.
             List<Map<String, Object>> plans = debtService.calculateRepaymentPlans(req);
             Map<String, Object> pslfResult = null;
-            if (req.getEmployerName() != null && !req.getEmployerName().isBlank()) {
-                pslfResult = debtService.checkPslfEligibility(req.getEmployerName(), req.getEmploymentStatus());
+            boolean hasEmployer = req.getEmployerName() != null && !req.getEmployerName().isBlank();
+            boolean hasLoanType = req.getFederalLoanType() != null && !req.getFederalLoanType().isBlank();
+            if (hasEmployer || hasLoanType) {
+                pslfResult = debtService.checkPslfEligibility(req.getEmployerName(), req.getEmploymentStatus(),
+                    req.getFederalLoanType(), req.getCurrentRepaymentPlan(), req.getQualifyingPaymentsMade());
             }
             String liveContent = fetchLiveDebtContent(
                 "SAVE IDR income-driven repayment plan 2025 student loan site:studentaid.gov",
@@ -361,7 +364,14 @@ public class DebtManagementController {
         try {
             String employer = body.get("employerName");
             String employmentStatus = body.get("employmentStatus");
-            return ResponseEntity.ok(debtService.checkPslfEligibility(employer, employmentStatus));
+            String federalLoanType = body.get("federalLoanType");
+            String currentRepaymentPlan = body.get("currentRepaymentPlan");
+            Integer qualifyingPaymentsMade = null;
+            if (body.get("qualifyingPaymentsMade") != null && !body.get("qualifyingPaymentsMade").isBlank()) {
+                qualifyingPaymentsMade = Integer.valueOf(body.get("qualifyingPaymentsMade"));
+            }
+            return ResponseEntity.ok(debtService.checkPslfEligibility(employer, employmentStatus,
+                federalLoanType, currentRepaymentPlan, qualifyingPaymentsMade));
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                 .body(Map.of("error", "PSLF check failed: " + e.getMessage()));

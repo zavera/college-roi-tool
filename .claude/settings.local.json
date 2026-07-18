@@ -353,7 +353,10 @@
       "Bash(find ~/.m2 -iname \"anthropic-java*.jar\" 2>/dev/null | head -5)",
       "Bash(unzip -o -q /Users/ambreenzaver/.m2/repository/com/anthropic/anthropic-java-core/2.34.0/anthropic-java-core-2.34.0-sources.jar -d anthropic-src)",
       "Bash(xargs -I{} basename {})",
-      "Bash(lsof -iTCP -sTCP:LISTEN -P)"
+      "Bash(lsof -iTCP -sTCP:LISTEN -P)",
+      "Bash(grep -n \"employmentStatus:   \\\\$\\('#dEmploymentStatus'\\).val\\(\\),\" /Users/ambreenzaver/IdeaProjects/college-roi-tool/src/main/resources/static/app.html)",
+      "mcp__railway__list_projects",
+      "mcp__railway__list_services"
     ]
   }
 }

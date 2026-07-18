@@ -178,20 +178,49 @@ public class DebtManagementService {
 
     // ── PSLF Employer Check ───────────────────────────────────────────────────
 
-    /** @deprecated Use {@link #checkPslfEligibility(String, String)} — this overload ignores the
-     *  full-time employment requirement, which is already collected in the intake form. */
+    /** Only Direct Loans (or FFEL/Perkins consolidated into a Direct Consolidation Loan) count
+     *  toward PSLF — this is a hard eligibility gate independent of employer. */
+    private static final List<String> PSLF_NON_QUALIFYING_LOAN_TYPES = List.of("ffel", "perkins");
+
+    /** Only these repayment plans count as qualifying PSLF payments: any IDR plan, or the
+     *  10-year Standard plan. Graduated/Extended plans do not qualify. */
+    private static final List<String> PSLF_QUALIFYING_PLANS = List.of("standard", "save", "paye", "ibr", "icr");
+
+    /** @deprecated Use {@link #checkPslfEligibility(String, String, String, String, Integer)} —
+     *  this overload ignores employment status, loan type, repayment plan, and payment count. */
     public Map<String, Object> checkPslfEligibility(String employerName) {
-        return checkPslfEligibility(employerName, null);
+        return checkPslfEligibility(employerName, null, null, null, null);
     }
 
-    /** PSLF requires: a qualifying employer (government or 501(c)(3) nonprofit) AND full-time
-     *  employment there. {@code employmentStatus} is the same field already collected in "Your
-     *  Loan Situation" (employed-full / employed-part / unemployed / self-employed) — this was
-     *  previously collected but never checked here. */
+    /** @deprecated Use {@link #checkPslfEligibility(String, String, String, String, Integer)} —
+     *  this overload ignores loan type, repayment plan, and payment count. */
     public Map<String, Object> checkPslfEligibility(String employerName, String employmentStatus) {
+        return checkPslfEligibility(employerName, employmentStatus, null, null, null);
+    }
+
+    /** PSLF requires: (1) a qualifying employer — government or 501(c)(3) nonprofit, (2) full-time
+     *  employment there, (3) Direct Loans (FFEL/Perkins only qualify once consolidated into a Direct
+     *  Consolidation Loan), and (4) 120 qualifying monthly payments under an IDR plan or the 10-year
+     *  Standard plan (Graduated/Extended payments do not count). {@code employmentStatus},
+     *  {@code federalLoanType}, {@code currentRepaymentPlan}, and {@code qualifyingPaymentsMade} are
+     *  all collected in "Your Loan Situation". Loan type is checked first since it's a hard gate
+     *  independent of employer — no employer lookup can make an uncounsolidated FFEL/Perkins loan
+     *  eligible. */
+    public Map<String, Object> checkPslfEligibility(String employerName, String employmentStatus,
+                                                      String federalLoanType, String currentRepaymentPlan,
+                                                      Integer qualifyingPaymentsMade) {
+        String progressNote = progressNote(currentRepaymentPlan, qualifyingPaymentsMade);
+
+        if (federalLoanType != null && PSLF_NON_QUALIFYING_LOAN_TYPES.contains(federalLoanType.toLowerCase())) {
+            return pslfResult("non-qualifying-loan-type", false, true,
+                "Your loans are reported as " + loanTypeLabel(federalLoanType) + ", which does NOT qualify for PSLF " +
+                "on its own — only Direct Loans count. Consolidate into a Direct Consolidation Loan at " +
+                "studentaid.gov/loan-consolidation to make these payments PSLF-eligible going forward." + progressNote);
+        }
+
         if (employerName == null || employerName.isBlank()) {
             return pslfResult("unknown", false, false,
-                "No employer name provided. Please enter your employer to check PSLF eligibility.");
+                "No employer name provided. Please enter your employer to check PSLF eligibility." + progressNote);
         }
 
         boolean fullTime = "employed-full".equals(employmentStatus);
@@ -206,11 +235,11 @@ public class DebtManagementService {
                     return pslfResult("government", false, true,
                         "Your employer appears to be a government entity, which is a qualifying employer type for PSLF. " +
                         "However, PSLF also requires full-time employment there, and your Employment Status is set to '" +
-                        employmentStatus + "' — update it to Employed Full-Time once that's the case to qualify.");
+                        employmentStatus + "' — update it to Employed Full-Time once that's the case to qualify." + progressNote);
                 }
                 return pslfResult("government", true, true,
                     "Your employer appears to be a government entity, which automatically qualifies for PSLF. " +
-                    "Confirm by submitting an Employment Certification Form (ECF) to your servicer.");
+                    "Confirm by submitting an Employment Certification Form (ECF) to your servicer." + progressNote);
             }
         }
 
@@ -237,15 +266,15 @@ public class DebtManagementService {
                                 return pslfResult("nonprofit", false, true,
                                     orgName + " is confirmed as a 501(c)(3) nonprofit, a qualifying employer type for PSLF. " +
                                     "However, PSLF also requires full-time employment there, and your Employment Status is set to '" +
-                                    employmentStatus + "' — update it to Employed Full-Time once that's the case to qualify.");
+                                    employmentStatus + "' — update it to Employed Full-Time once that's the case to qualify." + progressNote);
                             }
                             return pslfResult("nonprofit", true, true,
                                 orgName + " is confirmed as a 501(c)(3) nonprofit — your employer qualifies for PSLF. " +
-                                "Submit an Employment Certification Form annually to track your payments.");
+                                "Submit an Employment Certification Form annually to track your payments." + progressNote);
                         } else {
                             return pslfResult("nonprofit-not-501c3", false, false,
                                 "A matching organization was found but it does not appear to be a 501(c)(3) nonprofit. " +
-                                "Verify at studentaid.gov or consult your HR department.");
+                                "Verify at studentaid.gov or consult your HR department." + progressNote);
                         }
                     }
                 }
@@ -259,7 +288,35 @@ public class DebtManagementService {
             "Check using the PSLF Help Tool at studentaid.gov/pslf, or contact your HR department " +
             "to confirm whether your employer is a 501(c)(3) nonprofit or government entity." +
             (knownNotFullTime ? " Note: PSLF also requires full-time employment — your Employment Status is currently '"
-                + employmentStatus + "'." : ""));
+                + employmentStatus + "'." : "") + progressNote);
+    }
+
+    /** Builds the "not all payments count" and "X of 120 made" notes appended to every PSLF
+     *  result, regardless of employer outcome — plan/payment-count don't gate eligibility the
+     *  way loan type does, but they always affect how close the borrower actually is. */
+    private String progressNote(String currentRepaymentPlan, Integer qualifyingPaymentsMade) {
+        StringBuilder sb = new StringBuilder();
+        if (currentRepaymentPlan != null && !currentRepaymentPlan.isBlank()
+                && !"not-enrolled".equals(currentRepaymentPlan)
+                && !PSLF_QUALIFYING_PLANS.contains(currentRepaymentPlan.toLowerCase())) {
+            sb.append(" Note: your current repayment plan (").append(currentRepaymentPlan)
+              .append(") does not count toward PSLF's 120 payments — only IDR plans (SAVE, PAYE, IBR, ICR) " +
+                      "or the 10-year Standard plan qualify; switch plans to keep progressing.");
+        }
+        if (qualifyingPaymentsMade != null && qualifyingPaymentsMade >= 0) {
+            int remaining = Math.max(0, 120 - qualifyingPaymentsMade);
+            sb.append(" Progress: ").append(qualifyingPaymentsMade).append(" of 120 qualifying payments made")
+              .append(remaining > 0 ? (" (" + remaining + " remaining).") : " — you've reached 120! Submit your PSLF application.");
+        }
+        return sb.toString();
+    }
+
+    private String loanTypeLabel(String federalLoanType) {
+        return switch (federalLoanType.toLowerCase()) {
+            case "ffel" -> "FFEL (Federal Family Education Loan) loans";
+            case "perkins" -> "Perkins Loans";
+            default -> federalLoanType;
+        };
     }
 
     private Map<String, Object> pslfResult(String type, Boolean eligible, boolean confirmed, String message) {

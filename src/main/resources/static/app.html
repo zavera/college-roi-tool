@@ -1811,6 +1811,41 @@
                 <input type="text" id="dEmployer" placeholder="e.g. Boston Public Schools, MOHELA, Dept. of Veterans Affairs">
             </div>
             <div class="field-group">
+                <label for="dLoanType">Federal Loan Type <span style="font-weight:400;color:var(--muted)">for PSLF check</span></label>
+                <select id="dLoanType" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
+                    <option value="">Select…</option>
+                    <option value="direct">Direct Loans</option>
+                    <option value="consolidated">Direct Consolidation Loan</option>
+                    <option value="ffel">FFEL (not yet consolidated)</option>
+                    <option value="perkins">Perkins (not yet consolidated)</option>
+                    <option value="unknown">Not sure</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="debt-form-row">
+            <div class="field-group">
+                <label for="dCurrentPlan">Current Repayment Plan <span style="font-weight:400;color:var(--muted)">for PSLF check</span></label>
+                <select id="dCurrentPlan" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
+                    <option value="">Select…</option>
+                    <option value="save">SAVE</option>
+                    <option value="paye">PAYE</option>
+                    <option value="ibr">IBR</option>
+                    <option value="icr">ICR</option>
+                    <option value="standard">Standard (10-year)</option>
+                    <option value="graduated">Graduated</option>
+                    <option value="extended">Extended</option>
+                    <option value="not-enrolled">Not enrolled yet</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label for="dQualifyingPayments">Qualifying PSLF Payments Made <span style="font-weight:400;color:var(--muted)">optional, out of 120</span></label>
+                <input type="number" id="dQualifyingPayments" placeholder="e.g. 24" min="0" max="120" step="1">
+            </div>
+        </div>
+
+        <div class="debt-form-row">
+            <div class="field-group">
                 <label for="dCreditBand">Credit Score Range</label>
                 <select id="dCreditBand" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
                     <option value="">Select…</option>
@@ -2286,6 +2321,18 @@
             $("#paywallSection > :not(#searchPaywall)").css({ filter: "blur(5px)", opacity: "0.35", "user-select": "none", "pointer-events": "none" });
             $("#searchPaywall").css("display", "flex");
         }
+    }
+
+    /** Shows every tab's paywall immediately on login if that tab's free-search count already
+     *  meets or exceeds the current free-search limit — e.g. a user who used 2 searches when the
+     *  limit was 3 sees the paywall right away once the limit drops to 1, instead of only on
+     *  their next search attempt. */
+    function applyPaywallsIfOverLimit() {
+        if (premiumActive) return;
+        if (searchCount >= FREE_SEARCHES) applyPaywall();
+        if (debtSearchCount >= FREE_SEARCHES) $("#debtPaywall").css("display", "flex");
+        if (scholSearchCount >= FREE_SEARCHES) $("#scholPaywall").css("display", "flex");
+        if (fafsaCount >= FREE_SEARCHES) $("#fafsaPaywall").css("display", "flex");
     }
 
     let selectedCollege = {
@@ -3624,7 +3671,7 @@
                 FREE_SEARCHES    = data.freeSearchLimit         || FREE_SEARCHES;
                 $(".paywall-limit-num").text(FREE_SEARCHES);
                 updateSubToggleUI();
-                // Paywalls fire on next search attempt, not on page load
+                applyPaywallsIfOverLimit();
                 renderPjCategories();
             } else {
                 window.location.href = "/login.html";
@@ -4488,6 +4535,9 @@
             gracePeriodEndDate: $('#dGracePeriod').val() || null,
             employmentStatus:   $('#dEmploymentStatus').val(),
             employerName:       $('#dEmployer').val().trim(),
+            federalLoanType:        $('#dLoanType').val() || null,
+            currentRepaymentPlan:   $('#dCurrentPlan').val() || null,
+            qualifyingPaymentsMade: parseInt($('#dQualifyingPayments').val()) || null,
             annualGrossIncome:  income,
             householdSize:      parseInt($('#dHousehold').val()) || 1,
             maritalStatus:      $('#dMaritalStatus').val(),
