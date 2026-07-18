@@ -359,7 +359,8 @@
       "mcp__railway__list_services",
       "mcp__railway__whoami",
       "Bash(git mv *)",
-      "Bash(awk '$1>1')"
+      "Bash(awk '$1>1')",
+      "Bash(curl -s http://localhost:8080/app.html)"
     ]
   }
 }
