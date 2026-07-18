@@ -114,20 +114,24 @@ public class UserService implements UserDetailsService {
         return user;
     }
 
+    /** Deactivates access and clears any stored Stripe subscription reference (recurrence fully terminated). */
     public boolean deactivateSubscription(String email) {
         return userRepository.findByEmail(email.toLowerCase())
-            .map(u -> { subscriptionService.setActive(u, false); return true; })
+            .map(u -> { subscriptionService.deactivateAndClearStripe(u); return true; })
             .orElse(false);
     }
 
+    /** Admin-granted access with no backing Stripe subscription. */
     public boolean activateSubscription(String email) {
         return userRepository.findByEmail(email.toLowerCase())
             .map(u -> { subscriptionService.setActive(u, true); return true; })
             .orElse(false);
     }
 
-    public Optional<Boolean> toggleSubscription(String email) {
+    /** Activates access from a completed Stripe Checkout session, recording the subscription that backs it. */
+    public boolean activateSubscription(String email, String stripeCustomerId, String stripeSubscriptionId) {
         return userRepository.findByEmail(email.toLowerCase())
-            .map(subscriptionService::toggleActive);
+            .map(u -> { subscriptionService.activateWithStripe(u, stripeCustomerId, stripeSubscriptionId); return true; })
+            .orElse(false);
     }
 }

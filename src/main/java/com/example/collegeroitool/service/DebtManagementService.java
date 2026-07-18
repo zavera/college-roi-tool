@@ -178,17 +178,36 @@ public class DebtManagementService {
 
     // ── PSLF Employer Check ───────────────────────────────────────────────────
 
+    /** @deprecated Use {@link #checkPslfEligibility(String, String)} — this overload ignores the
+     *  full-time employment requirement, which is already collected in the intake form. */
     public Map<String, Object> checkPslfEligibility(String employerName) {
+        return checkPslfEligibility(employerName, null);
+    }
+
+    /** PSLF requires: a qualifying employer (government or 501(c)(3) nonprofit) AND full-time
+     *  employment there. {@code employmentStatus} is the same field already collected in "Your
+     *  Loan Situation" (employed-full / employed-part / unemployed / self-employed) — this was
+     *  previously collected but never checked here. */
+    public Map<String, Object> checkPslfEligibility(String employerName, String employmentStatus) {
         if (employerName == null || employerName.isBlank()) {
             return pslfResult("unknown", false, false,
                 "No employer name provided. Please enter your employer to check PSLF eligibility.");
         }
+
+        boolean fullTime = "employed-full".equals(employmentStatus);
+        boolean knownNotFullTime = employmentStatus != null && !employmentStatus.isBlank() && !fullTime;
 
         String lower = employerName.toLowerCase();
 
         // Check government keywords first
         for (String kw : GOV_KEYWORDS) {
             if (lower.contains(kw)) {
+                if (knownNotFullTime) {
+                    return pslfResult("government", false, true,
+                        "Your employer appears to be a government entity, which is a qualifying employer type for PSLF. " +
+                        "However, PSLF also requires full-time employment there, and your Employment Status is set to '" +
+                        employmentStatus + "' — update it to Employed Full-Time once that's the case to qualify.");
+                }
                 return pslfResult("government", true, true,
                     "Your employer appears to be a government entity, which automatically qualifies for PSLF. " +
                     "Confirm by submitting an Employment Certification Form (ECF) to your servicer.");
@@ -214,6 +233,12 @@ public class DebtManagementService {
                         boolean is501c3 = "03".equals(subSection) || "3".equals(subSection);
                         if (is501c3) {
                             String orgName = String.valueOf(source.getOrDefault("organization_name", employerName));
+                            if (knownNotFullTime) {
+                                return pslfResult("nonprofit", false, true,
+                                    orgName + " is confirmed as a 501(c)(3) nonprofit, a qualifying employer type for PSLF. " +
+                                    "However, PSLF also requires full-time employment there, and your Employment Status is set to '" +
+                                    employmentStatus + "' — update it to Employed Full-Time once that's the case to qualify.");
+                            }
                             return pslfResult("nonprofit", true, true,
                                 orgName + " is confirmed as a 501(c)(3) nonprofit — your employer qualifies for PSLF. " +
                                 "Submit an Employment Certification Form annually to track your payments.");
@@ -232,7 +257,9 @@ public class DebtManagementService {
         return pslfResult("unverified", null, false,
             "We could not automatically verify your employer's PSLF status. " +
             "Check using the PSLF Help Tool at studentaid.gov/pslf, or contact your HR department " +
-            "to confirm whether your employer is a 501(c)(3) nonprofit or government entity.");
+            "to confirm whether your employer is a 501(c)(3) nonprofit or government entity." +
+            (knownNotFullTime ? " Note: PSLF also requires full-time employment — your Employment Status is currently '"
+                + employmentStatus + "'." : ""));
     }
 
     private Map<String, Object> pslfResult(String type, Boolean eligible, boolean confirmed, String message) {

@@ -878,6 +878,10 @@
         .efas-repayment-table td:first-child { font-weight: 600; color: var(--navy); }
         .efas-repayment-table th:first-child { width: 42%; }
         .efas-resource-table td:first-child { font-weight: 700; color: var(--navy); width: 35%; }
+        .efas-employment-table { min-width: 520px; }
+        .efas-employment-table th:nth-child(1), .efas-employment-table td:nth-child(1) { width: 25%; }
+        .efas-employment-table th:nth-child(2), .efas-employment-table td:nth-child(2) { width: 15%; }
+        .efas-employment-table th:nth-child(3), .efas-employment-table td:nth-child(3) { width: 60%; }
         .efas-scholarship-table td:last-child a { color: var(--primary-dk); font-weight: 700; text-decoration: none; border-bottom: 1px solid var(--primary-lt); font-size: 11px; }
         .efas-metrics {
             display: flex;
@@ -1338,7 +1342,7 @@
     </div>
     <div class="hdr-user">
         <span class="hdr-user-name" id="hdrUserName" style="display:none;"></span>
-        <button type="button" id="hdrSubToggle" onclick="toggleSubscription()" style="display:none;border:none;border-radius:14px;padding:4px 12px;font-size:11px;font-weight:700;letter-spacing:.3px;cursor:pointer;margin-right:4px;"></button>
+        <button type="button" id="hdrSubToggle" class="hdr-sub-toggle" onclick="handleSubToggleClick()" style="display:none;letter-spacing:.3px;margin-right:4px;"></button>
         <a class="hdr-logout" id="hdrLogout" style="display:none;" href="#">Sign Out</a>
     </div>
 </header>
@@ -1348,7 +1352,7 @@
     <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-scholarship"  id="tab-btn-scholarship"  onclick="switchModuleTab('scholarship')">Scholarships</button>
     <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-award"        id="tab-btn-award"        onclick="switchModuleTab('award')">Award Assist</button>
     <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-postgrad" id="tab-btn-postgrad" onclick="switchModuleTab('postgrad')">Post-Grad Debt Relief</button>
-    <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-chat"      id="tab-btn-chat"     onclick="switchModuleTab('chat')">Ask Astra</button>
+    <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-chat"      id="tab-btn-chat"     onclick="switchModuleTab('chat')" style="color:var(--muted);opacity:0.65;">Ask Astra <span style="font-size:10px;font-weight:700;">(Soon)</span></button>
     <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-contact"   id="tab-btn-contact"  onclick="switchModuleTab('contact')">Contact</button>
 </div>
 
@@ -1428,7 +1432,7 @@
         style="width:100%;padding:9px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:6px;resize:vertical;box-sizing:border-box;"></textarea>
     </div>
     <div style="margin-top:12px;">
-      <label>Target Schools <span style="font-weight:400;font-size:10px;color:var(--muted);">(type to search — include for school-specific scholarships)</span></label>
+      <label>Target School <span style="font-weight:400;font-size:10px;color:var(--muted);">(type to search — one school only; include for school-specific scholarships)</span></label>
       <div style="display:flex;gap:8px;align-items:center;">
         <input type="text" id="scholSchoolSearch" placeholder="Type 2+ characters to search…"
           style="flex:1;padding:9px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:6px;">
@@ -1436,9 +1440,11 @@
       <div id="scholSchoolChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;min-height:4px;"></div>
     </div>
     <div style="margin-top:12px;">
-      <label for="scholComments">Additional Notes</label>
-      <textarea id="scholComments" rows="3" placeholder="Any other context: unusual circumstances, specific interests, essay topics you are working on…"
-        style="width:100%;padding:9px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:6px;resize:vertical;box-sizing:border-box;"></textarea>
+      <label for="scholComments">Additional Notes <span style="font-weight:400;font-size:10px;color:var(--muted);">(50 characters max)</span></label>
+      <textarea id="scholComments" rows="3" maxlength="50" placeholder="Brief context, e.g. a specific interest or essay topic…"
+        style="width:100%;padding:9px 12px;font-size:13px;border:1.5px solid var(--border);border-radius:6px;resize:vertical;box-sizing:border-box;"
+        oninput="$('#scholCommentsCount').text(this.value.length)"></textarea>
+      <div style="text-align:right;font-size:10px;color:var(--muted);margin-top:2px;"><span id="scholCommentsCount">0</span>/50</div>
     </div>
   </div>
 
@@ -1451,7 +1457,7 @@
   <!-- Combined results -->
   <div id="scholResultsSection" style="display:none;">
     <div class="card" style="padding-bottom:8px;">
-      <h2>Scholarships <span class="groq-tag">Groq · gpt-oss-120b</span></h2>
+      <h2>Scholarships <span class="groq-tag">Claude · Live Search</span></h2>
       <p class="debt-step-sub" id="scholResultsSubtitle"></p>
       <div id="scholAllResults"></div>
     </div>
@@ -1663,7 +1669,7 @@
     <div id="aiSection">
         <h2>
             AI Financial Summary
-            <span class="groq-tag">Groq · gpt-oss-120b</span>
+            <span class="groq-tag">Claude · Live Search</span>
         </h2>
         <p class="desc">
             Enter your aid package above, select a college, then click below for personalized summary.
@@ -1864,7 +1870,7 @@
 
         <!-- AI Assist -->
         <div class="debt-step">
-            <p class="debt-section-title">AI Assist <span class="groq-tag">Groq · gpt-oss-120b</span></p>
+            <p class="debt-section-title">AI Assist <span class="groq-tag">Claude · Live Search</span></p>
             <div id="debtAiAdvice" class="debt-ai-box" aria-live="polite"></div>
         </div>
 
@@ -1953,7 +1959,7 @@
 
     <!-- Private Lender Research Card (shown only when private balance + lender provided) -->
     <div class="debt-step" id="privateLenderResearchCard" style="display:none;">
-        <p class="debt-section-title">Private Lender Research <span class="groq-tag">Live · Tavily</span></p>
+        <p class="debt-section-title">Private Lender Research <span class="groq-tag">Live Search · Claude Summary</span></p>
         <h2 id="privateLenderResearchTitle">Hardship &amp; Repayment Options</h2>
         <p class="debt-step-sub">Live research pulled from your lender's own website — hardship help center, loan agreement terms, and repayment assistance FAQ.</p>
         <div id="privateLenderResearchSpinner" style="display:none;font-size:13px;color:var(--muted);font-style:italic;padding:12px 0;">Searching lender resources…</div>
@@ -2022,21 +2028,18 @@
 </div><!-- end .container postgrad -->
 </div><!-- end #tab-postgrad -->
 
-<!-- ══ ASK ASTRA (CHATBOT) TAB ══════════════════════════════════════════════ -->
+<!-- ══ ASK ASTRA (CHATBOT) TAB — temporarily disabled, coming soon ═══════════ -->
 <div id="tab-chat" style="position:relative;">
 
-<div id="chatPaywall" style="display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(255,255,255,0.84);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
+<div id="chatComingSoon" style="position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.88);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
     <div style="text-align:center;max-width:360px;">
         <div style="font-size:36px;margin-bottom:12px;">💬</div>
-        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your <span class="paywall-limit-num">3</span> free Ask Astra messages</h3>
-        <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock unlimited chat with Astra about scholarships, financial aid, and loan repayment.</p>
-        <button type="button" class="btn-unlock btn-primary" onclick="handleUnlock()" style="padding:13px 28px;font-size:15px;">
-            Unlock for <strong>$99.99/mo</strong>
-        </button>
+        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">Ask Astra — Coming Soon</h3>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:0;line-height:1.6;">We're improving this feature. Chat with Astra will be back shortly — check back soon!</p>
     </div>
 </div>
 
-<div class="container" style="max-width:760px;">
+<div class="container" style="max-width:760px;filter:grayscale(0.7);opacity:0.55;pointer-events:none;">
     <div class="card">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
             <h2 style="margin:0;">Ask Astra</h2>
@@ -2045,8 +2048,8 @@
 
         <div style="display:flex;flex-direction:column;width:100%;box-sizing:border-box;">
             <div id="chatMessages" style="height:360px;overflow-y:auto;border:1.5px solid var(--border);border-radius:8px;padding:14px;margin-bottom:8px;background:#fafbfc;font-size:13px;line-height:1.6;box-sizing:border-box;"></div>
-            <input type="text" id="chatInput" placeholder="Ask about financial aid, scholarships, or loan repayment…" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;box-sizing:border-box;" onkeydown="if(event.key==='Enter'){sendChatMessage();}">
-            <button type="button" class="btn-primary" style="margin-top:8px;" onclick="sendChatMessage()">Send</button>
+            <input type="text" id="chatInput" maxlength="100" disabled placeholder="Ask Astra is coming soon…" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;box-sizing:border-box;" onkeydown="if(event.key==='Enter'){sendChatMessage();}">
+            <button type="button" class="btn-primary" disabled style="margin-top:8px;" onclick="sendChatMessage()">Send</button>
             <div id="chatSpinner" style="display:none;font-size:12px;color:var(--muted);margin-top:6px;">Astra is thinking…</div>
         </div>
     </div>
@@ -2071,11 +2074,15 @@
   </div>
 
   <div class="card" style="padding:32px 36px;">
+    <div id="fafsa-rules-banner" style="display:none;background:#fdf3d9;border:1px solid #e8b94a;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12.5px;color:#6b4e0a;line-height:1.5;">
+      <strong>Rules in use:</strong> <span id="fafsa-rules-award-year">-</span> FAFSA award year
+      <span id="fafsa-rules-sources" style="display:block;font-size:11px;color:#8a6a1e;margin-top:3px;"></span>
+    </div>
     <h2 style="margin-bottom:4px;">FAFSA Prep</h2>
-    <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:0;">Enter your financial details to get a personalized asset-repositioning analysis powered by Astra AI. All fields are optional — fill in what you have.</p>
+    <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:0;">Enter your financial details to get a personalized asset-repositioning analysis powered by Astra AI. All fields are optional - fill in what you have.</p>
 
     <p style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6;background:#f4f0ea;border-radius:8px;padding:10px 14px;">
-      <strong>Tax year:</strong> FAFSA uses <strong>Prior-Prior Year (PPY)</strong> income — e.g. for the 2025–26 FAFSA, use your <strong>2023 tax return</strong>. Assets are reported as of the date you submit the FAFSA.
+      <strong>Tax year:</strong> FAFSA uses <strong>Prior-Prior Year (PPY)</strong> income - e.g. for the <span class="fafsa-award-year">-</span> FAFSA, use your <strong><span class="fafsa-expected-tax-year">-</span> tax return</strong>. Assets are reported as of the date you submit the FAFSA.
     </p>
 
     <form id="fafsa-form" onsubmit="fafsaSubmit(event)">
@@ -2098,12 +2105,12 @@
         <div class="fafsa-field">
           <label>Household Size</label>
           <input type="number" name="householdSize" placeholder="e.g. 4" min="1">
-          <div class="fafsa-hint">Everyone in the home the parent(s) support — FAFSA question #69</div>
+          <div class="fafsa-hint">Everyone in the home the parent(s) support - FAFSA question #69</div>
         </div>
         <div class="fafsa-field">
           <label>Number in College</label>
           <input type="number" name="numberInCollege" placeholder="e.g. 1" min="1">
-          <div class="fafsa-hint">Household members enrolled at least half-time — FAFSA question #70</div>
+          <div class="fafsa-hint">Household members enrolled at least half-time - FAFSA question #70</div>
         </div>
       </div>
 
@@ -2113,22 +2120,22 @@
         <div class="fafsa-field">
           <label>Student AGI ($)</label>
           <input type="number" name="studentAgi" placeholder="0" min="0" step="100">
-          <div class="fafsa-hint">Form 1040, Line 11 — use the tax year 2 years before the aid year</div>
+          <div class="fafsa-hint">Form 1040, Line 11 - use the tax year 2 years before the aid year</div>
         </div>
         <div class="fafsa-field">
           <label>Federal Taxes Paid ($)</label>
           <input type="number" name="studentTaxesPaid" placeholder="0" min="0" step="100">
-          <div class="fafsa-hint">Form 1040, Line 24 (total tax) — not withholding</div>
+          <div class="fafsa-hint">Form 1040, Line 24 (total tax) - not withholding</div>
         </div>
         <div class="fafsa-field">
           <label>Untaxed Income ($)</label>
           <input type="number" name="studentUntaxedIncome" placeholder="0" min="0" step="100">
-          <div class="fafsa-hint">SSA-1099 Box 5 (Social Security); Form 1040 Schedule 1 Line 8a (alimony pre-2019); child support received — total all sources</div>
+          <div class="fafsa-hint">SSA-1099 Box 5 (Social Security); Form 1040 Schedule 1 Line 8a (alimony pre-2019); child support received - total all sources</div>
         </div>
         <div class="fafsa-field">
           <label>Work-Study Earnings ($)</label>
           <input type="number" name="studentWorkStudy" placeholder="0" min="0" step="100">
-          <div class="fafsa-hint">W-2 Box 1 from your college employer — Federal Work-Study wages are excluded from FAFSA income calculation</div>
+          <div class="fafsa-hint">W-2 Box 1 from your college employer - Federal Work-Study wages are excluded from FAFSA income calculation</div>
         </div>
       </div>
 
@@ -2138,17 +2145,17 @@
         <div class="fafsa-field">
           <label>Cash &amp; Savings ($)</label>
           <input type="number" name="studentCashSavings" placeholder="0" min="0" step="100">
-          <div class="fafsa-hint">Checking + savings account balances — bank statement current balance; reported at 20% assessment rate</div>
+          <div class="fafsa-hint">Checking + savings account balances - bank statement current balance; reported at 20% assessment rate</div>
         </div>
         <div class="fafsa-field">
           <label>Investments ($)</label>
           <input type="number" name="studentInvestments" placeholder="0" min="0" step="100">
-          <div class="fafsa-hint">Brokerage / taxable accounts — 1099 year-end statement; do NOT include IRA, 401k, or retirement accounts</div>
+          <div class="fafsa-hint">Brokerage / taxable accounts - 1099 year-end statement; do NOT include IRA, 401k, or retirement accounts</div>
         </div>
         <div class="fafsa-field">
           <label>Business Net Worth ($)</label>
           <input type="number" name="studentBusinessNetWorth" placeholder="0" min="0" step="100">
-          <div class="fafsa-hint">Schedule C / Schedule K-1 — net value of business assets minus liabilities; family businesses with &lt;100 employees may be excluded</div>
+          <div class="fafsa-hint">Schedule C / Schedule K-1 - net value of business assets minus liabilities; family businesses with &lt;100 employees may be excluded</div>
         </div>
       </div>
 
@@ -2158,33 +2165,33 @@
         <div class="fafsa-field">
           <label>Parent AGI ($)</label>
           <input type="number" name="parentAgi" placeholder="0" min="0" step="100">
-          <div class="fafsa-hint">Form 1040, Line 11 — use tax year 2 years before the aid year (e.g. 2023 return for 2025–26 FAFSA)</div>
+          <div class="fafsa-hint">Form 1040, Line 11 - use tax year 2 years before the aid year (e.g. 2023 return for 2025–26 FAFSA)</div>
         </div>
         <div class="fafsa-field">
           <label>Federal Taxes Paid ($)</label>
           <input type="number" name="parentTaxesPaid" placeholder="0" min="0" step="100">
-          <div class="fafsa-hint">Form 1040, Line 24 — total tax owed, not what was withheld from paychecks</div>
+          <div class="fafsa-hint">Form 1040, Line 24 - total tax owed, not what was withheld from paychecks</div>
         </div>
         <div class="fafsa-field">
           <label>Untaxed Income ($)</label>
           <input type="number" name="parentUntaxedIncome" placeholder="0" min="0" step="100">
-          <div class="fafsa-hint">SSA-1099 Box 5; IRA/pension contributions (Form W-2 Box 12 codes D, E, G); child support paid — add all sources</div>
+          <div class="fafsa-hint">SSA-1099 Box 5; IRA/pension contributions (Form W-2 Box 12 codes D, E, G); child support paid - add all sources</div>
         </div>
         <div class="fafsa-field">
           <label>Marital Status</label>
           <select name="parentMaritalStatus">
-            <option value="">— select —</option>
+            <option value="">- select -</option>
             <option value="married">Married / Remarried</option>
             <option value="single">Single</option>
             <option value="divorced">Divorced / Separated</option>
             <option value="widowed">Widowed</option>
           </select>
-          <div class="fafsa-hint">Determines which parent(s) income is reported — divorced parents report the custodial parent only</div>
+          <div class="fafsa-hint">Determines which parent(s) income is reported - divorced parents report the custodial parent only</div>
         </div>
         <div class="fafsa-field">
           <label>Custodial Parent Age</label>
           <input type="number" name="parentAge" placeholder="e.g. 48" min="18" max="100">
-          <div class="fafsa-hint">Older parents receive a higher Asset Protection Allowance, reducing countable assets — use the older parent's age if married</div>
+          <div class="fafsa-hint">Older parents receive a higher Asset Protection Allowance, reducing countable assets - use the older parent's age if married</div>
         </div>
       </div>
 
@@ -2194,32 +2201,32 @@
         <div class="fafsa-field">
           <label>Cash &amp; Savings ($)</label>
           <input type="number" name="parentCashSavings" placeholder="0" min="0" step="100">
-          <div class="fafsa-hint">Checking + savings + money market balances — bank statement current balance; assessed at up to 5.64%</div>
+          <div class="fafsa-hint">Checking + savings + money market balances - bank statement current balance; assessed at up to 5.64%</div>
         </div>
         <div class="fafsa-field">
           <label>Investments ($)</label>
           <input type="number" name="parentInvestments" placeholder="0" min="0" step="100">
-          <div class="fafsa-hint">Taxable brokerage accounts — 1099 year-end or current statement; do NOT include 401k, IRA, or pension accounts</div>
+          <div class="fafsa-hint">Taxable brokerage accounts - 1099 year-end or current statement; do NOT include 401k, IRA, or pension accounts</div>
         </div>
         <div class="fafsa-field">
           <label>Home Equity ($)</label>
           <input type="number" name="parentHomeEquity" placeholder="0" min="0" step="1000">
-          <div class="fafsa-hint">Primary residence market value minus mortgage balance — NOT reported on FAFSA but useful for planning (unlike CSS Profile schools)</div>
+          <div class="fafsa-hint">Primary residence market value minus mortgage balance - NOT reported on FAFSA but useful for planning (unlike CSS Profile schools)</div>
         </div>
         <div class="fafsa-field">
           <label>Retirement Savings ($)</label>
           <input type="number" name="parentRetirementSavings" placeholder="0" min="0" step="1000">
-          <div class="fafsa-hint">401k, IRA, 403b, pension — Form 5498 or account statement; excluded from FAFSA assets entirely</div>
+          <div class="fafsa-hint">401k, IRA, 403b, pension - Form 5498 or account statement; excluded from FAFSA assets entirely</div>
         </div>
         <div class="fafsa-field">
           <label>Business Net Worth ($)</label>
           <input type="number" name="parentBusinessNetWorth" placeholder="0" min="0" step="100">
-          <div class="fafsa-hint">Schedule C or K-1 — net business assets minus liabilities; small businesses (&lt;100 employees, family-owned) are excluded from FAFSA</div>
+          <div class="fafsa-hint">Schedule C or K-1 - net business assets minus liabilities; small businesses (&lt;100 employees, family-owned) are excluded from FAFSA</div>
         </div>
         <div class="fafsa-field">
           <label>529 Balance ($)</label>
           <input type="number" name="parent529Balance" placeholder="0" min="0" step="100">
-          <div class="fafsa-hint">529 account statement current balance — reported as a parent asset (5.64% max rate); much better than student-owned 529 (20% rate)</div>
+          <div class="fafsa-hint">529 account statement current balance - reported as a parent asset (5.64% max rate); much better than student-owned 529 (20% rate)</div>
         </div>
       </div>
 
@@ -3371,17 +3378,19 @@
             const rows = groqData.employmentOpportunities.map(e =>
                 `<tr>
                     <td><strong>${e.title}</strong><br><span style="font-size:11px;color:var(--primary-dk);font-weight:600;">${e.type}</span></td>
-                    <td style="font-weight:700;color:var(--accent);white-space:nowrap">${e.pay}</td>
+                    <td style="font-weight:700;color:var(--accent);">${e.pay}</td>
                     <td>${e.details}</td>
                 </tr>`
             ).join('');
             employmentHtml += `
                 <div class="efas-resource-box">
                     <div class="efas-resource-box-header purple">On-Campus &amp; Career-Track Roles</div>
-                    <table class="efas-resource-table">
+                    <div style="overflow-x:auto;">
+                    <table class="efas-resource-table efas-employment-table">
                         <thead><tr><th>Role</th><th>Pay</th><th>How to Find It</th></tr></thead>
                         <tbody>${rows}</tbody>
                     </table>
+                    </div>
                 </div>`;
         } else {
             employmentHtml += '<p style="color:var(--muted);font-size:12px;padding:8px 0;">Employment data unavailable — enter a major above for personalized results.</p>';
@@ -3390,12 +3399,14 @@
         // Key Considerations
         let considerationsHtml = '<div class="efas-section-title">Key Considerations for Families</div>';
         if (groqData && groqData.keyConsiderations && groqData.keyConsiderations.length) {
-            const rows = groqData.keyConsiderations.map(c =>
-                `<tr><td>${c.title}</td><td>${c.body}</td></tr>`
-            ).join('');
+            const rows = groqData.keyConsiderations.map(c => {
+                const details = Array.isArray(c.details) ? c.details : (c.details ? [c.details] : (c.body ? [c.body] : []));
+                const bullets = '<ul style="margin:0;padding-left:16px;">' + details.map(d => `<li>${d}</li>`).join('') + '</ul>';
+                return `<tr><td>${c.title}</td><td>${bullets}</td></tr>`;
+            }).join('');
             considerationsHtml += `
                 <table class="efas-resource-table">
-                    <thead><tr><th>Topic</th><th>Guidance</th></tr></thead>
+                    <thead><tr><th>Topic</th><th>Details</th></tr></thead>
                     <tbody>${rows}</tbody>
                 </table>`;
         } else {
@@ -3575,6 +3586,23 @@
         }
     })();
 
+    // On load: show which FAFSA award-year rules the asset-repositioning analysis is grounded
+    // in (no auth required — this is static rule metadata, not student data).
+    $.ajax({
+        url: "/api/fafsa-prep/rules-info",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            if (!data || !data.awardYear) return;
+            $(".fafsa-award-year").text(data.awardYear);
+            $(".fafsa-expected-tax-year").text(data.expectedTaxYear || '-');
+            $("#fafsa-rules-award-year").text(data.awardYear);
+            const labels = (data.sources || []).map(s => s.chapterLabel).filter(Boolean);
+            $("#fafsa-rules-sources").text(labels.length ? 'Sourced from: ' + labels.join('; ') : '');
+            $("#fafsa-rules-banner").show();
+        }
+    });
+
     // On load: confirm session before showing any content
     $.ajax({
         url: "/api/auth/me",
@@ -3617,22 +3645,54 @@
         });
     });
 
-    // Subscription self-toggle — dev/testing lever; real purchases go through Stripe checkout.
+    // Subscription control — reflects real recurring billing, not just an access flag.
+    // ON  = a live $99/mo Stripe subscription is charging on a recurring basis.
+    // OFF = no active subscription; turning it on starts real recurring billing via Stripe Checkout.
     function updateSubToggleUI() {
         const $btn = $("#hdrSubToggle");
         if (premiumActive) {
-            $btn.text("Premium").css({ background: "var(--accent)", color: "#fff" });
+            $btn.text("Subscription: ON — $99/mo (click to turn off)")
+                .removeClass("sub-off").addClass("sub-on");
         } else {
-            $btn.text("Free — Upgrade").css({ background: "#e2e8f0", color: "var(--text)" });
+            $btn.text("Subscription: OFF (click to turn on — $99/mo)")
+                .removeClass("sub-on").addClass("sub-off");
         }
+        $btn.prop("disabled", false);
         $btn.show();
     }
 
-    function toggleSubscription() {
-        $.post("/api/auth/subscription/toggle", function(res) {
-            premiumActive = !!res.subscriptionActive;
-            updateSubToggleUI();
-        });
+    function handleSubToggleClick() {
+        const $btn = $("#hdrSubToggle");
+        if (premiumActive) {
+            if (!confirm("Turn subscription OFF? This cancels your $99/month subscription and stops all future recurring billing immediately.")) {
+                return;
+            }
+            $btn.prop("disabled", true).text("Cancelling…");
+            $.post("/api/stripe/cancel-subscription")
+                .done(function(res) {
+                    premiumActive = !!res.subscriptionActive;
+                    updateSubToggleUI();
+                })
+                .fail(function() {
+                    updateSubToggleUI();
+                    alert("Could not cancel the subscription. Please try again.");
+                });
+        } else {
+            $btn.prop("disabled", true).text("Redirecting…");
+            $.ajax({
+                url: "/api/stripe/create-checkout-session",
+                method: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ baseUrl: window.location.origin }),
+                success: function(resp) {
+                    if (resp.url) window.location.href = resp.url;
+                },
+                error: function() {
+                    updateSubToggleUI();
+                    alert("Could not start checkout. Please try again.");
+                }
+            });
+        }
     }
 
     function pf(val) {
@@ -3983,8 +4043,9 @@
     let scholSelectedSchools = [];
 
     function scholAddSchool(name) {
-        if (!name || scholSelectedSchools.includes(name)) return;
-        scholSelectedSchools.push(name);
+        if (!name) return;
+        // Only one target school allowed — picking a new one replaces the current selection.
+        scholSelectedSchools = [name];
         renderScholChips();
         $('#scholSchoolSearch').val('');
     }
@@ -4344,6 +4405,8 @@
     }
 
     function sendChatMessage() {
+        // Ask Astra is temporarily disabled — see #chatComingSoon overlay in the chat tab.
+        return;
         if (chatCount >= FREE_SEARCHES && !premiumActive) {
             $('#chatPaywall').css('display', 'flex');
             return;
@@ -4452,7 +4515,7 @@
                 // State-specific assistance — live search, isolated, only when a state was selected
                 const state = $('#dState').val();
                 if (state) {
-                    fetchStateAssistance(state);
+                    fetchStateAssistance(state, federalBalance, privateBalance, income);
                 }
                 // Increment counter; show paywall on next attempt if limit reached
                 $.post('/api/auth/debt-search/increment', function(res) {
@@ -4579,7 +4642,7 @@
         }
     }
 
-    function fetchStateAssistance(state) {
+    function fetchStateAssistance(state, federalBalance, privateBalance, income) {
         $('#stateAssistanceCard').show();
         $('#stateAssistanceContent').html('<p style="font-size:13px;color:var(--muted);font-style:italic;">Searching ' + escHtml(state) + ' loan forgiveness, refinancing, and advocacy programs…</p>');
 
@@ -4587,17 +4650,50 @@
             url: '/api/debt/state-assistance',
             method: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ state: state }),
+            data: JSON.stringify({
+                state: state,
+                federalLoanBalance: federalBalance || 0,
+                privateLoanBalance: privateBalance || 0,
+                annualGrossIncome: income || 0
+            }),
             success: function(resp) {
-                const summary = resp.summary || 'No state-specific information was found.';
-                // The model formats section headers as **bold** markdown — render them as <strong>.
-                const html = escHtml(summary).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-                $('#stateAssistanceContent').html('<div style="white-space:pre-wrap;line-height:1.65;font-size:13px;">' + html + '</div>');
+                $('#stateAssistanceContent').html(renderStateAssistance(resp.summary || {}, privateBalance > 0));
             },
             error: function() {
                 $('#stateAssistanceContent').html('<p style="font-size:13px;color:#b33;">Could not fetch state-specific assistance. Please try again.</p>');
             }
         });
+    }
+
+    function renderStateAssistance(summary, hasPrivate) {
+        function bulletList(items) {
+            if (!items || items.length === 0) return '';
+            return '<ul style="margin:4px 0 0;padding-left:20px;font-size:13px;line-height:1.6;">'
+                + items.map(i => '<li>' + escHtml(i) + '</li>').join('') + '</ul>';
+        }
+
+        let html = '';
+        const federal = summary.federalPrograms || [];
+        const refi    = summary.privateRefinancing || [];
+        const adv      = summary.advocacy || [];
+
+        html += '<p class="debt-section-title" style="font-size:13px;margin-bottom:2px;">Federal Loan Forgiveness &amp; Repayment Assistance</p>';
+        html += federal.length ? bulletList(federal)
+            : '<p style="font-size:12px;color:var(--muted);">No state-specific federal loan programs found — this section only applies if you have a federal balance.</p>';
+
+        html += '<p class="debt-section-title" style="font-size:13px;margin:14px 0 2px;">Private Loan Refinancing <span style="font-weight:400;color:var(--muted);">(private balances only)</span></p>';
+        if (refi.length) {
+            html += bulletList(refi);
+        } else if (hasPrivate) {
+            html += '<p style="font-size:12px;color:var(--muted);">No state-specific refinancing options found live — see the Balance Transfer &amp; Refinancing Options card above.</p>';
+        } else {
+            html += '<p style="font-size:12px;color:var(--muted);">Not shown — you don\'t have a private loan balance.</p>';
+        }
+
+        html += '<p class="debt-section-title" style="font-size:13px;margin:14px 0 2px;">Borrower Advocacy &amp; Legal Aid</p>';
+        html += adv.length ? bulletList(adv) : '<p style="font-size:12px;color:var(--muted);">No advocacy organizations found live.</p>';
+
+        return html;
     }
 
     function fetchPrivateLenderInfo(lender) {
@@ -4628,37 +4724,54 @@
     }
 
     function renderPrivateLenderResearch(resp, lender) {
-        const sections = [
-            { key: 'forbearanceResults',  icon: '⚠',  title: 'Hardship &amp; Forbearance Help Center',   desc: 'Live results from ' + lender + '\'s hardship programs and forbearance pages.' },
-            { key: 'faqResults',          icon: '?',  title: 'Repayment Assistance FAQ',                  desc: 'Common questions and lender answers about payment relief options.' },
-            { key: 'loanTermsResults',    icon: '📄', title: 'Loan Agreement &amp; Promissory Note Terms', desc: 'Key repayment terms and conditions from your loan agreement.' }
+        // Summarized sections (backend condenses raw Tavily results into a 3-5 sentence
+        // summary via AnthropicService.summarizeSearchResults) — summary text + compact link list,
+        // not a dump of every raw snippet.
+        const summarizedSections = [
+            { resultsKey: 'forbearanceResults', summaryKey: 'forbearanceSummary', icon: '⚠', title: 'Hardship &amp; Forbearance Help Center' },
+            { resultsKey: 'faqResults',         summaryKey: 'faqSummary',         icon: '?', title: 'Repayment Assistance FAQ' }
         ];
         let html = '';
-        sections.forEach(function(sec) {
-            const results = resp[sec.key] || [];
+        summarizedSections.forEach(function(sec) {
+            const results = resp[sec.resultsKey] || [];
+            const summary = resp[sec.summaryKey] || '';
             html += `<div class="private-lender-section">
                 <div class="private-lender-section-header">
                     <span class="private-lender-section-icon">${sec.icon}</span>
-                    <div>
-                        <strong>${sec.title}</strong>
-                        <p style="font-size:12px;color:var(--muted);margin:2px 0 0;">${sec.desc}</p>
-                    </div>
+                    <strong>${sec.title}</strong>
                 </div>`;
             if (results.length === 0) {
                 html += `<p style="font-size:13px;color:var(--muted);padding:8px 0;">No live results found — check <a href="https://www.google.com/search?q=${encodeURIComponent(lender + ' student loan hardship forbearance')}" target="_blank" rel="noopener" style="color:var(--primary-dk);">${lender}'s website directly →</a></p>`;
             } else {
-                results.forEach(function(r) {
-                    const name    = r.name    || r.source || '';
-                    const snippet = r.content || r.snippet || '';
-                    const url     = r.url     || '#';
-                    html += `<div class="private-lender-result">
-                        <a href="${url}" target="_blank" rel="noopener" class="private-lender-result-link">${name || url}</a>
-                        <p class="private-lender-result-snippet">${snippet}</p>
-                    </div>`;
-                });
+                html += `<p style="font-size:13px;line-height:1.6;padding:6px 0 10px;">${summary}</p>`;
+                const links = results.slice(0, 3).map(r =>
+                    `<a href="${r.url || '#'}" target="_blank" rel="noopener">${r.name || r.source || r.url}</a>`
+                ).join(' &middot; ');
+                html += `<p style="font-size:11px;color:var(--muted);">Sources: ${links}</p>`;
             }
             html += `</div>`;
         });
+
+        // Loan terms: kept as compact links (exact legal wording matters here — not summarized).
+        const terms = resp.loanTermsResults || [];
+        html += `<div class="private-lender-section">
+            <div class="private-lender-section-header">
+                <span class="private-lender-section-icon">📄</span>
+                <strong>Loan Agreement &amp; Promissory Note Terms</strong>
+            </div>`;
+        if (terms.length === 0) {
+            html += `<p style="font-size:13px;color:var(--muted);padding:8px 0;">No live results found — check ${lender}'s loan agreement directly.</p>`;
+        } else {
+            terms.forEach(function(r) {
+                const name    = r.name    || r.source || r.url || '';
+                const snippet = (r.content || r.snippet || '').slice(0, 200);
+                html += `<div class="private-lender-result">
+                    <a href="${r.url || '#'}" target="_blank" rel="noopener" class="private-lender-result-link">${name}</a>
+                    <p class="private-lender-result-snippet">${snippet}${snippet.length >= 200 ? '…' : ''}</p>
+                </div>`;
+            });
+        }
+        html += `</div>`;
         return html;
     }
 
@@ -4998,7 +5111,7 @@
 
         btn.disabled   = true;
         btn.textContent = 'Analyzing…';
-        status.textContent = 'Running Groq asset analysis — this may take 10–20 seconds…';
+        status.textContent = 'Running Claude asset analysis - this may take 5-10 seconds…';
 
         fetch('/api/fafsa-prep', {
             method: 'POST',

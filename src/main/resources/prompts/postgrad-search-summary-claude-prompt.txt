@@ -1,0 +1,7 @@
+Summarize the live search results below about {{topic}} into a single short summary a borrower can act on immediately - 3 to 5 sentences, plain English, no headers, no bullet list, no markdown formatting. Do not quote the sources verbatim; synthesize them. If the results don't cover the topic well, say so in 1 sentence and suggest checking the source links directly rather than guessing.
+
+LIVE SEARCH RESULTS:
+{{searchResults}}
+
+Respond with valid JSON only, no markdown, no commentary:
+{"summary": "<3-5 sentence summary>"}

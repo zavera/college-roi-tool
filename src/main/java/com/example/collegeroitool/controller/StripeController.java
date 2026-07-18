@@ -1,5 +1,7 @@
 package com.example.collegeroitool.controller;
 
+import com.example.collegeroitool.model.AppUser;
+import com.example.collegeroitool.service.SubscriptionService;
 import com.example.collegeroitool.service.UserService;
 import com.stripe.Stripe;
 import com.stripe.exception.SignatureVerificationException;
@@ -39,9 +41,11 @@ public class StripeController {
     private String priceId;
 
     private final UserService userService;
+    private final SubscriptionService subscriptionService;
 
-    public StripeController(UserService userService) {
+    public StripeController(UserService userService, SubscriptionService subscriptionService) {
         this.userService = userService;
+        this.subscriptionService = subscriptionService;
     }
 
     @PostConstruct
@@ -89,6 +93,33 @@ public class StripeController {
         }
     }
 
+    /** Turns recurring billing OFF: cancels the live Stripe subscription so no further $99/mo charges occur. */
+    @PostMapping("/cancel-subscription")
+    public ResponseEntity<?> cancelSubscription(Principal principal) {
+        String email = resolveEmail(principal);
+        if (email == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        }
+
+        AppUser user = userService.findByEmail(email).orElse(null);
+        if (user == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "User not found"));
+        }
+
+        subscriptionService.getStripeSubscriptionId(user).ifPresent(stripeSubscriptionId -> {
+            try {
+                Subscription stripeSub = Subscription.retrieve(stripeSubscriptionId);
+                stripeSub.cancel();
+            } catch (Exception e) {
+                // Subscription may already be canceled on Stripe's side (e.g. a prior webhook already
+                // fired) — proceed to clear local state regardless so the user isn't stuck.
+            }
+        });
+
+        subscriptionService.deactivateAndClearStripe(user);
+        return ResponseEntity.ok(Map.of("subscriptionActive", false));
+    }
+
     @PostMapping("/webhook")
     public ResponseEntity<String> webhook(
             HttpServletRequest request,
@@ -113,7 +144,7 @@ public class StripeController {
                         email = session.getMetadata().get("email");
                     }
                     if (email != null) {
-                        userService.activateSubscription(email);
+                        userService.activateSubscription(email, session.getCustomer(), session.getSubscription());
                     }
                 }
             }

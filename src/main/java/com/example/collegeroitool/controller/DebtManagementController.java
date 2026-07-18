@@ -3,15 +3,20 @@ package com.example.collegeroitool.controller;
 import com.example.collegeroitool.dto.DebtIntakeRequest;
 import com.example.collegeroitool.model.AppUser;
 import com.example.collegeroitool.model.SearchUsage;
+import com.example.collegeroitool.service.AnthropicService;
 import com.example.collegeroitool.service.AppConfigService;
 import com.example.collegeroitool.service.CreditOfferSearchService;
 import com.example.collegeroitool.service.DebtManagementService;
 import com.example.collegeroitool.service.GroqService;
+import com.example.collegeroitool.service.MonthlyCostCapExceededException;
 import com.example.collegeroitool.service.SearchUsageService;
 import com.example.collegeroitool.service.SubscriptionService;
 import com.example.collegeroitool.service.TavilySearchClient;
 import com.example.collegeroitool.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,8 +36,11 @@ import java.util.Map;
 @RequestMapping("/api/debt")
 public class DebtManagementController {
 
+    private static final Logger log = LoggerFactory.getLogger(DebtManagementController.class);
+
     private final DebtManagementService debtService;
     private final GroqService groqService;
+    private final AnthropicService anthropicService;
     private final CreditOfferSearchService creditOfferSearchService;
     private final UserService userService;
     private final TavilySearchClient tavilySearchClient;
@@ -48,6 +56,7 @@ public class DebtManagementController {
     private boolean devBypass;
 
     public DebtManagementController(DebtManagementService debtService, GroqService groqService,
+                                     AnthropicService anthropicService,
                                      CreditOfferSearchService creditOfferSearchService,
                                      UserService userService, TavilySearchClient tavilySearchClient,
                                      SubscriptionService subscriptionService,
@@ -55,6 +64,7 @@ public class DebtManagementController {
                                      AppConfigService appConfigService) {
         this.debtService = debtService;
         this.groqService = groqService;
+        this.anthropicService = anthropicService;
         this.creditOfferSearchService = creditOfferSearchService;
         this.userService = userService;
         this.tavilySearchClient = tavilySearchClient;
@@ -82,7 +92,8 @@ public class DebtManagementController {
     }
 
     @PostMapping("/repayment-plans")
-    public ResponseEntity<?> getRepaymentPlans(@RequestBody DebtIntakeRequest req, Principal principal) {
+    public ResponseEntity<?> getRepaymentPlans(@RequestBody DebtIntakeRequest req, Principal principal,
+                                                HttpServletRequest httpRequest) {
         AppUser user = resolveUser(principal);
         if (user != null) {
             SearchUsage usage = searchUsageService.getOrCreateForUser(user);
@@ -97,18 +108,26 @@ public class DebtManagementController {
             List<Map<String, Object>> plans = debtService.calculateRepaymentPlans(req);
             Map<String, Object> pslfResult = null;
             if (req.getEmployerName() != null && !req.getEmployerName().isBlank()) {
-                pslfResult = debtService.checkPslfEligibility(req.getEmployerName());
+                pslfResult = debtService.checkPslfEligibility(req.getEmployerName(), req.getEmploymentStatus());
             }
             String liveContent = fetchLiveDebtContent(
                 "SAVE IDR income-driven repayment plan 2025 student loan site:studentaid.gov",
                 "PSLF public service loan forgiveness qualifying payments 2025 site:studentaid.gov"
             );
-            String aiJson = groqService.getRepaymentRecommendation(req, plans, pslfResult, liveContent);
             Object aiParsed;
             try {
+                String aiJson = anthropicService.getRepaymentRecommendation(req, plans, pslfResult, liveContent,
+                    user != null ? user.getId() : null, httpRequest.getSession(true).getId());
                 aiParsed = objectMapper.readValue(GroqService.stripMarkdownFences(aiJson), Object.class);
+            } catch (MonthlyCostCapExceededException e) {
+                return ResponseEntity.status(429).body(Map.of("error", e.getMessage()));
             } catch (Exception e) {
-                aiParsed = Map.of("rationale", aiJson);
+                // Don't dump the raw (unparseable) model text into the UI — show a clean fallback
+                // instead. This previously happened when the Groq call truncated mid-JSON; see
+                // AnthropicService.getRepaymentRecommendation for the token-budget fix.
+                log.warn("[debt] AI Assist recommendation was not valid JSON: {}", e.getMessage());
+                aiParsed = Map.of("rationale", "Your repayment plan comparison is ready below. "
+                    + "We couldn't generate a personalized recommendation this time — please try again.");
             }
 
             if (user != null) {
@@ -204,7 +223,9 @@ public class DebtManagementController {
     }
 
     @PostMapping("/state-assistance")
-    public ResponseEntity<?> getStateAssistance(@RequestBody DebtIntakeRequest req) {
+    public ResponseEntity<?> getStateAssistance(@RequestBody DebtIntakeRequest req, Principal principal,
+                                                 HttpServletRequest httpRequest) {
+        AppUser user = resolveUser(principal);
         String state = req.getState();
         if (state == null || state.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "State is required."));
@@ -234,7 +255,18 @@ public class DebtManagementController {
                 liveContent = "(Live search returned no results — reason from training knowledge)";
             }
 
-            String summary = groqService.summarizeStateAssistance(state, liveContent);
+            Object summary;
+            try {
+                String summaryJson = anthropicService.getStateAssistanceSummary(
+                    state, req.getFederalLoanBalance(), req.getPrivateLoanBalance(), req.getAnnualGrossIncome(), liveContent,
+                    user != null ? user.getId() : null, httpRequest.getSession(true).getId());
+                summary = objectMapper.readValue(GroqService.stripMarkdownFences(summaryJson), Object.class);
+            } catch (MonthlyCostCapExceededException e) {
+                return ResponseEntity.status(429).body(Map.of("error", e.getMessage()));
+            } catch (Exception e) {
+                log.warn("[debt] state assistance summary was not valid JSON: {}", e.getMessage());
+                summary = Map.of("federalPrograms", List.of(), "privateRefinancing", List.of(), "advocacy", List.of());
+            }
             return ResponseEntity.ok(Map.of("summary", summary, "state", state));
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
@@ -243,14 +275,33 @@ public class DebtManagementController {
     }
 
     @PostMapping("/private-lender-info")
-    public ResponseEntity<?> getPrivateLenderInfo(@RequestBody DebtIntakeRequest req) {
+    public ResponseEntity<?> getPrivateLenderInfo(@RequestBody DebtIntakeRequest req, Principal principal,
+                                                   HttpServletRequest httpRequest) {
         String lender = req.getPrivateLender();
         if (lender == null || lender.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Private lender name is required."));
         }
+        AppUser user = resolveUser(principal);
         try {
             Map<String, Object> research = fetchPrivateLenderResearch(lender, req.getState());
+
+            // Condense the raw Tavily dumps into a 3-5 sentence summary each, keeping the raw
+            // results (with links) available under "*Sources" for the UI to link out to.
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> forbearanceResults = (List<Map<String, Object>>) research.get("forbearanceResults");
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> faqResults = (List<Map<String, Object>>) research.get("faqResults");
+
+            Long userId = user != null ? user.getId() : null;
+            String sessionId = httpRequest.getSession(true).getId();
+            research.put("forbearanceSummary", anthropicService.summarizeSearchResults(
+                lender + "'s hardship and forbearance programs", forbearanceResults, userId, sessionId));
+            research.put("faqSummary", anthropicService.summarizeSearchResults(
+                lender + "'s repayment assistance FAQ", faqResults, userId, sessionId));
+
             return ResponseEntity.ok(research);
+        } catch (MonthlyCostCapExceededException e) {
+            return ResponseEntity.status(429).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                 .body(Map.of("error", "Could not fetch private lender info: " + e.getMessage()));
@@ -309,7 +360,8 @@ public class DebtManagementController {
     public ResponseEntity<?> checkPslf(@RequestBody Map<String, String> body) {
         try {
             String employer = body.get("employerName");
-            return ResponseEntity.ok(debtService.checkPslfEligibility(employer));
+            String employmentStatus = body.get("employmentStatus");
+            return ResponseEntity.ok(debtService.checkPslfEligibility(employer, employmentStatus));
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                 .body(Map.of("error", "PSLF check failed: " + e.getMessage()));

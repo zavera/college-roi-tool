@@ -14,9 +14,14 @@ import com.example.collegeroitool.repository.PostgradRepository;
 import com.example.collegeroitool.repository.ScholarshipRepository;
 import com.example.collegeroitool.repository.SearchUsageRepository;
 import com.example.collegeroitool.repository.SubscriptionRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Assembles a per-user data summary for the chatbot only — never for the other
@@ -33,6 +38,7 @@ public class ChatbotContextService {
     private final CoaRepository coaRepository;
     private final PostgradRepository postgradRepository;
     private final ModelResponseRepository modelResponseRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ChatbotContextService(SubscriptionRepository subscriptionRepository,
                                   SearchUsageRepository searchUsageRepository,
@@ -82,5 +88,58 @@ public class ChatbotContextService {
         sb.append("AI responses generated so far: ").append(modelResponses).append("\n");
 
         return sb.toString();
+    }
+
+    /** Backs the chatbot's "get_my_saved_data_history" tool. Returns this user's own saved
+     *  session payloads (newest first) for the requested category, so the model can answer
+     *  questions like "what was my parental AGI" with an actual history of values across
+     *  sessions instead of a summary count. userId always comes from the server-side session in
+     *  ChatController/AnthropicService — this method has no path for a client to supply another
+     *  user's ID. Read-only: there is no corresponding write method exposed to the model. */
+    public String getSavedDataHistoryForTool(Long userId, String category) {
+        String cat = category == null ? "all" : category.toLowerCase();
+        List<Map<String, Object>> entries = new ArrayList<>();
+
+        if (cat.equals("fafsa") || cat.equals("all")) {
+            for (Fafsa f : fafsaRepository.findAllByUserIdOrderByCreatedAtDesc(userId)) {
+                entries.add(toEntry("fafsa", f.getCreatedAt(), f.getInputFafsaPayload()));
+            }
+        }
+        if (cat.equals("scholarship") || cat.equals("all")) {
+            for (Scholarship s : scholarshipRepository.findAllByUserIdOrderByCreatedAtDesc(userId)) {
+                entries.add(toEntry("scholarship", s.getCreatedAt(), s.getInputScholarshipPayload()));
+            }
+        }
+        if (cat.equals("coa") || cat.equals("all")) {
+            for (Coa c : coaRepository.findAllByUserIdOrderByCreatedAtDesc(userId)) {
+                entries.add(toEntry("coa", c.getCreatedAt(), c.getInputCoaPayload()));
+            }
+        }
+        if (cat.equals("postgrad") || cat.equals("all")) {
+            for (Postgrad p : postgradRepository.findAllByUserIdOrderByCreatedAtDesc(userId)) {
+                entries.add(toEntry("postgrad", p.getCreatedAt(), p.getInputPostgradPayload()));
+            }
+        }
+
+        if (entries.isEmpty()) {
+            return "No saved \"" + cat + "\" data found for this user.";
+        }
+        try {
+            return objectMapper.writeValueAsString(entries);
+        } catch (Exception e) {
+            return "Error retrieving saved data.";
+        }
+    }
+
+    private Map<String, Object> toEntry(String type, LocalDateTime createdAt, String payloadJson) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("type", type);
+        m.put("createdAt", createdAt != null ? createdAt.toString() : null);
+        try {
+            m.put("payload", objectMapper.readValue(payloadJson, Object.class));
+        } catch (Exception e) {
+            m.put("payload", payloadJson);
+        }
+        return m;
     }
 }

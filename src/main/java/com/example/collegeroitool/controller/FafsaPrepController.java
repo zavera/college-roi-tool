@@ -7,13 +7,15 @@ import com.example.collegeroitool.model.ModelResponse;
 import com.example.collegeroitool.model.SearchUsage;
 import com.example.collegeroitool.repository.FafsaRepository;
 import com.example.collegeroitool.repository.ModelResponseRepository;
+import com.example.collegeroitool.service.AnthropicService;
 import com.example.collegeroitool.service.AppConfigService;
 import com.example.collegeroitool.service.GroqService;
+import com.example.collegeroitool.service.MonthlyCostCapExceededException;
 import com.example.collegeroitool.service.SearchUsageService;
 import com.example.collegeroitool.service.SubscriptionService;
-import com.example.collegeroitool.service.TavilySearchClient;
 import com.example.collegeroitool.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,21 +36,16 @@ import java.util.Optional;
 public class FafsaPrepController {
 
     private static final Logger log = LoggerFactory.getLogger(FafsaPrepController.class);
-    private static final List<String> HANDBOOK_DOMAINS = List.of("fsapartners.ed.gov", "studentaid.gov");
     private static final String AWARD_YEAR = "2026-27";
     private static final Integer EXPECTED_TAX_YEAR = 2024; // PPY for the 2026-27 award year
 
     @Value("${premium.dev.bypass:false}")
     private boolean devBypass;
 
-    @Value("${groq.model}")
-    private String modelName;
-
     private final FafsaRepository fafsaRepository;
     private final ModelResponseRepository modelResponseRepository;
     private final UserService userService;
-    private final GroqService groqService;
-    private final TavilySearchClient tavilySearchClient;
+    private final AnthropicService anthropicService;
     private final SubscriptionService subscriptionService;
     private final SearchUsageService searchUsageService;
     private final AppConfigService appConfigService;
@@ -57,19 +54,28 @@ public class FafsaPrepController {
     public FafsaPrepController(FafsaRepository fafsaRepository,
                                 ModelResponseRepository modelResponseRepository,
                                 UserService userService,
-                                GroqService groqService,
-                                TavilySearchClient tavilySearchClient,
+                                AnthropicService anthropicService,
                                 SubscriptionService subscriptionService,
                                 SearchUsageService searchUsageService,
                                 AppConfigService appConfigService) {
         this.fafsaRepository = fafsaRepository;
         this.modelResponseRepository = modelResponseRepository;
         this.userService = userService;
-        this.groqService = groqService;
-        this.tavilySearchClient = tavilySearchClient;
+        this.anthropicService = anthropicService;
         this.subscriptionService = subscriptionService;
         this.searchUsageService = searchUsageService;
         this.appConfigService = appConfigService;
+    }
+
+    /** Which award-year rules the asset-repositioning analysis is currently grounded in.
+     *  No student data — safe to call before login so the UI can show it up front. */
+    @GetMapping("/rules-info")
+    public ResponseEntity<?> rulesInfo() {
+        Map<String, Object> info = new LinkedHashMap<>();
+        info.put("awardYear", AWARD_YEAR);
+        info.put("expectedTaxYear", EXPECTED_TAX_YEAR);
+        info.put("sources", anthropicService.getHandbookSources(AWARD_YEAR));
+        return ResponseEntity.ok(info);
     }
 
     /** List all FAFSA prep entries for the current user, newest first. */
@@ -85,7 +91,8 @@ public class FafsaPrepController {
 
     /** Save a new FAFSA prep entry and run the asset-repositioning analysis. */
     @PostMapping
-    public ResponseEntity<?> save(@RequestBody Map<String, Object> body, Principal principal) {
+    public ResponseEntity<?> save(@RequestBody Map<String, Object> body, Principal principal,
+                                   HttpServletRequest httpRequest) {
         AppUser user = resolveUser(principal);
         if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
 
@@ -103,23 +110,26 @@ public class FafsaPrepController {
         entry.setInputFafsaPayload(payloadJson);
         entry = fafsaRepository.save(entry);
 
-        String liveContent = fetchLiveHandbookContent();
-
-        String rawAnalysis;
+        String rawAnalysis = null;
         int status;
         Object parsedAnalysis = null;
         try {
             // This is a manual-entry planning tool with no document upload, so there is nothing
             // to cross-check tax years against. Pass matching expected/extracted years plus an
             // explicit note so the model doesn't flag a spurious "no tax year detected" discrepancy.
-            rawAnalysis = groqService.getAssetRepositioningAdvice(payloadJson, AWARD_YEAR, liveContent,
+            rawAnalysis = anthropicService.getAssetRepositioningAdvice(payloadJson, AWARD_YEAR,
                 EXPECTED_TAX_YEAR, EXPECTED_TAX_YEAR,
-                "Data entered manually by the student/family — no tax documents were uploaded for this planning session. Do not flag a tax year discrepancy; set discrepancy to null.");
+                "Data entered manually by the student/family, no tax documents were uploaded for this planning session. Do not flag a tax year discrepancy; set discrepancy to null.",
+                user.getId(), httpRequest.getSession(true).getId());
             parsedAnalysis = objectMapper.readValue(GroqService.stripMarkdownFences(rawAnalysis), Object.class);
             status = 200;
+        } catch (MonthlyCostCapExceededException e) {
+            logModelResponse(entry, null, 429);
+            return ResponseEntity.status(429).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            log.warn("[fafsa-prep] Groq analysis failed id={}: {}", entry.getId(), e.getMessage());
-            rawAnalysis = null;
+            // Keep whatever rawAnalysis the model actually returned (even if parsing it as JSON
+            // failed) so the stored model_response row shows what really came back, not null.
+            log.warn("[fafsa-prep] Claude analysis failed id={}: {}", entry.getId(), e.getMessage());
             status = 500;
         }
         logModelResponse(entry, rawAnalysis, status);
@@ -147,30 +157,14 @@ public class FafsaPrepController {
 
     // ── helpers ──────────────────────────────────────────────────────────────
 
-    /** Fetches live FSA Handbook + studentaid.gov asset-definition content for prompt injection. */
-    private String fetchLiveHandbookContent() {
-        try {
-            var results = tavilySearchClient.searchHandbook(
-                "FAFSA SAI student aid index asset reporting rules " + AWARD_YEAR, 3, HANDBOOK_DOMAINS, 1000);
-            StringBuilder sb = new StringBuilder();
-            for (var r : results) {
-                sb.append("\n[Source: ").append(r.get("url")).append("]\n");
-                sb.append(r.get("content")).append("\n");
-            }
-            String content = sb.toString().trim();
-            return content.isEmpty() ? null : content;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     private void logModelResponse(Fafsa entry, String outputPayload, int status) {
         ModelResponse resp = new ModelResponse();
-        resp.setModelName(modelName);
+        resp.setModelName(anthropicService.getModel());
         resp.setTypeInputPayload(InputPayloadType.FAFSA);
         resp.setInputId(entry.getId());
         resp.setOutputPayload(outputPayload);
         resp.setResponseStatus(status);
+        resp.setPrompt(AnthropicService.ASSET_REPOSITIONING_PROMPT_FILE);
         modelResponseRepository.save(resp);
     }
 

@@ -19,6 +19,12 @@ public class Subscription {
     @Column(name = "amount_cents", nullable = false)
     private int amountCents;
 
+    @Column(name = "stripe_customer_id")
+    private String stripeCustomerId;
+
+    @Column(name = "stripe_subscription_id")
+    private String stripeSubscriptionId;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime updatedAt = LocalDateTime.now();
@@ -35,6 +41,10 @@ public class Subscription {
     public void    setActive(boolean v)        { this.active = v; }
     public int  getAmountCents()               { return amountCents; }
     public void setAmountCents(int v)          { this.amountCents = v; }
+    public String getStripeCustomerId()        { return stripeCustomerId; }
+    public void setStripeCustomerId(String v)  { this.stripeCustomerId = v; }
+    public String getStripeSubscriptionId()     { return stripeSubscriptionId; }
+    public void setStripeSubscriptionId(String v) { this.stripeSubscriptionId = v; }
     public LocalDateTime getCreatedAt()        { return createdAt; }
     public LocalDateTime getUpdatedAt()        { return updatedAt; }
 }

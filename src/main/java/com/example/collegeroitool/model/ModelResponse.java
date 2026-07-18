@@ -22,6 +22,11 @@ public class ModelResponse {
     @Column(name = "output_payload", columnDefinition = "TEXT")
     private String outputPayload;
 
+    /** File name of the prompt template used to generate this response (e.g.
+     *  "fafsa-asset-repositioning-claude-prompt.txt"), for tracing which prompt version produced it. */
+    @Column(name = "prompt")
+    private String prompt;
+
     /** Row id in the table named by typeInputPayload. No DB FK — the target table varies by type. */
     @Column(name = "input_id")
     private Long inputId;
@@ -38,6 +43,8 @@ public class ModelResponse {
     public void   setTypeInputPayload(InputPayloadType v)  { this.typeInputPayload = v; }
     public String getOutputPayload()                       { return outputPayload; }
     public void   setOutputPayload(String v)                { this.outputPayload = v; }
+    public String getPrompt()                              { return prompt; }
+    public void   setPrompt(String v)                       { this.prompt = v; }
     public Long getInputId()                               { return inputId; }
     public void setInputId(Long v)                          { this.inputId = v; }
     public Integer getResponseStatus()                      { return responseStatus; }

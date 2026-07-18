@@ -200,16 +200,6 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("chatCount", 0));
     }
 
-    @PostMapping("/subscription/toggle")
-    public ResponseEntity<?> toggleSubscription(Principal principal) {
-        if (devBypass && principal == null) return ResponseEntity.ok(Map.of("subscriptionActive", true));
-        if (principal == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
-        String email = resolveEmail(principal);
-        return userService.toggleSubscription(email)
-            .<ResponseEntity<?>>map(active -> ResponseEntity.ok(Map.of("subscriptionActive", active)))
-            .orElse(ResponseEntity.badRequest().body(Map.of("error", "User not found")));
-    }
-
     @PostMapping("/admin/activate")
     public ResponseEntity<?> activateSubscription(
             @RequestParam String email,

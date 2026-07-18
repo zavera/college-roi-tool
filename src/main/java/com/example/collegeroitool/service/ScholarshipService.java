@@ -9,58 +9,65 @@ import java.util.*;
 @Service
 public class ScholarshipService {
 
-    private static final List<String> SCHOLARSHIP_ALLOWED_DOMAINS = List.of(
-        "fastweb.com", "scholarships.com", "scholarships360.org", "bold.org",
-        "niche.com", "cappex.com", "goingmerry.com", "collegescholarships.org",
-        "studentaid.gov", "unigo.com", "collegexpress.com", "petersons.com",
-        "collegeboard.org", "salliemae.com"
-    );
-
     // Domains Tavily should NOT search for general scholarships
     private static final List<String> EXCLUDED_GENERAL = List.of(
         "reddit.com", "quora.com", "yahoo.com", "pinterest.com"
     );
 
+    // FERPA: fields that are NEVER sent to any third-party service regardless of key name
+    private static final List<String> PII_KEY_FRAGMENTS = List.of(
+        "name", "ssn", "social", "dob", "birth", "address", "street", "zip", "phone",
+        "email", "ein", "tin", "passport", "license", "account", "routing", "signature"
+    );
+
+    // FERPA: only these financial/academic field types may be sent to the model for scholarship matching
+    private static final List<String> ALLOWED_KEY_FRAGMENTS = List.of(
+        "gpa", "income", "agi", "wage", "grant", "aid", "major", "degree", "school", "credit",
+        "tuition", "enrollment", "field", "program", "efc", "sai", "tax"
+    );
+
     private final TavilySearchClient tavilySearchClient;
     private final GroqService groqService;
+    private final AnthropicService anthropicService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ScholarshipService(TavilySearchClient tavilySearchClient, GroqService groqService) {
+    public ScholarshipService(TavilySearchClient tavilySearchClient, GroqService groqService,
+                               AnthropicService anthropicService) {
         this.tavilySearchClient = tavilySearchClient;
         this.groqService = groqService;
+        this.anthropicService = anthropicService;
     }
 
     /**
      * Unified search: combines external national/state + school-specific queries into one
-     * Groq call, returning a merged de-duplicated list ordered by match quality.
-     * Queries are always parameter-specific to what the student provided (major/state/ethnicity/
-     * first-gen/target schools) layered on top of a national baseline that runs regardless —
-     * so a student with no filters still gets solid national-level matches, and a student who
-     * gave a state gets that state's programs in addition to (not instead of) national ones.
+     * live Tavily fetch, then has Claude format/rank the results into a merged de-duplicated
+     * list. Queries are always parameter-specific to what the student provided (major/state/
+     * ethnicity/first-gen/target school) layered on top of a national baseline that runs
+     * regardless — so a student with no filters still gets solid national-level matches, and a
+     * student who gave a state gets that state's programs in addition to (not instead of) national ones.
      */
-    public String search(Map<String, Object> demographics,
-                         String comments, List<String> targetSchools) throws Exception {
-        String kvSummary = "";
+    public String search(Map<String, Object> demographics, String comments, List<String> targetSchools,
+                         Long userId, String sessionId) throws Exception {
         List<String> queries = new ArrayList<>(buildExternalQueries(demographics));
         if (targetSchools != null && !targetSchools.isEmpty()) {
             queries.addAll(buildSchoolQueries(demographics, targetSchools));
         }
         List<Map<String, Object>> rawResults = runSearches(queries, EXCLUDED_GENERAL);
         String searchResultsJson = toJson(rawResults);
-        String context = buildContext(demographics, kvSummary, comments, targetSchools);
-        String recommendations = groqService.getScholarshipRecommendations(context, searchResultsJson);
+        String context = buildContext(demographics, comments, targetSchools);
+        String recommendations = anthropicService.getScholarshipRecommendations(context, searchResultsJson, userId, sessionId);
         return validateLinks(recommendations, rawResults);
     }
 
     /** @deprecated Use {@link #search} */
-    public String searchExternal(Map<String, Object> demographics, String comments) throws Exception {
-        return search(demographics, comments, List.of());
+    public String searchExternal(Map<String, Object> demographics, String comments, Long userId, String sessionId) throws Exception {
+        return search(demographics, comments, List.of(), userId, sessionId);
     }
 
     /** @deprecated Use {@link #search} */
-    public String searchSchoolSpecific(Map<String, Object> demographics,
-                                        String comments, List<String> targetSchools) throws Exception {
-        return search(demographics, comments, targetSchools);
+    public String searchSchoolSpecific(Map<String, Object> demographics, String comments,
+                                        List<String> targetSchools, Long userId, String sessionId) throws Exception {
+        return search(demographics, comments, targetSchools, userId, sessionId);
     }
 
     /**
@@ -71,18 +78,6 @@ public class ScholarshipService {
     }
 
     // ── private helpers ───────────────────────────────────────────────────────
-
-    // FERPA: fields that are NEVER sent to any third-party service regardless of key name
-    private static final List<String> PII_KEY_FRAGMENTS = List.of(
-        "name", "ssn", "social", "dob", "birth", "address", "street", "zip", "phone",
-        "email", "ein", "tin", "passport", "license", "account", "routing", "signature"
-    );
-
-    // FERPA: only these financial/academic field types may be sent to Groq for scholarship matching
-    private static final List<String> ALLOWED_KEY_FRAGMENTS = List.of(
-        "gpa", "income", "agi", "wage", "grant", "aid", "major", "degree", "school", "credit",
-        "tuition", "enrollment", "field", "program", "efc", "sai", "tax"
-    );
 
     /**
      * FERPA: Tavily search queries contain ONLY demographic/academic attributes (major, state,
@@ -152,7 +147,7 @@ public class ScholarshipService {
      * so a link that matches neither is flagged unverified rather than presented as ground truth.
      */
     private String validateLinks(String recommendationsJson, List<Map<String, Object>> rawResults) {
-        Set<String> verifiedDomains = new HashSet<>(SCHOLARSHIP_ALLOWED_DOMAINS);
+        Set<String> verifiedDomains = new HashSet<>(AnthropicService.SCHOLARSHIP_ALLOWED_DOMAINS);
         for (Map<String, Object> r : rawResults) {
             String domain = domainOf(String.valueOf(r.getOrDefault("url", "")));
             if (domain != null) verifiedDomains.add(domain);
@@ -187,12 +182,11 @@ public class ScholarshipService {
     }
 
     /**
-     * FERPA: this context is sent to Groq (approved processor). It contains only
-     * demographic/academic attributes and sanitized financial aggregates from buildKvSummary().
-     * Student name, DOB, SSN, and all direct identifiers are intentionally excluded.
+     * FERPA: this context is sent to Claude (approved processor). It contains only
+     * demographic/academic attributes and sanitized financial aggregates. Student name, DOB,
+     * SSN, and all direct identifiers are intentionally excluded.
      */
-    private String buildContext(Map<String, Object> demographics, String kvSummary,
-                                 String comments, List<String> targetSchools) {
+    private String buildContext(Map<String, Object> demographics, String comments, List<String> targetSchools) {
         StringBuilder sb = new StringBuilder();
         String gpa = str(demographics, "gpa");
         if (!gpa.isEmpty()) sb.append("GPA: ").append(gpa).append("\n");
@@ -208,8 +202,7 @@ public class ScholarshipService {
         String extra = str(demographics, "extracurriculars");
         if (!extra.isEmpty()) sb.append("Extracurriculars/Achievements: ").append(extra).append("\n");
         if (targetSchools != null && !targetSchools.isEmpty())
-            sb.append("Target schools: ").append(String.join(", ", targetSchools)).append("\n");
-        if (!kvSummary.isEmpty()) sb.append("Financial context from documents (anonymized): ").append(kvSummary).append("\n");
+            sb.append("Target school: ").append(String.join(", ", targetSchools)).append("\n");
         if (comments != null && !comments.isBlank()) sb.append("Additional notes: ").append(comments).append("\n");
         return sb.toString();
     }
