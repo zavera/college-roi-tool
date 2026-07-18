@@ -356,7 +356,10 @@
       "Bash(lsof -iTCP -sTCP:LISTEN -P)",
       "Bash(grep -n \"employmentStatus:   \\\\$\\('#dEmploymentStatus'\\).val\\(\\),\" /Users/ambreenzaver/IdeaProjects/college-roi-tool/src/main/resources/static/app.html)",
       "mcp__railway__list_projects",
-      "mcp__railway__list_services"
+      "mcp__railway__list_services",
+      "mcp__railway__whoami",
+      "Bash(git mv *)",
+      "Bash(awk '$1>1')"
     ]
   }
 }
