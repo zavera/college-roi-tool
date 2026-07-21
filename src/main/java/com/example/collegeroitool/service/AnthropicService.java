@@ -15,6 +15,7 @@ import com.example.collegeroitool.dto.DebtIntakeRequest;
 import com.example.collegeroitool.dto.LlmAdviceRequest;
 import com.example.collegeroitool.model.FafsaHandbookReference;
 import com.example.collegeroitool.model.InputPayloadType;
+import com.example.collegeroitool.model.LowEarningSchoolEarnings;
 import com.example.collegeroitool.repository.FafsaHandbookReferenceRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /** Claude-backed analysis for FAFSA Prep's asset-repositioning tab. Uses hardcoded FSA
@@ -228,7 +230,8 @@ public class AnthropicService {
      *  Student Profile, Key Metrics, and repayment-scenario tables shown alongside this in the
      *  UI are all deterministic client-side math (app.html) — this call has no part in them,
      *  and it must never be asked to recompute or restate those figures as if it derived them. */
-    public String getFinancialAdvice(LlmAdviceRequest req, String liveSearchContent, Long userId, String sessionId) {
+    public String getFinancialAdvice(LlmAdviceRequest req, String liveSearchContent,
+                                      LowEarningSchoolEarnings lowEarning, Long userId, String sessionId) {
         String collegeName = req.getCollegeName() != null ? req.getCollegeName() : "this college";
         String major       = req.getMajor()       != null ? req.getMajor()       : "Undecided";
 
@@ -256,11 +259,18 @@ public class AnthropicService {
         String residency = req.getResidency()       != null ? req.getResidency()       : "instate";
         String living    = req.getLivingSituation() != null ? req.getLivingSituation() : "oncampus";
 
+        String lowEarningFlag = lowEarning == null || lowEarning.getLowerEarningsFlag() == null
+            ? "unknown (not found in FSA Earnings Data Report)"
+            : (Boolean.TRUE.equals(lowEarning.getLowerEarningsFlag())
+                ? "YES - flagged as \"Lower Earnings\" on the FAFSA Submission Summary"
+                : "No");
+
         String prompt = awardAssistPromptTemplate
             .replace("{{collegeName}}", collegeName)
             .replace("{{major}}", major)
             .replace("{{residency}}", residency)
             .replace("{{living}}", living)
+            .replace("{{lowEarningFlag}}", lowEarningFlag)
             .replace("{{liveSearchContent}}", liveSearchContent != null && !liveSearchContent.isBlank()
                 ? liveSearchContent : "(no live search results found)")
             .replace("{{coa}}",               String.format("%.0f", coa))
@@ -284,6 +294,49 @@ public class AnthropicService {
         Message response = client.messages().create(params);
         recordUsage(response, userId, sessionId, InputPayloadType.COA, awardAssistModel);
         return extractLastText(response);
+    }
+
+    /** Disambiguates a user-typed college name against a short candidate list from
+     *  {@link com.example.collegeroitool.repository.LowEarningSchoolEarningsRepository} (called
+     *  by LowEarningSchoolMatchService only when an exact normalized-name match wasn't found).
+     *  Returns the matched unitId, or empty if no candidate is confidently the same school —
+     *  the caller must treat "NONE" and "no client configured" the same way (don't guess). */
+    public Optional<Integer> matchSchoolName(String inputName, List<LowEarningSchoolEarnings> candidates,
+                                              Long userId, String sessionId) {
+        if (client == null || candidates.isEmpty()) return Optional.empty();
+
+        tokenUsageService.checkCapOrThrow(userId);
+
+        StringBuilder candidateList = new StringBuilder();
+        for (LowEarningSchoolEarnings c : candidates) {
+            candidateList.append("unitId=").append(c.getUnitId())
+                .append(" | ").append(c.getInstitutionName())
+                .append(" | ").append(c.getState() != null ? c.getState() : "")
+                .append("\n");
+        }
+
+        String prompt = "A user typed this college name: \"" + inputName + "\"\n\n"
+            + "Candidate institutions from an FSA earnings dataset:\n" + candidateList
+            + "\nWhich candidate (if any) is the same real-world institution as the user's input? "
+            + "Respond with ONLY the numeric unitId of the match, or ONLY the word NONE if you are "
+            + "not confident any candidate is the same school. Do not guess - NONE is the safe answer "
+            + "when uncertain. No other text.";
+
+        MessageCreateParams params = MessageCreateParams.builder()
+            .model(awardAssistModel)
+            .maxTokens(20L)
+            .addUserMessage(prompt)
+            .build();
+
+        Message response = client.messages().create(params);
+        recordUsage(response, userId, sessionId, InputPayloadType.COA, awardAssistModel);
+        String text = extractLastText(response).trim();
+
+        try {
+            return Optional.of(Integer.valueOf(text.replaceAll("[^0-9]", "")));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
     }
 
     /** Post-Grad Debt Relief's "AI Assist" recommendation — which repayment plan fits this

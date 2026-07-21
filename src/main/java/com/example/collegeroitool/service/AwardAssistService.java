@@ -1,19 +1,25 @@
 package com.example.collegeroitool.service;
 
+import com.example.collegeroitool.dto.AwardAdviceResult;
 import com.example.collegeroitool.dto.LlmAdviceRequest;
+import com.example.collegeroitool.model.LowEarningSchoolEarnings;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /** Orchestrates Award Assist's "AI Financial Summary" — live Tavily search for school/major
  *  specific facts (clubs, scholarships, resources, jobs), then Claude Haiku turns that into
  *  the structured content the UI renders. The Financial Gap Analysis, Student Profile, Key
  *  Metrics, and repayment-scenario tables shown alongside this are all deterministic client-
  *  side math (see app.html renderCollegeSection/recalculateGap) — this service and the AI have
- *  no part in them, and nothing here should try to recompute those figures. */
+ *  no part in them, and nothing here should try to recompute those figures. The FSA "Lower
+ *  Earnings" flag/figures resolved via LowEarningSchoolMatchService follow the same rule: the
+ *  raw row is returned as-is for deterministic display, and only its flag value is handed to
+ *  the AI call as context to explain, never to verify or recompute. */
 @Service
 public class AwardAssistService {
 
@@ -24,20 +30,29 @@ public class AwardAssistService {
 
     private final TavilySearchClient tavilySearchClient;
     private final AnthropicService anthropicService;
+    private final LowEarningSchoolMatchService lowEarningSchoolMatchService;
 
-    public AwardAssistService(TavilySearchClient tavilySearchClient, AnthropicService anthropicService) {
+    public AwardAssistService(TavilySearchClient tavilySearchClient, AnthropicService anthropicService,
+                               LowEarningSchoolMatchService lowEarningSchoolMatchService) {
         this.tavilySearchClient = tavilySearchClient;
         this.anthropicService = anthropicService;
+        this.lowEarningSchoolMatchService = lowEarningSchoolMatchService;
     }
 
-    public String getFinancialAdvice(LlmAdviceRequest req, Long userId, String sessionId) {
+    public AwardAdviceResult getFinancialAdvice(LlmAdviceRequest req, Long userId, String sessionId) {
         String collegeName = req.getCollegeName() != null ? req.getCollegeName() : "this college";
         String major       = req.getMajor()       != null ? req.getMajor()       : "Undecided";
 
         List<Map<String, Object>> rawResults = runSearches(buildQueries(collegeName, major));
         String liveSearchContent = formatForPrompt(rawResults);
 
-        return anthropicService.getFinancialAdvice(req, liveSearchContent, userId, sessionId);
+        Optional<LowEarningSchoolEarnings> lowEarning =
+            lowEarningSchoolMatchService.match(collegeName, userId, sessionId);
+
+        String adviceJson = anthropicService.getFinancialAdvice(
+            req, liveSearchContent, lowEarning.orElse(null), userId, sessionId);
+
+        return new AwardAdviceResult(adviceJson, lowEarning.orElse(null));
     }
 
     private List<String> buildQueries(String collegeName, String major) {

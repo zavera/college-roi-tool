@@ -918,6 +918,30 @@
         .efas-status-good { color: #276749; font-weight: 700; }
         .efas-status-warn { color: #c05621; font-weight: 700; }
         .efas-status-bad  { color: #c53030; font-weight: 700; }
+        .fsa-flag-row-flagged td { background: #fdf3e7; color: #925c1a; }
+        #lowEarningCard .card-collapsible-header {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        #lowEarningCard .card-collapsible-header h2 { margin: 0; }
+        #lowEarningCard .card-caret { font-size: 13px; color: var(--muted); }
+        .fsa-legend {
+            margin-top: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 12px;
+        }
+        .fsa-legend summary {
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--muted);
+        }
+        .fsa-legend-list { margin: 8px 0 0; }
+        .fsa-legend-list dt { font-size: 12px; font-weight: 700; margin-top: 6px; }
+        .fsa-legend-list dd { font-size: 12px; color: var(--muted); margin: 2px 0 0; }
         .efas-resource-box {
             border: 1px solid var(--border);
             border-radius: 7px;
@@ -1520,9 +1544,18 @@
         <div id="comparePillRow" class="compare-pill-row"></div>
     </div>
 
+    <!-- ── FSA Earnings Data Report (deterministic lookup, runs as soon as a school is selected) ── -->
+    <div class="card" id="lowEarningCard" style="display:none;">
+        <div class="card-collapsible-header" onclick="toggleLowEarningSection()">
+            <h2>FSA Earnings Data Report</h2>
+            <span class="card-caret" id="lowEarningCaret">&#9662;</span>
+        </div>
+        <div id="lowEarningBody"></div>
+    </div>
+
     <!-- ── Major / Program Earnings ── -->
     <div class="card" id="majorSection">
-        <h2>Earnings by Major</h2>
+        <h2>Earnings by Major <span class="groq-tag">Live Data · College Scorecard</span></h2>
 
         <!-- Single-college mode (default) -->
         <div id="majorSingleMode">
@@ -2395,7 +2428,7 @@
             renderCOACard(collegeName);
             recalculateGap();
             loadPrograms(collegeName, data.sixYrEarnings || 0);
-            if (premiumActive) renderPremiumTabs();
+            loadLowEarningData(collegeName);
         }).fail(function() {
             selectedCollege = { name: collegeName, netPrice: null, sixYrEarnings: null };
             $("#results").html(`
@@ -2405,7 +2438,66 @@
             `);
             $("#majorSection").hide();
             updateCompareBtn();
+            loadLowEarningData(collegeName);
         });
+    }
+
+    // ── FSA "Lower Earnings" lookup — runs immediately on school selection, independent of the
+    // full "Get AI Financial Summary" flow. Exact-match is free/instant; Claude only gets called
+    // as a fallback to disambiguate a non-exact name (see LowEarningSchoolMatchService). ──
+    function loadLowEarningData(collegeName) {
+        $("#lowEarningCard").hide();
+        $("#lowEarningBody").empty();
+        if (!collegeName) return;
+        $.get("/api/llm/low-earning", { collegeName: collegeName })
+            .done(function(resp) { renderLowEarningSection(resp, collegeName); })
+            .fail(function() { /* fail open — no message on lookup errors */ });
+    }
+
+    function renderLowEarningSection(data, collegeName) {
+        if (!data || !Object.keys(data).length) {
+            $("#lowEarningCard").hide();
+            return;
+        }
+        const d = n => '$' + Math.round(Math.max(0, n || 0)).toLocaleString('en-US');
+        const flagVal = data.lowerEarningsFlag;
+        const rowClass = flagVal === true ? 'fsa-flag-row-flagged' : '';
+        const flagLabel = flagVal === true ? 'Yes — flagged as "Lower Earnings"'
+            : flagVal === false ? 'No' : 'Not available';
+
+        $("#lowEarningBody").html(`
+            <table class="efas-earnings-table">
+                <tbody>
+                    <tr><td>Institution (FSA match)</td><td>${data.institutionName || 'N/A'}${data.state ? ' (' + data.state + ')' : ''}</td></tr>
+                    <tr><td>College Scorecard Reported Earnings (4 yrs after graduation)</td><td>${data.earningsReported != null ? d(data.earningsReported) : 'N/A'}</td></tr>
+                    <tr><td>Inflation-Adjusted Earnings</td><td>${data.earningsInflationAdjusted != null ? d(data.earningsInflationAdjusted) : 'N/A'}</td></tr>
+                    <tr><td>High School Earnings Threshold${data.hsEarningsThresholdType ? ' (' + data.hsEarningsThresholdType + ')' : ''}</td><td>${data.hsEarningsThresholdValue != null ? d(data.hsEarningsThresholdValue) : 'N/A'}</td></tr>
+                    <tr class="${rowClass}"><td>FAFSA Submission Summary "Lower Earnings" Flag</td><td>${flagLabel}</td></tr>
+                </tbody>
+            </table>
+            <details class="fsa-legend">
+                <summary>What do these terms mean?</summary>
+                <dl class="fsa-legend-list">
+                    <dt>Lower Earnings Flag</dt>
+                    <dd>The school was flagged on the FAFSA Submission Summary because median graduate earnings four years after completion fell below the earnings of recent high school graduates in the applicable comparison area.</dd>
+                    <dt>College Scorecard Reported Earnings</dt>
+                    <dd>Median earnings of undergraduate completers four years after graduation, from the College Scorecard (2017–18/2018–19 pooled cohort, measured in 2022–2023).</dd>
+                    <dt>Inflation-Adjusted Earnings</dt>
+                    <dd>The figure above, adjusted to January 2026 dollars (CPI-U) — this is the value shown on the FAFSA Submission Summary.</dd>
+                    <dt>High School Earnings Threshold</dt>
+                    <dd>Median earnings of recent high school graduates (ages 25–34) used as the comparison benchmark — "State" if most first-year students are in-state, "National" if the school draws students from multiple states.</dd>
+                </dl>
+            </details>
+            <p class="efas-footnote">Source: FSA Earnings Data Report, Data Published March 2026.</p>
+        `);
+        $("#lowEarningCard").show();
+        $("#lowEarningBody").show();
+        $("#lowEarningCaret").html('&#9662;');
+    }
+
+    function toggleLowEarningSection() {
+        $("#lowEarningBody").toggle();
+        $("#lowEarningCaret").html($("#lowEarningBody").is(':visible') ? '&#9662;' : '&#9656;');
     }
 
     function renderCOACard(collegeName) {
