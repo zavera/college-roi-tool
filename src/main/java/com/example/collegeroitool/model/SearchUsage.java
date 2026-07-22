@@ -18,6 +18,7 @@ public class SearchUsage {
     private int scholarship = 0;
     private int coa = 0;
     private int postgrad = 0;
+    private int startup = 0;
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -39,6 +40,8 @@ public class SearchUsage {
     public void setCoa(int v)               { this.coa = v; }
     public int  getPostgrad()               { return postgrad; }
     public void setPostgrad(int v)          { this.postgrad = v; }
+    public int  getStartup()                { return startup; }
+    public void setStartup(int v)           { this.startup = v; }
     public LocalDateTime getCreatedAt()     { return createdAt; }
     public LocalDateTime getUpdatedAt()     { return updatedAt; }
 }

@@ -46,4 +46,10 @@ public class SearchUsageService {
         usage.setPostgrad(usage.getPostgrad() + 1);
         return repo.save(usage);
     }
+
+    public SearchUsage incrementStartup(AppUser user) {
+        SearchUsage usage = getOrCreateForUser(user);
+        usage.setStartup(usage.getStartup() + 1);
+        return repo.save(usage);
+    }
 }

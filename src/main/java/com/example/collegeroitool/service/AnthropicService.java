@@ -51,6 +51,7 @@ public class AnthropicService {
     public static final String POSTGRAD_REPAYMENT_PROMPT_FILE = "postgrad-repayment-recommendation-claude-prompt.txt";
     public static final String POSTGRAD_STATE_ASSISTANCE_PROMPT_FILE = "postgrad-state-assistance-claude-prompt.txt";
     public static final String POSTGRAD_SEARCH_SUMMARY_PROMPT_FILE = "postgrad-search-summary-claude-prompt.txt";
+    public static final String STARTUP_LOCATOR_PROMPT_FILE = "startup-locator-claude-prompt.txt";
 
     /** Trusted scholarship-site domains — restricts both the web_search tool (here) and
      *  {@code ScholarshipService.validateLinks}'s link verification to the same allowlist. */
@@ -79,6 +80,9 @@ public class AnthropicService {
     @Value("${anthropic.model.chatbot:claude-haiku-4-5}")
     private String chatbotModel;
 
+    @Value("${anthropic.model.startup:claude-haiku-4-5}")
+    private String startupLocatorModel;
+
     private static final String CHATBOT_TOOL_NAME = "get_my_saved_data_history";
     private static final int CHATBOT_MAX_TOOL_ITERATIONS = 5;
 
@@ -93,6 +97,7 @@ public class AnthropicService {
     private String postgradRepaymentPromptTemplate;
     private String postgradStateAssistancePromptTemplate;
     private String postgradSearchSummaryPromptTemplate;
+    private String startupLocatorPromptTemplate;
 
     public AnthropicService(FafsaHandbookReferenceRepository handbookReferenceRepository,
                              TokenUsageService tokenUsageService,
@@ -125,6 +130,9 @@ public class AnthropicService {
         postgradSearchSummaryPromptTemplate = new String(
             new ClassPathResource("prompts/" + POSTGRAD_SEARCH_SUMMARY_PROMPT_FILE).getInputStream().readAllBytes(),
             StandardCharsets.UTF_8);
+        startupLocatorPromptTemplate = new String(
+            new ClassPathResource("prompts/" + STARTUP_LOCATOR_PROMPT_FILE).getInputStream().readAllBytes(),
+            StandardCharsets.UTF_8);
     }
 
     public String getModel() {
@@ -145,6 +153,10 @@ public class AnthropicService {
 
     public String getChatbotModel() {
         return chatbotModel;
+    }
+
+    public String getStartupLocatorModel() {
+        return startupLocatorModel;
     }
 
     /** Runs the FAFSA Prep asset-repositioning analysis using hardcoded FSA Handbook /
@@ -221,6 +233,44 @@ public class AnthropicService {
 
         Message response = client.messages().create(params);
         recordUsage(response, userId, sessionId, InputPayloadType.SCHOLARSHIP, scholarshipModel);
+        return extractLastText(response);
+    }
+
+    /** Formats already-fetched live Tavily search results (campus startups, incubators, nearby-
+     *  city startup scenes, and events) into the structured list the Startup Locator tab shows.
+     *  Same pattern as {@link #getScholarshipRecommendations} — Tavily does the fact-finding,
+     *  this call only renders/ranks/dedupes what was already found, on Haiku. */
+    public String getStartupLocatorResults(String collegeName, String interestArea, String state, String major,
+                                            String financialContext, String onCampusContent, String catalogContent,
+                                            Long userId, String sessionId) {
+        if (client == null) {
+            return "{\"onCampusStartups\":[{\"name\":\"Campus Venture Lab\",\"description\":\"Dev-mode placeholder data.\",\"connection\":\"Student-founded\"}],"
+                + "\"nearbyCityStartups\":[{\"name\":\"Dev Placeholder Inc\",\"city\":\"Dev City\",\"description\":\"Dev-mode placeholder data.\",\"whyItFits\":\"Dev-mode placeholder data.\"}],"
+                + "\"events\":[{\"name\":\"Startup Mixer\",\"date\":\"TBD\",\"location\":\"Dev-mode placeholder\",\"description\":\"Dev-mode placeholder data.\"}]}";
+        }
+
+        tokenUsageService.checkCapOrThrow(userId);
+
+        String prompt = startupLocatorPromptTemplate
+            .replace("{{collegeName}}", collegeName != null ? collegeName : "this college")
+            .replace("{{interestArea}}", interestArea != null && !interestArea.isBlank() ? interestArea : "any industry")
+            .replace("{{state}}", state != null && !state.isBlank() ? state : "not specified")
+            .replace("{{major}}", major != null && !major.isBlank() ? major : "not specified")
+            .replace("{{financialContext}}", financialContext != null && !financialContext.isBlank()
+                ? financialContext : "Student did not provide financial feasibility inputs.")
+            .replace("{{onCampusContent}}", onCampusContent != null && !onCampusContent.isBlank()
+                ? onCampusContent : "(no live search results found)")
+            .replace("{{catalogContent}}", catalogContent != null && !catalogContent.isBlank()
+                ? catalogContent : "(no seed-catalog matches found)");
+
+        MessageCreateParams params = MessageCreateParams.builder()
+            .model(startupLocatorModel)
+            .maxTokens(4096L)
+            .addUserMessage(prompt)
+            .build();
+
+        Message response = client.messages().create(params);
+        recordUsage(response, userId, sessionId, InputPayloadType.STARTUP, startupLocatorModel);
         return extractLastText(response);
     }
 

@@ -958,6 +958,7 @@
         }
         .efas-resource-box-header.green  { background: #2d7a4f; }
         .efas-resource-box-header.purple { background: #6b46c1; }
+        .efas-resource-box-header.navy   { background: var(--navy, #1a2f4a); }
         .efas-resource-box table { margin-bottom: 0; }
         .efas-schol-section-header td {
             font-weight: 700;
@@ -1336,6 +1337,7 @@
             .efas-metric-box { background: var(--navy) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; border: 1px solid #555; }
             .efas-resource-box-header.green  { background: #2d7a4f !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .efas-resource-box-header.purple { background: #6b46c1 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .efas-resource-box-header.navy   { background: var(--navy, #1a2f4a) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .efas-schol-section-header.national  td { background: #fef3c7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .efas-schol-section-header.field     td { background: #f0fdf4 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .efas-schol-section-header.community td { background: #f5f3ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -1375,6 +1377,7 @@
     <button class="mod-tab active" role="tab" aria-selected="true"  aria-controls="tab-fafsa"       id="tab-btn-fafsa"        onclick="switchModuleTab('fafsa')">FAFSA Prep</button>
     <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-scholarship"  id="tab-btn-scholarship"  onclick="switchModuleTab('scholarship')">Scholarships</button>
     <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-award"        id="tab-btn-award"        onclick="switchModuleTab('award')">Award Assist</button>
+    <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-startup"       id="tab-btn-startup"      onclick="switchModuleTab('startup')">Startup Locator</button>
     <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-postgrad" id="tab-btn-postgrad" onclick="switchModuleTab('postgrad')">Post-Grad Debt Relief</button>
     <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-chat"      id="tab-btn-chat"     onclick="switchModuleTab('chat')" style="color:var(--muted);opacity:0.65;">Ask Astra (Coming Soon)</button>
     <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-contact"   id="tab-btn-contact"  onclick="switchModuleTab('contact')">Contact</button>
@@ -1742,6 +1745,112 @@
 
 </div><!-- end .container -->
 </div><!-- end #tab-award -->
+
+<!-- ══ STARTUP LOCATOR TAB ═══════════════════════════════════════════════════ -->
+<div id="tab-startup" style="display:none;position:relative;">
+<div id="startupPaywall" style="display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(255,255,255,0.84);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
+    <div style="text-align:center;max-width:360px;">
+        <div style="font-size:36px;margin-bottom:12px;">🚀</div>
+        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your <span class="paywall-limit-num">3</span> free startup searches</h3>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock startup discovery, scholarship searches, and award letter analyses — $20 worth of AI usage included every month.</p>
+        <button type="button" class="btn-unlock btn-primary" onclick="handleUnlock()" style="padding:13px 28px;font-size:15px;">
+            Unlock for <strong>$99.99/mo</strong>
+        </button>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px;">Includes Scholarships + Award Assist + Post-Grad Debt Relief · Cancel anytime</div>
+    </div>
+</div>
+<div class="container">
+
+  <div class="card">
+    <h2>Startup Locator <span class="groq-tag">Claude · Live Search</span></h2>
+    <p class="debt-step-sub">Find real startups connected to your campus, in nearby cities, and upcoming entrepreneurship events — personalized to your field of study. Nearby-city matches are seeded from a real catalog of active Y Combinator-backed companies, freshness-checked live.</p>
+    <div class="field-group">
+        <label for="startupCollegeSearch">College or University</label>
+        <input type="text" id="startupCollegeSearch" placeholder="Type 2+ characters (e.g. Michigan, Howard, NYU)…" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div class="field-group">
+        <label for="startupInterestArea">Interest Area</label>
+        <select id="startupInterestArea" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
+            <option value="">Any Industry</option>
+            <option value="fintech">FinTech</option>
+            <option value="healthtech">HealthTech / BioTech</option>
+            <option value="ai">AI / Machine Learning</option>
+            <option value="climate">Climate / CleanTech</option>
+            <option value="consumer">Consumer</option>
+            <option value="enterprise">Enterprise / SaaS</option>
+            <option value="edtech">EdTech</option>
+        </select>
+    </div>
+    <div class="field-group">
+        <label for="startupState">State / Region <span style="font-weight:400;font-size:10px;color:var(--muted);">(narrows nearby-city matches)</span></label>
+        <select id="startupState" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
+          <option value="">-- Any --</option>
+          <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option>
+          <option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option>
+          <option>Florida</option><option>Georgia</option><option>Hawaii</option><option>Idaho</option>
+          <option>Illinois</option><option>Indiana</option><option>Iowa</option><option>Kansas</option>
+          <option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option>
+          <option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option>
+          <option>Missouri</option><option>Montana</option><option>Nebraska</option><option>Nevada</option>
+          <option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option><option>New York</option>
+          <option>North Carolina</option><option>North Dakota</option><option>Ohio</option><option>Oklahoma</option>
+          <option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option>
+          <option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option>
+          <option>Vermont</option><option>Virginia</option><option>Washington</option><option>West Virginia</option>
+          <option>Wisconsin</option><option>Wyoming</option>
+        </select>
+    </div>
+    </div>
+    <div class="field-group">
+        <label for="startupMajor">Major / Field of Study <span style="font-weight:400;font-size:10px;color:var(--muted);">(optional — personalizes why each match fits you)</span></label>
+        <input type="text" id="startupMajor" placeholder="e.g. Computer Science" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;">
+    </div>
+    <button type="button" id="startupSearchButton" class="btn-primary">Find Startups</button>
+    <div id="startupSpinner" aria-live="polite" aria-atomic="true" style="display:none;margin-top:10px;color:var(--muted);font-size:13px;">Searching for startups and events…</div>
+    <div id="startupResults" style="margin-top:16px;"></div>
+  </div>
+
+  <!-- Financial Feasibility — all optional; runway is computed client-side (deterministic math,
+       never sent through the AI), same pattern as Award Assist's Financial Gap Analysis. Only
+       the computed runway/feasibility label are sent to the search, not raw dollar figures. -->
+  <div class="card">
+    <h2>Financial Feasibility <span style="font-weight:400;font-size:11px;color:var(--muted);text-transform:none;">(optional)</span></h2>
+    <p class="debt-step-sub">A quick, private runway estimate — how long you could realistically go without steady income if you joined or started a company. All fields optional; skip anything you don't know.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="field-group">
+        <label for="startupExpenses">Monthly Essential Expenses ($) <span style="font-weight:400;font-size:10px;color:var(--muted);">rent, food, transport</span></label>
+        <input type="number" id="startupExpenses" placeholder="e.g. 2000 (defaults to $2,000 if left blank)" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;">
+      </div>
+      <div class="field-group">
+        <label for="startupSavings">Current Savings / Liquid Cash ($)</label>
+        <input type="number" id="startupSavings" placeholder="0.00" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;">
+      </div>
+      <div class="field-group">
+        <label for="startupIncome">Monthly Income ($) <span style="font-weight:400;font-size:10px;color:var(--muted);">job, family support, aid disbursement</span></label>
+        <input type="number" id="startupIncome" placeholder="0.00" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;">
+      </div>
+      <div class="field-group">
+        <label for="startupDebt">Monthly Debt Payments ($) <span style="font-weight:400;font-size:10px;color:var(--muted);">student loan, etc., if currently due</span></label>
+        <input type="number" id="startupDebt" placeholder="0.00" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;">
+      </div>
+    </div>
+    <div class="field-group">
+      <label for="startupHorizon">How Long Could You Go Without Steady Income? (months)</label>
+      <select id="startupHorizon" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;">
+        <option value="">-- Not sure --</option>
+        <option value="1">Up to 1 month</option>
+        <option value="2">Up to 2 months</option>
+        <option value="3">Up to 3 months</option>
+        <option value="6">Up to 6 months</option>
+        <option value="12">12+ months</option>
+      </select>
+    </div>
+    <div id="startupFeasibilityResult" style="margin-top:8px;"></div>
+  </div>
+
+</div><!-- end .container -->
+</div><!-- end #tab-startup -->
 
 <!-- ══ POST-GRAD DEBT TAB ════════════════════════════════════════════════════ -->
 <div id="tab-postgrad" style="position:relative;">
@@ -2344,6 +2453,7 @@
     let scholSearchCount = 0;  // Scholarships tab
     let chatCount        = 0;  // Ask Astra — not yet tracked server-side, session-local only
     let fafsaCount       = 0;  // FAFSA Prep tab
+    let startupCount     = 0;  // Startup Locator tab
     let lastCreditData   = {};
     let premiumActive    = false;
     let FREE_SEARCHES    = 3;  // default; overwritten from /api/auth/me's config-driven freeSearchLimit
@@ -2376,6 +2486,182 @@
         if (debtSearchCount >= FREE_SEARCHES) applyDebtPaywall();
         if (scholSearchCount >= FREE_SEARCHES) applyScholPaywall();
         if (fafsaCount >= FREE_SEARCHES) applyFafsaPaywall();
+        if (startupCount >= FREE_SEARCHES) applyStartupPaywall();
+    }
+
+    // ── Startup Locator ────────────────────────────────────────────────────────
+    const DEFAULT_MONTHLY_EXPENSES = 2000;
+
+    /** Deterministic runway math — no AI involved, same "compute client-side, hand the AI only
+     *  the result" pattern as Award Assist's recalculateGap(). Returns null if the student hasn't
+     *  entered enough to compute anything meaningful (no savings and no expenses/income/debt). */
+    function computeStartupFeasibility() {
+        const expensesRaw = $("#startupExpenses").val();
+        const expenses = expensesRaw !== "" ? pf(expensesRaw) : DEFAULT_MONTHLY_EXPENSES;
+        const savings   = pf($("#startupSavings").val()) || 0;
+        const income    = pf($("#startupIncome").val())  || 0;
+        const debt      = pf($("#startupDebt").val())     || 0;
+        const horizon   = $("#startupHorizon").val() ? parseInt($("#startupHorizon").val(), 10) : null;
+
+        const allBlank = expensesRaw === "" && !$("#startupSavings").val() && !$("#startupIncome").val() && !$("#startupDebt").val() && !horizon;
+        if (allBlank) return null;
+
+        const netBurn = expenses + debt - income;
+        const runwayMonths = netBurn <= 0 ? null : (savings / netBurn);
+
+        let label, cls;
+        if (netBurn <= 0) {
+            label = "Income covers your costs — no burn on savings";
+            cls = "efas-status-good";
+        } else if (horizon != null && runwayMonths >= horizon) {
+            label = "Feasible for your stated time horizon";
+            cls = "efas-status-good";
+        } else if (horizon != null && runwayMonths >= horizon * 0.5) {
+            label = "Tight — below your stated time horizon";
+            cls = "efas-status-warn";
+        } else if (horizon != null) {
+            label = "High risk — well below your stated time horizon";
+            cls = "efas-status-bad";
+        } else {
+            label = runwayMonths >= 3 ? "Feasible" : runwayMonths >= 1.5 ? "Tight" : "High risk";
+            cls = runwayMonths >= 3 ? "efas-status-good" : runwayMonths >= 1.5 ? "efas-status-warn" : "efas-status-bad";
+        }
+
+        return { runwayMonths: netBurn <= 0 ? null : runwayMonths, horizonMonths: horizon, label: label, cssClass: cls };
+    }
+
+    function renderStartupFeasibility() {
+        const result = computeStartupFeasibility();
+        if (!result) { $("#startupFeasibilityResult").empty(); return; }
+        const runwayText = result.runwayMonths == null ? "No monthly burn" : result.runwayMonths.toFixed(1) + " months of runway";
+        $("#startupFeasibilityResult").html(
+            '<div style="display:inline-block;border:1.5px solid var(--border);border-radius:8px;padding:10px 16px;background:#fafbfc;">' +
+            '<div style="font-size:16px;font-weight:800;color:var(--navy,#1a2f4a);">' + runwayText + '</div>' +
+            '<div class="' + result.cssClass + '" style="font-size:12px;margin-top:2px;">' + result.label + '</div>' +
+            '</div>'
+        );
+    }
+
+    $("#startupExpenses, #startupSavings, #startupIncome, #startupDebt, #startupHorizon").on("input change", renderStartupFeasibility);
+
+    $("#startupCollegeSearch").autocomplete({
+        source: function(request, response) {
+            $.get("/api/colleges/search?term=" + encodeURIComponent(request.term), function(data) {
+                response(data);
+            }).fail(function() { response([]); });
+        },
+        minLength: 2,
+        select: function(event, ui) {
+            this.value = ui.item.value;
+            return false;
+        }
+    });
+
+    $("#startupSearchButton").on("click", function() {
+        if (startupCount >= FREE_SEARCHES && !premiumActive) {
+            applyStartupPaywall();
+            return;
+        }
+        const collegeName = $("#startupCollegeSearch").val().trim();
+        if (!collegeName) {
+            $("#startupResults").html('<p class="err-card">Enter a college or university to search.</p>');
+            return;
+        }
+        const interestArea = $("#startupInterestArea").val();
+        const state = $("#startupState").val();
+        const major = $("#startupMajor").val().trim();
+        const feasibility = computeStartupFeasibility();
+
+        $("#startupSearchButton").prop("disabled", true);
+        $("#startupSpinner").show();
+        $("#startupResults").empty();
+
+        $.ajax({
+            url: "/api/startup-locator/search",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                collegeName: collegeName, interestArea: interestArea, state: state, major: major,
+                runwayMonths: feasibility ? feasibility.runwayMonths : null,
+                horizonMonths: feasibility ? feasibility.horizonMonths : null,
+                feasibilityLabel: feasibility ? feasibility.label : null
+            }),
+            success: function(resp) {
+                $("#startupSpinner").hide();
+                $("#startupSearchButton").prop("disabled", false);
+                renderStartupResults(resp.data || null, collegeName);
+                $.post("/api/auth/startup-search/increment", function(res) {
+                    startupCount = res.startupSearchCount != null ? res.startupSearchCount : startupCount;
+                });
+            },
+            error: function(xhr) {
+                $("#startupSpinner").hide();
+                $("#startupSearchButton").prop("disabled", false);
+                const msg = xhr.responseJSON?.error || "Something went wrong. Please try again.";
+                $("#startupResults").html('<p class="err-card">' + msg + '</p>');
+            }
+        });
+    });
+
+    function renderStartupResults(data, collegeName) {
+        if (!data) {
+            $("#startupResults").html('<p class="err-card">Could not fetch startup results. Please try again.</p>');
+            return;
+        }
+
+        function renderList(title, items, rowFn, emptyMsg) {
+            let html = '<div class="efas-section-title">' + title + '</div>';
+            if (items && items.length) {
+                html += items.map(rowFn).join('');
+            } else {
+                html += '<p style="color:var(--muted);font-size:12px;padding:8px 0;">' + emptyMsg + '</p>';
+            }
+            return html;
+        }
+
+        // Only render a link if it's genuinely http(s) — guards against a javascript: URI or
+        // similar ending up in an href even though the backend already only ever sends a
+        // verified Tavily-result URL or a seed-catalog website/YC directory URL.
+        function linkHtml(url, label) {
+            if (!url || !/^https?:\/\//i.test(url)) return '';
+            return `<div style="margin-top:6px;"><a href="${url}" target="_blank" rel="noopener noreferrer" style="font-size:12px;font-weight:700;color:var(--primary-dk,#8a6d3b);">${label || 'Visit site'} &rarr;</a></div>`;
+        }
+
+        const onCampusHtml = renderList('On-Campus Startups', data.onCampusStartups, function(s) {
+            return `<div class="efas-resource-box"><div class="efas-resource-box-header green">${s.name || 'Startup'}</div>
+                <div style="padding:8px 12px;font-size:13px;">
+                    <div style="color:var(--muted);margin-bottom:4px;">${s.connection || ''}</div>
+                    <div>${s.description || ''}</div>
+                    ${linkHtml(s.link)}
+                </div></div>`;
+        }, `No real, verifiable startups connected to ${collegeName} were found in the live search — try a broader interest area, or check back later.`);
+
+        const nearbyHtml = renderList('Nearby City Startups <span style="font-weight:400;font-size:10px;color:var(--muted);text-transform:none;">(seeded from real Y Combinator company data, freshness-checked live)</span>', data.nearbyCityStartups, function(s) {
+            return `<div class="efas-resource-box"><div class="efas-resource-box-header purple">${s.name || 'Startup'}${s.city ? ' — ' + s.city : ''}</div>
+                <div style="padding:8px 12px;font-size:13px;">
+                    <div style="margin-bottom:6px;">${s.description || ''}</div>
+                    ${s.whyItFits ? '<div style="background:#f5f2ea;border-radius:6px;padding:8px 10px;color:var(--navy);"><strong>Why it fits you:</strong> ' + s.whyItFits + '</div>' : ''}
+                    ${linkHtml(s.link, 'Company website')}
+                </div></div>`;
+        }, `No real startups near ${collegeName} were found for this interest area/state — try a broader interest area or a different state.`);
+
+        const eventsHtml = renderList('Startup &amp; Entrepreneurship Events', data.events, function(e) {
+            return `<div class="efas-resource-box"><div class="efas-resource-box-header navy">${e.name || 'Event'}</div>
+                <div style="padding:8px 12px;font-size:13px;">
+                    <div style="color:var(--muted);margin-bottom:4px;">${e.date || ''}${e.location ? ' · ' + e.location : ''}</div>
+                    <div>${e.description || ''}</div>
+                    ${linkHtml(e.link, 'Event details')}
+                </div></div>`;
+        }, `No upcoming startup events near ${collegeName} were found in the live search.`);
+
+        $("#startupResults").html(onCampusHtml + nearbyHtml + eventsHtml);
+    }
+
+    function applyStartupPaywall() {
+        if (startupCount >= FREE_SEARCHES && !premiumActive) {
+            $("#tab-startup > .container").css({ filter: "blur(5px)", opacity: "0.35", "user-select": "none", "pointer-events": "none" });
+            $("#startupPaywall").css("display", "flex");
+        }
     }
 
     let selectedCollege = {
@@ -3771,6 +4057,7 @@
                 debtSearchCount  = data.postgradSearchCount     || 0;
                 scholSearchCount = data.scholarshipSearchCount  || 0;
                 fafsaCount       = data.fafsaSearchCount        || 0;
+                startupCount     = data.startupSearchCount      || 0;
                 premiumActive    = data.subscriptionActive      || false;
                 FREE_SEARCHES    = data.freeSearchLimit         || FREE_SEARCHES;
                 $(".paywall-limit-num").text(FREE_SEARCHES);
@@ -3973,6 +4260,7 @@
     function switchModuleTab(tab) {
         document.getElementById('tab-scholarship').style.display  = tab === 'scholarship'  ? 'block' : 'none';
         document.getElementById('tab-award').style.display        = tab === 'award'        ? 'block' : 'none';
+        document.getElementById('tab-startup').style.display      = tab === 'startup'      ? 'block' : 'none';
         document.getElementById('tab-postgrad').style.display     = tab === 'postgrad'     ? 'block' : 'none';
         document.getElementById('tab-chat').style.display         = tab === 'chat'         ? 'block' : 'none';
         document.getElementById('tab-fafsa').style.display        = tab === 'fafsa'        ? 'block' : 'none';

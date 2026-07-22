@@ -132,6 +132,7 @@ public class AuthController {
         int scholarshipCount = usage != null ? usage.getScholarship() : 0;
         int coaCount         = usage != null ? usage.getCoa() : 0;
         int postgradCount    = usage != null ? usage.getPostgrad() : 0;
+        int startupCount     = usage != null ? usage.getStartup() : 0;
         if (user != null && user.getName() != null) name = user.getName();
 
         // Register this session — overwrites any prior session token for this user,
@@ -147,17 +148,18 @@ public class AuthController {
             } catch (Exception ignored) {}
         }
 
-        return ResponseEntity.ok(Map.of(
-            "loggedIn",                true,
-            "email",                   email,
-            "name",                    name != null ? name : email,
-            "subscriptionActive",      subscribed,
-            "fafsaSearchCount",        fafsaCount,
-            "scholarshipSearchCount",  scholarshipCount,
-            "coaSearchCount",          coaCount,
-            "postgradSearchCount",     postgradCount,
-            "freeSearchLimit",         appConfigService.getFreeSearchesLimit(),
-            "institutionName",         "Callisto Tech"
+        return ResponseEntity.ok(Map.ofEntries(
+            Map.entry("loggedIn",                true),
+            Map.entry("email",                   email),
+            Map.entry("name",                    name != null ? name : email),
+            Map.entry("subscriptionActive",      subscribed),
+            Map.entry("fafsaSearchCount",        fafsaCount),
+            Map.entry("scholarshipSearchCount",  scholarshipCount),
+            Map.entry("coaSearchCount",          coaCount),
+            Map.entry("postgradSearchCount",     postgradCount),
+            Map.entry("startupSearchCount",      startupCount),
+            Map.entry("freeSearchLimit",         appConfigService.getFreeSearchesLimit()),
+            Map.entry("institutionName",         "Callisto Tech")
         ));
     }
 
@@ -191,6 +193,15 @@ public class AuthController {
         AppUser user = userService.findByEmail(resolveEmail(principal)).orElse(null);
         int count = user != null ? searchUsageService.getOrCreateForUser(user).getPostgrad() : 0;
         return ResponseEntity.ok(Map.of("debtSearchCount", count));
+    }
+
+    @PostMapping("/startup-search/increment")
+    public ResponseEntity<?> incrementStartupSearch(Principal principal) {
+        if (devBypass && principal == null) return ResponseEntity.ok(Map.of("startupSearchCount", 0));
+        if (principal == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        AppUser user = userService.findByEmail(resolveEmail(principal)).orElse(null);
+        int count = user != null ? searchUsageService.getOrCreateForUser(user).getStartup() : 0;
+        return ResponseEntity.ok(Map.of("startupSearchCount", count));
     }
 
     @PostMapping("/chat/increment")
