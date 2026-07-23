@@ -434,6 +434,24 @@
             font-size: 14px;
         }
 
+        /* ── Shared AI-call progress bar (time-based estimate, not real server progress —
+           these calls aren't streamed, so the fill approaches ~90% over the expected
+           duration and only reaches 100% once the response actually comes back). ── */
+        .ai-progress-track {
+            margin-top: 8px;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .ai-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--primary-dk);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
         #aiAdviceBox {
             margin-top: 14px;
             padding: 16px;
@@ -1479,7 +1497,10 @@
   <div style="margin-bottom:20px;">
     <button type="button" class="btn-primary" onclick="searchScholarships()">Search Scholarships</button>
   </div>
-  <div id="scholSearchSpinner" style="display:none;text-align:center;font-size:13px;color:var(--muted);margin-bottom:12px;">Searching and matching scholarships…</div>
+  <div id="scholSearchSpinner" style="display:none;text-align:center;font-size:13px;color:var(--muted);margin-bottom:12px;">
+      <span id="scholSearchSpinnerLabel">Searching and matching scholarships…</span>
+      <div class="ai-progress-track"><div class="ai-progress-fill" id="scholSearchSpinnerFill"></div></div>
+  </div>
 
   <!-- Combined results -->
   <div id="scholResultsSection" style="display:none;">
@@ -1713,7 +1734,10 @@
 
         <button type="button" id="aiButton" class="btn-ai">Get AI Financial Summary</button>
 
-        <div id="aiSpinner" aria-live="polite" aria-atomic="true">Analyzing your financial package…</div>
+        <div id="aiSpinner" aria-live="polite" aria-atomic="true">
+            <span id="aiSpinnerLabel">Analyzing your financial package…</span>
+            <div class="ai-progress-track"><div class="ai-progress-fill" id="aiSpinnerFill"></div></div>
+        </div>
         <div id="coverageChartWrap" aria-hidden="true"></div>
         <div id="aiAdviceBox" style="display:none;" aria-live="polite" aria-atomic="true"></div>
         <div id="exportRow" style="display:none;text-align:right;">
@@ -1806,8 +1830,12 @@
         <label for="startupMajor">Major / Field of Study <span style="font-weight:400;font-size:10px;color:var(--muted);">(optional — personalizes why each match fits you)</span></label>
         <input type="text" id="startupMajor" placeholder="e.g. Computer Science" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;">
     </div>
+    <div id="startupSearchFeasibilityBadge"></div>
     <button type="button" id="startupSearchButton" class="btn-primary">Find Startups</button>
-    <div id="startupSpinner" aria-live="polite" aria-atomic="true" style="display:none;margin-top:10px;color:var(--muted);font-size:13px;">Searching for startups and events…</div>
+    <div id="startupSpinner" aria-live="polite" aria-atomic="true" style="display:none;margin-top:10px;color:var(--muted);font-size:13px;">
+        <span id="startupSpinnerLabel">Searching for startups and events…</span>
+        <div class="ai-progress-track"><div class="ai-progress-fill" id="startupSpinnerFill"></div></div>
+    </div>
     <div id="startupResults" style="margin-top:16px;"></div>
   </div>
 
@@ -2038,7 +2066,8 @@
             Analyze My Loans
         </button>
         <div id="debtSpinner" style="display:none;font-size:13px;color:var(--muted);font-style:italic;padding:12px 0;">
-            Calculating repayment options…
+            <span id="debtSpinnerLabel">Calculating repayment options…</span>
+            <div class="ai-progress-track"><div class="ai-progress-fill" id="debtSpinnerFill"></div></div>
         </div>
     </div>
 
@@ -2532,7 +2561,11 @@
 
     function renderStartupFeasibility() {
         const result = computeStartupFeasibility();
-        if (!result) { $("#startupFeasibilityResult").empty(); return; }
+        if (!result) {
+            $("#startupFeasibilityResult").empty();
+            $("#startupSearchFeasibilityBadge").empty();
+            return;
+        }
         const runwayText = result.runwayMonths == null ? "No monthly burn" : result.runwayMonths.toFixed(1) + " months of runway";
         $("#startupFeasibilityResult").html(
             '<div style="display:inline-block;border:1.5px solid var(--border);border-radius:8px;padding:10px 16px;background:#fafbfc;">' +
@@ -2540,9 +2573,25 @@
             '<div class="' + result.cssClass + '" style="font-size:12px;margin-top:2px;">' + result.label + '</div>' +
             '</div>'
         );
+
+        // Compact echo of the same result inline in the search card — the runway/feasibility
+        // inputs live in a separate "Financial Feasibility" card further down, so without this
+        // there's no visible confirmation, at the point of clicking "Find Startups", that those
+        // numbers are actually feeding the search (see StartupLocatorService.deriveRiskTier).
+        const bias = result.cssClass === 'efas-status-good'
+            ? 'prioritizing well-funded, growing companies'
+            : 'prioritizing startups actively hiring for paid roles';
+        $("#startupSearchFeasibilityBadge").html(
+            '<div style="margin-bottom:12px;font-size:12px;padding:8px 12px;border-radius:6px;background:#fafbfc;border:1.5px solid var(--border);">' +
+            '<span style="font-weight:700;">Factoring in your financial feasibility:</span> ' +
+            '<span class="' + result.cssClass + '">' + runwayText + ' — ' + result.label + '</span>' +
+            '<div style="color:var(--muted);margin-top:2px;">Search will be ' + bias + '.</div>' +
+            '</div>'
+        );
     }
 
     $("#startupExpenses, #startupSavings, #startupIncome, #startupDebt, #startupHorizon").on("input change", renderStartupFeasibility);
+    renderStartupFeasibility(); // reflect any pre-filled values (e.g. after switching tabs) on load
 
     $("#startupCollegeSearch").autocomplete({
         source: function(request, response) {
@@ -2574,6 +2623,7 @@
 
         $("#startupSearchButton").prop("disabled", true);
         $("#startupSpinner").show();
+        startAiProgress('startupSpinnerFill', 15);
         $("#startupResults").empty();
 
         $.ajax({
@@ -2587,6 +2637,7 @@
                 feasibilityLabel: feasibility ? feasibility.label : null
             }),
             success: function(resp) {
+                stopAiProgress('startupSpinnerFill');
                 $("#startupSpinner").hide();
                 $("#startupSearchButton").prop("disabled", false);
                 renderStartupResults(resp.data || null, collegeName);
@@ -2595,6 +2646,7 @@
                 });
             },
             error: function(xhr) {
+                stopAiProgress('startupSpinnerFill');
                 $("#startupSpinner").hide();
                 $("#startupSearchButton").prop("disabled", false);
                 const msg = xhr.responseJSON?.error || "Something went wrong. Please try again.";
@@ -2742,7 +2794,12 @@
 
     function renderLowEarningSection(data, collegeName) {
         if (!data || !Object.keys(data).length) {
-            $("#lowEarningCard").hide();
+            $("#lowEarningBody").html(`
+                <p class="efas-footnote">No Data Available — this school was not found in the FSA Earnings Data Report.</p>
+            `);
+            $("#lowEarningCard").show();
+            $("#lowEarningBody").show();
+            $("#lowEarningCaret").html('&#9662;');
             return;
         }
         const d = n => '$' + Math.round(Math.max(0, n || 0)).toLocaleString('en-US');
@@ -3507,6 +3564,33 @@
         };
     }
 
+    // ── Shared AI-call progress bar ────────────────────────────────────────────
+    // These AI calls (Claude Haiku + Tavily, 10-30s) aren't streamed from the backend,
+    // so this can't reflect real server progress. Instead the fill approaches ~90% on an
+    // easing curve tuned to each call's typical duration, then snaps to 100% once the
+    // response actually arrives — gives a sense of motion instead of a static spinner.
+    const _aiProgressTimers = {};
+    function startAiProgress(fillId, expectedSeconds) {
+        stopAiProgress(fillId);
+        const fill = document.getElementById(fillId);
+        if (!fill) return;
+        fill.style.width = '0%';
+        const startTime = Date.now();
+        _aiProgressTimers[fillId] = setInterval(function() {
+            const elapsed = (Date.now() - startTime) / 1000;
+            const pct = 90 * (1 - Math.exp(-elapsed / expectedSeconds));
+            fill.style.width = Math.min(pct, 90).toFixed(1) + '%';
+        }, 200);
+    }
+    function stopAiProgress(fillId) {
+        if (_aiProgressTimers[fillId]) {
+            clearInterval(_aiProgressTimers[fillId]);
+            delete _aiProgressTimers[fillId];
+        }
+        const fill = document.getElementById(fillId);
+        if (fill) fill.style.width = '100%';
+    }
+
     // ── AI Financial Summary ──────────────────────────────────────────────────
     $("#aiButton").on("click", function() {
         // Paywall: block on 4th+ click of "Get AI Summary" per account
@@ -3521,6 +3605,7 @@
         $("#coverageChartWrap").hide();
         $("#aiSpinner").show();
         $("#aiSection").attr("aria-busy", "true");
+        startAiProgress('aiSpinnerFill', inCompareMode ? 30 : 25);
 
         if (inCompareMode) {
             // One AJAX call per compare entry, wait for all
@@ -3543,6 +3628,7 @@
                     complete: function() {
                         completed++;
                         if (completed === compareList.length) {
+                            stopAiProgress('aiSpinnerFill');
                             $("#aiSpinner").hide();
                             $("#aiSection").attr("aria-busy", "false");
                             renderCoverageChart(compareList);
@@ -3598,6 +3684,7 @@
                 contentType: "application/json",
                 data: JSON.stringify(payload),
                 success: function(resp) {
+                    stopAiProgress('aiSpinnerFill');
                     $("#aiSpinner").hide();
                     $("#aiSection").attr("aria-busy", "false");
                     // resp.data is the normal path. If the backend's JSON parse failed (e.g. a
@@ -3622,6 +3709,7 @@
                     });
                 },
                 error: function(xhr) {
+                    stopAiProgress('aiSpinnerFill');
                     $("#aiSpinner").hide();
                     $("#aiSection").attr("aria-busy", "false");
                     const msg = xhr.responseJSON?.error || "Something went wrong. Please try again.";
@@ -4356,7 +4444,9 @@
             applyScholPaywall();
             return;
         }
-        $('#scholSearchSpinner').text('Searching scholarships…').show();
+        $('#scholSearchSpinnerLabel').text('Searching scholarships…');
+        $('#scholSearchSpinner').show();
+        startAiProgress('scholSearchSpinnerFill', 15);
         $('#scholResultsSection').hide();
         $.ajax({
             url: '/api/scholarship/search',
@@ -4368,6 +4458,7 @@
                 targetSchools: scholSelectedSchools
             }),
             success(data) {
+                stopAiProgress('scholSearchSpinnerFill');
                 $('#scholSearchSpinner').hide();
                 const scholarships = data.scholarships || [];
                 if (!scholarships.length) {
@@ -4384,6 +4475,7 @@
                 // paywall fires on next click attempt, not after rendering results
             },
             error() {
+                stopAiProgress('scholSearchSpinnerFill');
                 $('#scholSearchSpinner').hide();
                 alert('Could not retrieve scholarships. Please try again.');
             }
@@ -4725,6 +4817,7 @@
         }
 
         $('#debtSpinner').show();
+        startAiProgress('debtSpinnerFill', 15);
         $('#debtAnalyzeBtn').prop('disabled', true);
         $('#debtResultsCard').hide();
         $('#stateAssistanceCard').hide();
@@ -4754,6 +4847,7 @@
             contentType: 'application/json',
             data: JSON.stringify(payload),
             success: function(resp) {
+                stopAiProgress('debtSpinnerFill');
                 renderDebtResults(resp);
                 $('#debtResultsCard').show();
                 $('#debtSpinner').hide();
@@ -4779,6 +4873,7 @@
                 });
             },
             error: function() {
+                stopAiProgress('debtSpinnerFill');
                 $('#debtSpinner').hide();
                 $('#debtAnalyzeBtn').prop('disabled', false);
                 alert('Could not calculate repayment plans. Please try again.');
