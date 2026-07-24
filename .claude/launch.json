@@ -22,5 +22,6 @@
       ],
       "port": 8080
     }
-  ]
+  ],
+  "autoVerify": false
 }

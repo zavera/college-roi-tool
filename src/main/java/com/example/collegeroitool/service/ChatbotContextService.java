@@ -6,6 +6,7 @@ import com.example.collegeroitool.model.InputPayloadType;
 import com.example.collegeroitool.model.Postgrad;
 import com.example.collegeroitool.model.Scholarship;
 import com.example.collegeroitool.model.SearchUsage;
+import com.example.collegeroitool.model.Startup;
 import com.example.collegeroitool.model.Subscription;
 import com.example.collegeroitool.repository.CoaRepository;
 import com.example.collegeroitool.repository.FafsaRepository;
@@ -13,6 +14,7 @@ import com.example.collegeroitool.repository.ModelResponseRepository;
 import com.example.collegeroitool.repository.PostgradRepository;
 import com.example.collegeroitool.repository.ScholarshipRepository;
 import com.example.collegeroitool.repository.SearchUsageRepository;
+import com.example.collegeroitool.repository.StartupRepository;
 import com.example.collegeroitool.repository.SubscriptionRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
@@ -37,6 +39,7 @@ public class ChatbotContextService {
     private final ScholarshipRepository scholarshipRepository;
     private final CoaRepository coaRepository;
     private final PostgradRepository postgradRepository;
+    private final StartupRepository startupRepository;
     private final ModelResponseRepository modelResponseRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -46,6 +49,7 @@ public class ChatbotContextService {
                                   ScholarshipRepository scholarshipRepository,
                                   CoaRepository coaRepository,
                                   PostgradRepository postgradRepository,
+                                  StartupRepository startupRepository,
                                   ModelResponseRepository modelResponseRepository) {
         this.subscriptionRepository = subscriptionRepository;
         this.searchUsageRepository = searchUsageRepository;
@@ -53,6 +57,7 @@ public class ChatbotContextService {
         this.scholarshipRepository = scholarshipRepository;
         this.coaRepository = coaRepository;
         this.postgradRepository = postgradRepository;
+        this.startupRepository = startupRepository;
         this.modelResponseRepository = modelResponseRepository;
     }
 
@@ -68,17 +73,20 @@ public class ChatbotContextService {
           .append(", scholarship: ").append(usage != null ? usage.getScholarship() : 0)
           .append(", coa: ").append(usage != null ? usage.getCoa() : 0)
           .append(", postgrad: ").append(usage != null ? usage.getPostgrad() : 0)
+          .append(", startup: ").append(usage != null ? usage.getStartup() : 0)
           .append("\n");
 
         List<Fafsa> fafsaRows = fafsaRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
         List<Scholarship> scholarshipRows = scholarshipRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
         List<Coa> coaRows = coaRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
         List<Postgrad> postgradRows = postgradRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
+        List<Startup> startupRows = startupRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
 
         sb.append("FAFSA sessions on file: ").append(fafsaRows.size()).append("\n");
         sb.append("Scholarship searches on file: ").append(scholarshipRows.size()).append("\n");
         sb.append("Cost-of-attendance sessions on file: ").append(coaRows.size()).append("\n");
         sb.append("Post-grad sessions on file: ").append(postgradRows.size()).append("\n");
+        sb.append("Startup Locator searches on file: ").append(startupRows.size()).append("\n");
 
         int modelResponses =
             modelResponseRepository.findByTypeInputPayloadAndInputIdIn(InputPayloadType.FAFSA, fafsaRows.stream().map(Fafsa::getId).toList()).size()
@@ -118,6 +126,11 @@ public class ChatbotContextService {
         if (cat.equals("postgrad") || cat.equals("all")) {
             for (Postgrad p : postgradRepository.findAllByUserIdOrderByCreatedAtDesc(userId)) {
                 entries.add(toEntry("postgrad", p.getCreatedAt(), p.getInputPostgradPayload()));
+            }
+        }
+        if (cat.equals("startup") || cat.equals("all")) {
+            for (Startup s : startupRepository.findAllByUserIdOrderByCreatedAtDesc(userId)) {
+                entries.add(toEntry("startup", s.getCreatedAt(), s.getInputStartupPayload()));
             }
         }
 

@@ -154,6 +154,30 @@
         .hdr-sub-toggle:hover { background: rgba(255,255,255,0.22); }
         .hdr-sub-toggle.sub-on  { color: #4ade80; border-color: rgba(74,222,128,0.45); background: rgba(74,222,128,0.12); }
         .hdr-sub-toggle.sub-off { color: rgba(255,255,255,0.55); }
+        .hdr-plan-switch {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--primary);
+            background: rgba(201,168,76,0.12);
+            border: 1px solid rgba(201,168,76,0.3);
+            border-radius: 20px;
+            padding: 4px 12px;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: background .15s;
+        }
+        .hdr-plan-switch:hover { background: rgba(201,168,76,0.22); }
+        .hdr-plan-select {
+            font-size: 11px;
+            font-weight: 700;
+            color: #fff;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            padding: 4px 10px;
+            cursor: pointer;
+        }
         .hdr-badge {
             border: 1px solid rgba(201,168,124,0.35);
             background: rgba(201,168,124,0.1);
@@ -1386,6 +1410,11 @@
     </div>
     <div class="hdr-user">
         <span class="hdr-user-name" id="hdrUserName" style="display:none;"></span>
+        <select id="hdrPlanSelect" class="hdr-plan-select" style="display:none;margin-right:6px;">
+            <option value="monthly">Monthly — $99.99/mo</option>
+            <option value="yearly">Yearly — $79/mo (billed $948/yr)</option>
+        </select>
+        <a href="#" id="hdrPlanSwitch" class="hdr-plan-switch" style="display:none;margin-right:6px;" onclick="handlePlanSwitchClick(event)"></a>
         <button type="button" id="hdrSubToggle" class="hdr-sub-toggle" onclick="handleSubToggleClick()" style="display:none;letter-spacing:.3px;margin-right:4px;"></button>
         <a class="hdr-logout" id="hdrLogout" style="display:none;" href="#">Sign Out</a>
     </div>
@@ -1397,7 +1426,7 @@
     <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-award"        id="tab-btn-award"        onclick="switchModuleTab('award')">Award Assist</button>
     <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-startup"       id="tab-btn-startup"      onclick="switchModuleTab('startup')">Startup Locator</button>
     <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-postgrad" id="tab-btn-postgrad" onclick="switchModuleTab('postgrad')">Post-Grad Debt Relief</button>
-    <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-chat"      id="tab-btn-chat"     onclick="switchModuleTab('chat')" style="color:var(--muted);opacity:0.65;">Ask Astra (Coming Soon)</button>
+    <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-chat"      id="tab-btn-chat"     onclick="switchModuleTab('chat')">Ask Astra</button>
     <button class="mod-tab"        role="tab" aria-selected="false" aria-controls="tab-contact"   id="tab-btn-contact"  onclick="switchModuleTab('contact')">Contact</button>
 </div>
 
@@ -2234,18 +2263,10 @@
 </div><!-- end .container postgrad -->
 </div><!-- end #tab-postgrad -->
 
-<!-- ══ ASK ASTRA (CHATBOT) TAB — temporarily disabled, coming soon ═══════════ -->
+<!-- ══ ASK ASTRA (CHATBOT) TAB ═════════════════════════════════════════════ -->
 <div id="tab-chat" style="position:relative;">
 
-<div id="chatComingSoon" style="position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.88);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
-    <div style="text-align:center;max-width:360px;">
-        <div style="font-size:36px;margin-bottom:12px;">💬</div>
-        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">Ask Astra — Coming Soon</h3>
-        <p style="font-size:14px;color:var(--muted);margin-bottom:0;line-height:1.6;">We're improving this feature. Chat with Astra will be back shortly — check back soon!</p>
-    </div>
-</div>
-
-<div class="container" style="max-width:760px;filter:grayscale(0.7);opacity:0.55;pointer-events:none;">
+<div class="container" style="max-width:760px;">
     <div class="card">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
             <h2 style="margin:0;">Ask Astra</h2>
@@ -2254,8 +2275,8 @@
 
         <div style="display:flex;flex-direction:column;width:100%;box-sizing:border-box;">
             <div id="chatMessages" style="height:360px;overflow-y:auto;border:1.5px solid var(--border);border-radius:8px;padding:14px;margin-bottom:8px;background:#fafbfc;font-size:13px;line-height:1.6;box-sizing:border-box;"></div>
-            <input type="text" id="chatInput" maxlength="100" disabled placeholder="Ask Astra is coming soon…" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;box-sizing:border-box;" onkeydown="if(event.key==='Enter'){sendChatMessage();}">
-            <button type="button" class="btn-primary" disabled style="margin-top:8px;" onclick="sendChatMessage()">Send</button>
+            <input type="text" id="chatInput" maxlength="100" placeholder="Ask Astra a question…" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:6px;background:#fafbfc;color:var(--text);font-family:inherit;box-sizing:border-box;" onkeydown="if(event.key==='Enter'){sendChatMessage();}">
+            <button type="button" class="btn-primary" style="margin-top:8px;" onclick="sendChatMessage()">Send</button>
             <div id="chatSpinner" style="display:none;font-size:12px;color:var(--muted);margin-top:6px;">Astra is thinking…</div>
         </div>
     </div>
@@ -2485,6 +2506,7 @@
     let startupCount     = 0;  // Startup Locator tab
     let lastCreditData   = {};
     let premiumActive    = false;
+    let currentPlanType  = 'MONTHLY';  // 'MONTHLY' or 'YEARLY' — reflects Subscription.planType from /api/auth/me
     let FREE_SEARCHES    = 3;  // default; overwritten from /api/auth/me's config-driven freeSearchLimit
     let chatHistory = [];
 
@@ -4147,6 +4169,7 @@
                 fafsaCount       = data.fafsaSearchCount        || 0;
                 startupCount     = data.startupSearchCount      || 0;
                 premiumActive    = data.subscriptionActive      || false;
+                currentPlanType  = data.planType                || 'MONTHLY';
                 FREE_SEARCHES    = data.freeSearchLimit         || FREE_SEARCHES;
                 $(".paywall-limit-num").text(FREE_SEARCHES);
                 updateSubToggleUI();
@@ -4175,12 +4198,21 @@
     // OFF = no active subscription; turning it on starts real recurring billing via Stripe Checkout.
     function updateSubToggleUI() {
         const $btn = $("#hdrSubToggle");
+        const $select = $("#hdrPlanSelect");
+        const $switch = $("#hdrPlanSwitch");
         if (premiumActive) {
-            $btn.text("Subscription: ON — $99/mo (click to turn off)")
+            const planLabel = currentPlanType === 'YEARLY' ? '$79/mo (billed yearly)' : '$99/mo';
+            $btn.text("Subscription: ON — " + planLabel + " (click to turn off)")
                 .removeClass("sub-off").addClass("sub-on");
+            $select.hide();
+            $switch.show().text(currentPlanType === 'YEARLY'
+                ? "Switch to monthly"
+                : "Switch to yearly (save $252/yr)");
         } else {
-            $btn.text("Subscription: OFF (click to turn on — $99/mo)")
+            $btn.text("Subscription: OFF (click to turn on)")
                 .removeClass("sub-on").addClass("sub-off");
+            $select.show();
+            $switch.hide();
         }
         $btn.prop("disabled", false);
         $btn.show();
@@ -4189,7 +4221,7 @@
     function handleSubToggleClick() {
         const $btn = $("#hdrSubToggle");
         if (premiumActive) {
-            if (!confirm("Turn subscription OFF? This cancels your $99/month subscription and stops all future recurring billing immediately.")) {
+            if (!confirm("Turn subscription OFF? This cancels your subscription and stops all future recurring billing immediately.")) {
                 return;
             }
             $btn.prop("disabled", true).text("Cancelling…");
@@ -4203,12 +4235,13 @@
                     alert("Could not cancel the subscription. Please try again.");
                 });
         } else {
+            const plan = $("#hdrPlanSelect").val() || 'monthly';
             $btn.prop("disabled", true).text("Redirecting…");
             $.ajax({
                 url: "/api/stripe/create-checkout-session",
                 method: "POST",
                 contentType: "application/json",
-                data: JSON.stringify({ baseUrl: window.location.origin }),
+                data: JSON.stringify({ baseUrl: window.location.origin, plan: plan }),
                 success: function(resp) {
                     if (resp.url) window.location.href = resp.url;
                 },
@@ -4218,6 +4251,32 @@
                 }
             });
         }
+    }
+
+    function handlePlanSwitchClick(e) {
+        e.preventDefault();
+        const newPlan = currentPlanType === 'YEARLY' ? 'monthly' : 'yearly';
+        const label = newPlan === 'yearly' ? 'Yearly ($79/mo, billed $948/yr)' : 'Monthly ($99.99/mo)';
+        if (!confirm("Switch to " + label + "? Stripe will prorate the difference on your next invoice.")) {
+            return;
+        }
+        const $switch = $("#hdrPlanSwitch");
+        $switch.text("Switching…");
+        $.ajax({
+            url: "/api/stripe/change-plan",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ plan: newPlan }),
+            success: function(res) {
+                currentPlanType = res.planType || (newPlan === 'yearly' ? 'YEARLY' : 'MONTHLY');
+                updateSubToggleUI();
+            },
+            error: function(xhr) {
+                updateSubToggleUI();
+                const msg = (xhr.responseJSON && xhr.responseJSON.error) || "Could not switch plans. Please try again.";
+                alert(msg);
+            }
+        });
     }
 
     function pf(val) {
@@ -4747,8 +4806,6 @@
     }
 
     function sendChatMessage() {
-        // Ask Astra is temporarily disabled — see #chatComingSoon overlay in the chat tab.
-        return;
         if (chatCount >= FREE_SEARCHES && !premiumActive) {
             $('#chatPaywall').css('display', 'flex');
             return;

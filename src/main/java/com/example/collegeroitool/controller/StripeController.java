@@ -1,6 +1,7 @@
 package com.example.collegeroitool.controller;
 
 import com.example.collegeroitool.model.AppUser;
+import com.example.collegeroitool.model.PlanType;
 import com.example.collegeroitool.service.SubscriptionService;
 import com.example.collegeroitool.service.UserService;
 import com.stripe.Stripe;
@@ -8,8 +9,10 @@ import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
 import com.stripe.model.Customer;
 import com.stripe.model.Subscription;
+import com.stripe.model.SubscriptionItem;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
+import com.stripe.param.SubscriptionUpdateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,7 +41,10 @@ public class StripeController {
     private String webhookSecret;
 
     @Value("${stripe.price.id}")
-    private String priceId;
+    private String monthlyPriceId;
+
+    @Value("${stripe.price.id.yearly}")
+    private String yearlyPriceId;
 
     private final UserService userService;
     private final SubscriptionService subscriptionService;
@@ -72,17 +78,20 @@ public class StripeController {
             String baseUrl = (body != null && body.containsKey("baseUrl"))
                 ? body.get("baseUrl")
                 : "https://astra-ed.org";
+            String plan = (body != null && "yearly".equalsIgnoreCase(body.get("plan"))) ? "yearly" : "monthly";
+            String selectedPriceId = "yearly".equals(plan) ? yearlyPriceId : monthlyPriceId;
 
             SessionCreateParams params = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
                 .setCustomerEmail(email)
                 .addLineItem(SessionCreateParams.LineItem.builder()
-                    .setPrice(priceId)
+                    .setPrice(selectedPriceId)
                     .setQuantity(1L)
                     .build())
                 .setSuccessUrl(baseUrl + "/?payment=success&session_id={CHECKOUT_SESSION_ID}")
                 .setCancelUrl(baseUrl + "/?payment=cancelled")
                 .putMetadata("email", email)
+                .putMetadata("plan", plan)
                 .build();
 
             Session session = Session.create(params);
@@ -120,6 +129,53 @@ public class StripeController {
         return ResponseEntity.ok(Map.of("subscriptionActive", false));
     }
 
+    /** Self-serve plan switch (monthly<->yearly) for an already-active subscription. Uses Stripe's
+     *  own proration (create_prorations) rather than computing the prorated amount ourselves —
+     *  Stripe credits the unused time on the old plan and charges/credits the difference on the
+     *  subscription's next invoice. */
+    @PostMapping("/change-plan")
+    public ResponseEntity<?> changePlan(Principal principal, @RequestBody Map<String, String> body) {
+        String email = resolveEmail(principal);
+        if (email == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        }
+        String requestedPlan = body != null ? body.get("plan") : null;
+        if (!"monthly".equalsIgnoreCase(requestedPlan) && !"yearly".equalsIgnoreCase(requestedPlan)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "plan must be \"monthly\" or \"yearly\""));
+        }
+        PlanType newPlan = "yearly".equalsIgnoreCase(requestedPlan) ? PlanType.YEARLY : PlanType.MONTHLY;
+        String newPriceId = newPlan == PlanType.YEARLY ? yearlyPriceId : monthlyPriceId;
+
+        AppUser user = userService.findByEmail(email).orElse(null);
+        if (user == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "User not found"));
+        }
+
+        String stripeSubscriptionId = subscriptionService.getStripeSubscriptionId(user).orElse(null);
+        if (stripeSubscriptionId == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "No active subscription to switch"));
+        }
+
+        try {
+            Subscription stripeSub = Subscription.retrieve(stripeSubscriptionId);
+            SubscriptionItem currentItem = stripeSub.getItems().getData().get(0);
+
+            SubscriptionUpdateParams params = SubscriptionUpdateParams.builder()
+                .addItem(SubscriptionUpdateParams.Item.builder()
+                    .setId(currentItem.getId())
+                    .setPrice(newPriceId)
+                    .build())
+                .setProrationBehavior(SubscriptionUpdateParams.ProrationBehavior.CREATE_PRORATIONS)
+                .build();
+            stripeSub.update(params);
+
+            subscriptionService.switchPlan(user, newPlan);
+            return ResponseEntity.ok(Map.of("subscriptionActive", true, "planType", newPlan.name()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PostMapping("/webhook")
     public ResponseEntity<String> webhook(
             HttpServletRequest request,
@@ -140,11 +196,13 @@ public class StripeController {
                     .getObject().orElse(null);
                 if (session != null) {
                     String email = session.getCustomerEmail();
+                    String planStr = session.getMetadata() != null ? session.getMetadata().get("plan") : null;
                     if (email == null && session.getMetadata() != null) {
                         email = session.getMetadata().get("email");
                     }
                     if (email != null) {
-                        userService.activateSubscription(email, session.getCustomer(), session.getSubscription());
+                        PlanType plan = "yearly".equals(planStr) ? PlanType.YEARLY : PlanType.MONTHLY;
+                        userService.activateSubscription(email, session.getCustomer(), session.getSubscription(), plan);
                     }
                 }
             }

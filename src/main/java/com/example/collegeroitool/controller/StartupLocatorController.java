@@ -1,7 +1,13 @@
 package com.example.collegeroitool.controller;
 
 import com.example.collegeroitool.model.AppUser;
+import com.example.collegeroitool.model.InputPayloadType;
+import com.example.collegeroitool.model.ModelResponse;
 import com.example.collegeroitool.model.SearchUsage;
+import com.example.collegeroitool.model.Startup;
+import com.example.collegeroitool.repository.ModelResponseRepository;
+import com.example.collegeroitool.repository.StartupRepository;
+import com.example.collegeroitool.service.AnthropicService;
 import com.example.collegeroitool.service.AppConfigService;
 import com.example.collegeroitool.service.GroqService;
 import com.example.collegeroitool.service.MonthlyCostCapExceededException;
@@ -37,16 +43,23 @@ public class StartupLocatorController {
     private final SubscriptionService subscriptionService;
     private final SearchUsageService searchUsageService;
     private final AppConfigService appConfigService;
+    private final StartupRepository startupRepository;
+    private final ModelResponseRepository modelResponseRepository;
+    private final AnthropicService anthropicService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public StartupLocatorController(StartupLocatorService startupLocatorService, UserService userService,
                                      SubscriptionService subscriptionService, SearchUsageService searchUsageService,
-                                     AppConfigService appConfigService) {
+                                     AppConfigService appConfigService, StartupRepository startupRepository,
+                                     ModelResponseRepository modelResponseRepository, AnthropicService anthropicService) {
         this.startupLocatorService = startupLocatorService;
         this.userService = userService;
         this.subscriptionService = subscriptionService;
         this.searchUsageService = searchUsageService;
         this.appConfigService = appConfigService;
+        this.startupRepository = startupRepository;
+        this.modelResponseRepository = modelResponseRepository;
+        this.anthropicService = anthropicService;
     }
 
     @PostMapping("/search")
@@ -79,6 +92,18 @@ public class StartupLocatorController {
         Integer horizonMonths = horizonMonthsRaw instanceof Number ? ((Number) horizonMonthsRaw).intValue() : null;
         String feasibilityLabel = body.get("feasibilityLabel") != null ? String.valueOf(body.get("feasibilityLabel")) : null;
 
+        Startup entry = null;
+        if (user != null) {
+            entry = new Startup();
+            entry.setUserId(user.getId());
+            try {
+                entry.setInputStartupPayload(objectMapper.writeValueAsString(body));
+            } catch (Exception e) {
+                entry.setInputStartupPayload(null);
+            }
+            entry = startupRepository.save(entry);
+        }
+
         String json;
         int status;
         try {
@@ -87,12 +112,14 @@ public class StartupLocatorController {
                 user != null ? user.getId() : null, httpRequest.getSession(true).getId());
             status = 200;
         } catch (MonthlyCostCapExceededException e) {
+            logModelResponse(entry, null, 429);
             return ResponseEntity.status(429).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             log.warn("[startup-locator] search failed userId={}: {}", user != null ? user.getId() : null, e.getMessage());
             json = null;
             status = 500;
         }
+        logModelResponse(entry, json, status);
 
         if (status == 500) {
             return ResponseEntity.internalServerError().body(Map.of("error", "Startup search failed"));
@@ -109,6 +136,18 @@ public class StartupLocatorController {
         } catch (Exception jsonEx) {
             return ResponseEntity.ok(Map.of("error", "Could not parse startup results"));
         }
+    }
+
+    private void logModelResponse(Startup entry, String outputPayload, int status) {
+        if (entry == null) return;
+        ModelResponse resp = new ModelResponse();
+        resp.setModelName(anthropicService.getStartupLocatorModel());
+        resp.setTypeInputPayload(InputPayloadType.STARTUP);
+        resp.setInputId(entry.getId());
+        resp.setOutputPayload(outputPayload);
+        resp.setResponseStatus(status);
+        resp.setPrompt(AnthropicService.STARTUP_LOCATOR_PROMPT_FILE);
+        modelResponseRepository.save(resp);
     }
 
     private AppUser resolveUser(Principal principal) {

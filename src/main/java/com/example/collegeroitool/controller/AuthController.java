@@ -127,6 +127,7 @@ public class AuthController {
 
         AppUser user = userService.findByEmail(email).orElse(null);
         boolean subscribed = user != null && subscriptionService.hasAccess(user);
+        String planType = user != null ? subscriptionService.getOrCreateForUser(user).getPlanType().name() : "MONTHLY";
         SearchUsage usage = user != null ? searchUsageService.getOrCreateForUser(user) : null;
         int fafsaCount       = usage != null ? usage.getFafsa() : 0;
         int scholarshipCount = usage != null ? usage.getScholarship() : 0;
@@ -153,6 +154,7 @@ public class AuthController {
             Map.entry("email",                   email),
             Map.entry("name",                    name != null ? name : email),
             Map.entry("subscriptionActive",      subscribed),
+            Map.entry("planType",                planType),
             Map.entry("fafsaSearchCount",        fafsaCount),
             Map.entry("scholarshipSearchCount",  scholarshipCount),
             Map.entry("coaSearchCount",          coaCount),

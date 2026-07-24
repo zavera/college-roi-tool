@@ -1,6 +1,7 @@
 package com.example.collegeroitool.service;
 
 import com.example.collegeroitool.model.AppUser;
+import com.example.collegeroitool.model.PlanType;
 import com.example.collegeroitool.model.Subscription;
 import com.example.collegeroitool.repository.SubscriptionRepository;
 import com.example.collegeroitool.repository.UserRepository;
@@ -60,16 +61,41 @@ public class SubscriptionService {
      * checkout-redirect/webhook pair don't send duplicate notifications.
      */
     public boolean activateWithStripe(AppUser user, String stripeCustomerId, String stripeSubscriptionId) {
+        return activateWithStripe(user, stripeCustomerId, stripeSubscriptionId, PlanType.MONTHLY);
+    }
+
+    /** Same as above, but also records which plan (monthly/yearly) this checkout was for and
+     *  resets planStartDate to now — this is the start of a new billing cycle. */
+    public boolean activateWithStripe(AppUser user, String stripeCustomerId, String stripeSubscriptionId, PlanType planType) {
         Subscription sub = getOrCreateForUser(user);
         boolean wasActive = sub.isActive();
         sub.setActive(true);
         sub.setStripeCustomerId(stripeCustomerId);
         sub.setStripeSubscriptionId(stripeSubscriptionId);
+        sub.setPlanType(planType);
+        sub.setPlanStartDate(java.time.LocalDateTime.now());
+        sub.setAmountCents(planType == PlanType.YEARLY
+            ? appConfigService.getSubscriptionYearlyAmountCents()
+            : appConfigService.getSubscriptionAmountCents());
         boolean active = repo.save(sub).isActive();
         if (!wasActive) {
             sendToggleEmail(user, true);
         }
         return active;
+    }
+
+    /** Records a plan switch (monthly<->yearly) for an already-active subscription. The actual
+     *  Stripe-side proration is handled by the caller (StripeController.changePlan) before this
+     *  is called — this only updates our local record of which plan is current and resets
+     *  planStartDate to mark the start of the new billing cycle. */
+    public void switchPlan(AppUser user, PlanType newPlan) {
+        Subscription sub = getOrCreateForUser(user);
+        sub.setPlanType(newPlan);
+        sub.setPlanStartDate(java.time.LocalDateTime.now());
+        sub.setAmountCents(newPlan == PlanType.YEARLY
+            ? appConfigService.getSubscriptionYearlyAmountCents()
+            : appConfigService.getSubscriptionAmountCents());
+        repo.save(sub);
     }
 
     /**

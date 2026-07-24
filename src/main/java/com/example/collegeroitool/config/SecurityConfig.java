@@ -56,6 +56,7 @@ public class SecurityConfig {
         var subscription = subscriptionService.getOrCreateForUser(user);
         var exemption = exemptionService.getOrCreateForUser(user);
         if (session != null) {
+            session.setAttribute("userId", user.getId());
             session.setAttribute("subscription", subscription);
             session.setAttribute("searchUsage", searchUsageService.getOrCreateForUser(user));
             session.setAttribute("exemption", exemption);

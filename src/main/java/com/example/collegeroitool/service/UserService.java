@@ -101,6 +101,10 @@ public class UserService implements UserDetailsService {
         return userRepository.findByEmail(email.toLowerCase());
     }
 
+    public Optional<AppUser> findById(Long id) {
+        return userRepository.findById(id);
+    }
+
     public AppUser findOrCreateDevUser() {
         AppUser user = userRepository.findByEmail("dev@local").orElseGet(() -> {
             AppUser nu = new AppUser();
@@ -130,8 +134,14 @@ public class UserService implements UserDetailsService {
 
     /** Activates access from a completed Stripe Checkout session, recording the subscription that backs it. */
     public boolean activateSubscription(String email, String stripeCustomerId, String stripeSubscriptionId) {
+        return activateSubscription(email, stripeCustomerId, stripeSubscriptionId, com.example.collegeroitool.model.PlanType.MONTHLY);
+    }
+
+    /** Same as above, but records which plan (monthly/yearly) the checkout was for. */
+    public boolean activateSubscription(String email, String stripeCustomerId, String stripeSubscriptionId,
+                                         com.example.collegeroitool.model.PlanType planType) {
         return userRepository.findByEmail(email.toLowerCase())
-            .map(u -> { subscriptionService.activateWithStripe(u, stripeCustomerId, stripeSubscriptionId); return true; })
+            .map(u -> { subscriptionService.activateWithStripe(u, stripeCustomerId, stripeSubscriptionId, planType); return true; })
             .orElse(false);
     }
 }

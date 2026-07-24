@@ -9,6 +9,9 @@ public class AppConfigService {
     private static final String SUBSCRIPTION_AMOUNT_CENTS_KEY = "subscription_amount_cents";
     private static final int DEFAULT_SUBSCRIPTION_AMOUNT_CENTS = 9900;
 
+    private static final String SUBSCRIPTION_YEARLY_AMOUNT_CENTS_KEY = "subscription_yearly_amount_cents";
+    private static final int DEFAULT_SUBSCRIPTION_YEARLY_AMOUNT_CENTS = 94800; // $79/mo billed annually = $948/yr
+
     private static final String FREE_SEARCHES_LIMIT_KEY = "free_searches_limit";
     private static final int DEFAULT_FREE_SEARCHES_LIMIT = 1;
 
@@ -20,6 +23,10 @@ public class AppConfigService {
 
     public int getSubscriptionAmountCents() {
         return getIntConfig(SUBSCRIPTION_AMOUNT_CENTS_KEY, DEFAULT_SUBSCRIPTION_AMOUNT_CENTS);
+    }
+
+    public int getSubscriptionYearlyAmountCents() {
+        return getIntConfig(SUBSCRIPTION_YEARLY_AMOUNT_CENTS_KEY, DEFAULT_SUBSCRIPTION_YEARLY_AMOUNT_CENTS);
     }
 
     /** Number of free searches allowed per tab (fafsa/scholarship/coa/postgrad) before the paywall shows. */

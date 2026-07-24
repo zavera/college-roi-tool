@@ -3,11 +3,14 @@ package com.example.collegeroitool.service;
 import com.anthropic.client.AnthropicClient;
 import com.anthropic.client.okhttp.AnthropicOkHttpClient;
 import com.anthropic.core.JsonValue;
+import com.anthropic.core.http.StreamResponse;
+import com.anthropic.helpers.MessageAccumulator;
 import com.anthropic.models.messages.ContentBlock;
 import com.anthropic.models.messages.ContentBlockParam;
 import com.anthropic.models.messages.Message;
 import com.anthropic.models.messages.MessageCreateParams;
 import com.anthropic.models.messages.MessageParam;
+import com.anthropic.models.messages.RawMessageStreamEvent;
 import com.anthropic.models.messages.StopReason;
 import com.anthropic.models.messages.Tool;
 import com.anthropic.models.messages.ToolResultBlockParam;
@@ -29,6 +32,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /** Claude-backed analysis for FAFSA Prep's asset-repositioning tab. Uses hardcoded FSA
@@ -521,11 +525,17 @@ public class AnthropicService {
      *  counts-only summary that was baked into the prompt before. Live search content (already
      *  fetched via Tavily upstream by ChatController) is injected into the system prompt for
      *  general financial-aid questions the tool can't answer. userId/sessionId are always
-     *  resolved server-side by the caller — never accepted from the client. */
+     *  resolved server-side by the caller — never accepted from the client. Text is streamed to
+     *  {@code onToken} as it's generated (token-by-token, same delta text the client should
+     *  append verbatim — no re-formatting needed) across every round of the tool-use loop, so a
+     *  brief narration before/after a tool call is shown live rather than delayed. The full
+     *  concatenated answer is also returned once streaming completes, for persistence. */
     public String getChatResponse(List<Map<String, Object>> history, String userMessage, String liveSearchContent,
-                                   Long userId, String sessionId) {
+                                   Long userId, String sessionId, Consumer<String> onToken) {
         if (client == null) {
-            return "This is a dev-mode placeholder response from Ask Astra. Set ANTHROPIC_API_KEY to get real answers.";
+            String placeholder = "This is a dev-mode placeholder response from Ask Astra. Set ANTHROPIC_API_KEY to get real answers.";
+            onToken.accept(placeholder);
+            return placeholder;
         }
 
         tokenUsageService.checkCapOrThrow(userId);
@@ -533,16 +543,16 @@ public class AnthropicService {
         Tool historyTool = Tool.builder()
             .name(CHATBOT_TOOL_NAME)
             .description("Looks up the logged-in student's OWN previously saved data in this app (FAFSA Prep, "
-                + "Scholarships, Award Assist/Cost-of-Attendance, Post-Grad Debt Relief) so you can answer "
-                + "questions about figures they entered before, e.g. \"what was my parental AGI\" or \"what "
-                + "income did I use last time\". Read-only — call this whenever the user references data they "
-                + "previously saved, rather than guessing or asking them to repeat it. Returns every saved "
+                + "Scholarships, Award Assist/Cost-of-Attendance, Post-Grad Debt Relief, Startup Locator) so you "
+                + "can answer questions about figures they entered before, e.g. \"what was my parental AGI\" or "
+                + "\"what income did I use last time\". Read-only — call this whenever the user references data "
+                + "they previously saved, rather than guessing or asking them to repeat it. Returns every saved "
                 + "session for the category, newest first, so you can describe how a value changed over time.")
             .inputSchema(Tool.InputSchema.builder()
                 .properties(Tool.InputSchema.Properties.builder()
                     .putAdditionalProperty("category", JsonValue.from(Map.of(
                         "type", "string",
-                        "enum", List.of("fafsa", "scholarship", "coa", "postgrad", "all"),
+                        "enum", List.of("fafsa", "scholarship", "coa", "postgrad", "startup", "all"),
                         "description", "Which saved-data category to look up. Use \"all\" if you're not sure which tab the data came from."
                     )))
                     .build())
@@ -577,7 +587,7 @@ public class AnthropicService {
         builder.addUserMessage(userMessage);
 
         long totalIn = 0, totalOut = 0;
-        Message response = client.messages().create(builder.build());
+        Message response = createStreaming(builder.build(), onToken);
         totalIn += response.usage().inputTokens();
         totalOut += response.usage().outputTokens();
 
@@ -606,7 +616,7 @@ public class AnthropicService {
                 .role(MessageParam.Role.USER)
                 .contentOfBlockParams(toolResults)
                 .build());
-            response = client.messages().create(builder.build());
+            response = createStreaming(builder.build(), onToken);
             totalIn += response.usage().inputTokens();
             totalOut += response.usage().outputTokens();
         }
@@ -618,6 +628,23 @@ public class AnthropicService {
         }
 
         return extractLastText(response);
+    }
+
+    /** Runs one streaming Claude call, forwarding each text delta to {@code onToken} as it
+     *  arrives, and returns the fully-accumulated {@link Message} once the stream ends (same
+     *  shape as the non-streaming {@code create} call, so callers like the tool-use loop above
+     *  don't need to know streaming happened). */
+    private Message createStreaming(MessageCreateParams params, Consumer<String> onToken) {
+        MessageAccumulator accumulator = MessageAccumulator.create();
+        try (StreamResponse<RawMessageStreamEvent> streamResponse = client.messages().createStreaming(params)) {
+            streamResponse.stream().forEach(event -> {
+                accumulator.accumulate(event);
+                event.contentBlockDelta()
+                    .flatMap(delta -> delta.delta().text())
+                    .ifPresent(textDelta -> onToken.accept(textDelta.text()));
+            });
+        }
+        return accumulator.message();
     }
 
     private void recordUsage(Message response, Long userId, String sessionId, InputPayloadType type, String modelUsed) {

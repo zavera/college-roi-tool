@@ -25,6 +25,15 @@ public class Subscription {
     @Column(name = "stripe_subscription_id")
     private String stripeSubscriptionId;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "plan_type", nullable = false)
+    private PlanType planType = PlanType.MONTHLY;
+
+    /** When the CURRENT plan/billing cycle started — reset on every plan switch (not the same as
+     *  createdAt, which is when this row was first created). */
+    @Column(name = "plan_start_date")
+    private LocalDateTime planStartDate = LocalDateTime.now();
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime updatedAt = LocalDateTime.now();
@@ -45,6 +54,10 @@ public class Subscription {
     public void setStripeCustomerId(String v)  { this.stripeCustomerId = v; }
     public String getStripeSubscriptionId()     { return stripeSubscriptionId; }
     public void setStripeSubscriptionId(String v) { this.stripeSubscriptionId = v; }
+    public PlanType getPlanType()              { return planType; }
+    public void setPlanType(PlanType v)        { this.planType = v; }
+    public LocalDateTime getPlanStartDate()    { return planStartDate; }
+    public void setPlanStartDate(LocalDateTime v) { this.planStartDate = v; }
     public LocalDateTime getCreatedAt()        { return createdAt; }
     public LocalDateTime getUpdatedAt()        { return updatedAt; }
 }
