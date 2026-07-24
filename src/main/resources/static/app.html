@@ -1439,11 +1439,16 @@
 <div id="scholPaywall" style="display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(255,255,255,0.84);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
     <div style="text-align:center;max-width:360px;">
         <div style="font-size:36px;margin-bottom:12px;">🎓</div>
-        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your <span class="paywall-limit-num">3</span> free scholarship searches</h3>
+        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your <span class="paywall-limit-num">1</span> free scholarship searches</h3>
         <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock scholarship searches, award letter analyses, and loan repayment tools — $20 worth of AI usage included every month.</p>
-        <button type="button" class="btn-unlock btn-primary" onclick="handleUnlock()" style="padding:13px 28px;font-size:15px;">
-            Unlock for <strong>$99.99/mo</strong>
-        </button>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <button type="button" class="btn-unlock btn-primary" onclick="handleUnlock('monthly', event)" style="padding:13px 20px;font-size:14px;">
+                Monthly — <strong>$99.99/mo</strong>
+            </button>
+            <button type="button" class="btn-unlock" onclick="handleUnlock('yearly', event)" style="padding:13px 20px;font-size:14px;">
+                Yearly — <strong>$79/mo</strong> (billed $948/yr)
+            </button>
+        </div>
         <div style="font-size:12px;color:var(--muted);margin-top:8px;">Includes Scholarships + Award Assist + Post-Grad Debt Relief · Cancel anytime</div>
     </div>
 </div>
@@ -1781,15 +1786,25 @@
     <div id="searchPaywall" style="display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(255,255,255,0.82);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
         <div style="max-width:420px;text-align:center;">
             <div style="font-size:36px;margin-bottom:12px;">🔒</div>
-            <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your <span class="paywall-limit-num">3</span> free AI financial summaries</h3>
+            <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your <span class="paywall-limit-num">1</span> free AI financial summaries</h3>
             <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock college searches, financial gap analysis, and AI summaries — $20 worth of AI usage included every month.</p>
-            <div style="background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px;">
-                <div style="font-size:28px;font-weight:800;color:var(--navy);">$99.99<span style="font-size:14px;font-weight:400;color:var(--muted)"> / month</span></div>
-                <div style="font-size:12px;color:var(--muted);margin-top:4px;">$20 AI usage included · AI summaries · Financial gap analysis</div>
+            <div style="display:flex;gap:12px;margin-bottom:20px;">
+                <div style="flex:1;background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:16px;">
+                    <div style="font-size:22px;font-weight:800;color:var(--navy);">$99.99<span style="font-size:12px;font-weight:400;color:var(--muted)"> / mo</span></div>
+                    <div style="font-size:11px;color:var(--muted);margin:4px 0 10px;">Billed monthly</div>
+                    <button type="button" class="btn-unlock" onclick="handleUnlock('monthly', event)" style="width:100%;padding:11px;font-size:13px;">
+                        Choose Monthly
+                    </button>
+                </div>
+                <div style="flex:1;background:#fff;border:1.5px solid var(--primary);border-radius:10px;padding:16px;">
+                    <div style="font-size:22px;font-weight:800;color:var(--navy);">$79<span style="font-size:12px;font-weight:400;color:var(--muted)"> / mo</span></div>
+                    <div style="font-size:11px;color:var(--muted);margin:4px 0 10px;">Billed $948/yr — save 21%</div>
+                    <button type="button" class="btn-unlock btn-primary" onclick="handleUnlock('yearly', event)" style="width:100%;padding:11px;font-size:13px;">
+                        Choose Yearly
+                    </button>
+                </div>
             </div>
-            <button type="button" class="btn-unlock" onclick="handleUnlock()" style="width:100%;padding:14px;font-size:15px;">
-                Unlock Full Access
-            </button>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">$20 AI usage included every month · AI summaries · Financial gap analysis</div>
             <p style="font-size:11px;color:var(--muted);margin-top:10px;">Cancel anytime. Secure checkout via Stripe.</p>
         </div>
     </div>
@@ -1804,11 +1819,16 @@
 <div id="startupPaywall" style="display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(255,255,255,0.84);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
     <div style="text-align:center;max-width:360px;">
         <div style="font-size:36px;margin-bottom:12px;">🚀</div>
-        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your <span class="paywall-limit-num">3</span> free startup searches</h3>
+        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your <span class="paywall-limit-num">1</span> free startup searches</h3>
         <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock startup discovery, scholarship searches, and award letter analyses — $20 worth of AI usage included every month.</p>
-        <button type="button" class="btn-unlock btn-primary" onclick="handleUnlock()" style="padding:13px 28px;font-size:15px;">
-            Unlock for <strong>$99.99/mo</strong>
-        </button>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <button type="button" class="btn-unlock btn-primary" onclick="handleUnlock('monthly', event)" style="padding:13px 20px;font-size:14px;">
+                Monthly — <strong>$99.99/mo</strong>
+            </button>
+            <button type="button" class="btn-unlock" onclick="handleUnlock('yearly', event)" style="padding:13px 20px;font-size:14px;">
+                Yearly — <strong>$79/mo</strong> (billed $948/yr)
+            </button>
+        </div>
         <div style="font-size:12px;color:var(--muted);margin-top:8px;">Includes Scholarships + Award Assist + Post-Grad Debt Relief · Cancel anytime</div>
     </div>
 </div>
@@ -1916,11 +1936,16 @@
 <div id="debtPaywall" style="display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(255,255,255,0.84);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
     <div style="text-align:center;max-width:360px;">
         <div style="font-size:36px;margin-bottom:12px;">🎓</div>
-        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your <span class="paywall-limit-num">3</span> free analyses</h3>
+        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your <span class="paywall-limit-num">1</span> free analyses</h3>
         <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock student loan repayment analyses, PSLF checks, and hardship letter generation — $20 worth of AI usage included every month.</p>
-        <button type="button" class="btn-unlock btn-primary" onclick="handleUnlock()" style="padding:13px 28px;font-size:15px;">
-            Unlock for <strong>$99.99/mo</strong>
-        </button>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <button type="button" class="btn-unlock btn-primary" onclick="handleUnlock('monthly', event)" style="padding:13px 20px;font-size:14px;">
+                Monthly — <strong>$99.99/mo</strong>
+            </button>
+            <button type="button" class="btn-unlock" onclick="handleUnlock('yearly', event)" style="padding:13px 20px;font-size:14px;">
+                Yearly — <strong>$79/mo</strong> (billed $948/yr)
+            </button>
+        </div>
         <div style="font-size:12px;color:var(--muted);margin-top:8px;">Includes Award Assist + Post-Grad Debt Relief · Cancel anytime</div>
     </div>
 </div>
@@ -2266,6 +2291,23 @@
 <!-- ══ ASK ASTRA (CHATBOT) TAB ═════════════════════════════════════════════ -->
 <div id="tab-chat" style="position:relative;">
 
+<div id="chatPaywall" style="display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(255,255,255,0.84);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
+    <div style="text-align:center;max-width:360px;">
+        <div style="font-size:36px;margin-bottom:12px;">💬</div>
+        <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your <span class="paywall-limit-num">1</span> free Ask Astra messages</h3>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock unlimited Ask Astra chat, plus every other tool — $20 worth of AI usage included every month.</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <button type="button" class="btn-unlock btn-primary" onclick="handleUnlock('monthly', event)" style="padding:13px 20px;font-size:14px;">
+                Monthly — <strong>$99.99/mo</strong>
+            </button>
+            <button type="button" class="btn-unlock" onclick="handleUnlock('yearly', event)" style="padding:13px 20px;font-size:14px;">
+                Yearly — <strong>$79/mo</strong> (billed $948/yr)
+            </button>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px;">Cancel anytime · Secure checkout via Stripe</div>
+    </div>
+</div>
+
 <div class="container" style="max-width:760px;">
     <div class="card">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
@@ -2291,11 +2333,16 @@
   <div id="fafsaPaywall" style="display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(255,255,255,0.84);backdrop-filter:blur(6px);border-radius:12px;padding:32px 20px;">
     <div style="text-align:center;max-width:360px;">
       <div style="font-size:36px;margin-bottom:12px;">📋</div>
-      <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your <span class="paywall-limit-num">3</span> free FAFSA analyses</h3>
+      <h3 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;">You've used your <span class="paywall-limit-num">1</span> free FAFSA analyses</h3>
       <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Unlock FAFSA prep analyses, scholarship searches, award letter tools, and more — $20 worth of AI usage included every month.</p>
-      <button type="button" class="btn-unlock btn-primary" onclick="handleUnlock()" style="padding:13px 28px;font-size:15px;">
-        Unlock for <strong>$99.99/mo</strong>
-      </button>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <button type="button" class="btn-unlock btn-primary" onclick="handleUnlock('monthly', event)" style="padding:13px 20px;font-size:14px;">
+              Monthly — <strong>$99.99/mo</strong>
+          </button>
+          <button type="button" class="btn-unlock" onclick="handleUnlock('yearly', event)" style="padding:13px 20px;font-size:14px;">
+              Yearly — <strong>$79/mo</strong> (billed $948/yr)
+          </button>
+      </div>
       <div style="font-size:12px;color:var(--muted);margin-top:8px;">Includes FAFSA Prep + Scholarships + Award Assist + Post-Grad Debt Relief · Cancel anytime</div>
     </div>
   </div>
@@ -4082,19 +4129,21 @@
 
     function exportReport() { window.print(); }
 
-    function handleUnlock() {
-        const btn = document.querySelector('.btn-unlock');
+    function handleUnlock(plan, evt) {
+        plan = plan || 'monthly';
+        const btn = evt ? evt.currentTarget : document.querySelector('.btn-unlock');
+        const originalText = btn ? btn.innerHTML : '';
         if (btn) { btn.disabled = true; btn.textContent = 'Redirecting…'; }
         $.ajax({
             url: '/api/stripe/create-checkout-session',
             method: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ baseUrl: window.location.origin }),
+            data: JSON.stringify({ baseUrl: window.location.origin, plan: plan }),
             success: function(resp) {
                 if (resp.url) window.location.href = resp.url;
             },
             error: function() {
-                if (btn) { btn.disabled = false; btn.textContent = 'Unlock Premium'; }
+                if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
                 alert('Could not start checkout. Please try again.');
             }
         });
@@ -4816,14 +4865,19 @@
 
         appendChatBubble('user', message);
         input.val('');
-        $('#chatSpinner').show();
+        $('#chatSpinner').text('Astra is thinking…').show();
         $('#chatInput').prop('disabled', true);
 
         const $assistantBubble = createChatBubble('assistant');
         let answer = '';
 
+        const STATUS_PREFIX = '\u0000STATUS\u0000';
         streamSse('/api/chat/send', { message, history: chatHistory },
             function onToken(token) {
+                if (token.indexOf(STATUS_PREFIX) === 0) {
+                    $('#chatSpinner').text(token.slice(STATUS_PREFIX.length));
+                    return;
+                }
                 answer += token;
                 $assistantBubble.text(answer);
                 $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);

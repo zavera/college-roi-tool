@@ -412,7 +412,19 @@
       "Bash(lsof -i :8080 -sTCP:LISTEN)",
       "Bash(curl -s -m 3 http://localhost:8080/actuator/health)",
       "Bash(curl -s -m 3 -I http://localhost:8080/)",
-      "Bash(kill 64061)"
+      "Bash(kill 64061)",
+      "mcp__railway__get_service_config",
+      "mcp__railway__list_deployments",
+      "Bash(command -v railway)",
+      "Bash(railway --version)",
+      "Bash(RAILWAY_CALLER=\"skill:use-railway@1.3.6\" RAILWAY_AGENT_SESSION=\"railway-skill-$\\(date +%s\\)-$$\" railway whoami --json)",
+      "Bash(RAILWAY_CALLER=\"skill:use-railway@1.3.6\" RAILWAY_AGENT_SESSION=\"railway-skill-$\\(date +%s\\)-$$\" railway service list --project 9547d231-95ec-4cf6-9c01-05dfa6ef6597 --json)",
+      "Bash(RAILWAY_CALLER=\"skill:use-railway@1.3.6\" RAILWAY_AGENT_SESSION=\"railway-skill-$\\(date +%s\\)-$$\" railway service list --project 9547d231-95ec-4cf6-9c01-05dfa6ef6597 --environment 80121a35-6b5d-41af-b7db-78181fe69ee2 --json)",
+      "Bash(cat ~/.claude/skills/use-railway/scripts/railway-api.sh 2>/dev/null | head -5 *)",
+      "Bash(bash ~/.claude/skills/use-railway/scripts/railway-api.sh 'query getService\\($id: String!\\) { service\\(id: $id\\) { id name } serviceInstances: service\\(id: $id\\) { id } }' '{\"id\":\"e11d3954-444d-4742-8ddc-9d96d1d4d4d7\"}')",
+      "Bash(RAILWAY_CALLER=\"skill:use-railway@1.3.6\" RAILWAY_AGENT_SESSION=\"railway-skill-$\\(date +%s\\)-$$\" railway deployment list --project 9547d231-95ec-4cf6-9c01-05dfa6ef6597 --environment 80121a35-6b5d-41af-b7db-78181fe69ee2 --service e11d3954-444d-4742-8ddc-9d96d1d4d4d7 --json)",
+      "mcp__railway__get_logs",
+      "Bash(RAILWAY_CALLER=\"skill:use-railway@1.3.6\" RAILWAY_AGENT_SESSION=\"railway-skill-$\\(date +%s\\)-$$\" railway logs --project 9547d231-95ec-4cf6-9c01-05dfa6ef6597 --environment 80121a35-6b5d-41af-b7db-78181fe69ee2 --service e11d3954-444d-4742-8ddc-9d96d1d4d4d7 --lines 60 --json)"
     ]
   }
 }

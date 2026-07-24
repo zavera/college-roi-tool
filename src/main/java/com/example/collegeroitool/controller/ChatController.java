@@ -39,6 +39,12 @@ public class ChatController {
 
     private static final int MAX_MESSAGE_LENGTH = 100;
 
+    // Sentinel prefix marking a status token (e.g. "Searching the web…") rather than actual
+    // model-generated answer text — the frontend strips these into the "thinking" indicator
+    // instead of appending them to the visible answer. Not valid model output on its own, so
+    // safe to use as a marker.
+    static final String STATUS_PREFIX = "\u0000STATUS\u0000";
+
     // SseEmitter.send() calls made before the controller method returns are queued internally by
     // Spring and only flushed once the method returns and async processing is handed off — so
     // real token-by-token streaming requires doing the generation work on another thread and
@@ -101,11 +107,6 @@ public class ChatController {
         Long userId = user != null ? user.getId() : null;
         String sessionId = httpSession.getId();
 
-        // Live search: route to relevant domain based on question content. The model can also
-        // pull the user's own saved-data history via the get_my_saved_data_history tool (see
-        // AnthropicService.getChatResponse) — no PII summary is pre-injected here anymore.
-        String liveContent = fetchLiveContent(message);
-
         Chatbot chatbotEntry = null;
         ChatSession chatSession = null;
         if (user != null) {
@@ -131,6 +132,16 @@ public class ChatController {
 
         streamExecutor.submit(() -> {
             try {
+                // Emit an immediate status token so the UI shows activity right away instead of a
+                // silent gap — the Tavily live-search fetch below can take several seconds on its
+                // own, before the model even starts generating. STATUS_PREFIX lets the frontend
+                // route this into the "thinking" indicator instead of the answer bubble.
+                try {
+                    emitter.send(SseEmitter.event().data(STATUS_PREFIX + "Searching the web…"));
+                } catch (Exception ignored) {}
+
+                String liveContent = fetchLiveContent(finalMessage);
+
                 String answer = anthropicService.getChatResponse(history, finalMessage, liveContent, userId, sessionId,
                     token -> {
                         try {
